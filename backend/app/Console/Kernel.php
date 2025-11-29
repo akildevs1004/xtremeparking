@@ -67,7 +67,8 @@ class Kernel extends ConsoleKernel
             ->appendOutputTo(storage_path("kernal_logs/" . date("d-M-Y") . "-notification-armed-with-shop-time.log"));
 
 
-        if (env("APP_ENV") == "production") {
+        //  if (env("APP_ENV") == "production")
+        {
             $schedule
                 ->command('task:db_backup')
                 ->dailyAt('6:00')

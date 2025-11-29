@@ -42,7 +42,7 @@ class DbBackup extends Command
         echo "\n";
 
         $data = [
-            'file' => collect(glob(storage_path("app/dbbackupalarm/*.zip")))->last(),
+            'file' => collect(glob(storage_path("app/dbbackup/*.zip")))->last(),
             'date' => date('Y-M-d'),
             'body' => 'alarm Database Backup',
         ];
