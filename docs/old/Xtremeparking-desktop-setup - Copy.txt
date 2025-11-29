@@ -1,0 +1,43 @@
+1. Install Database - postgresql-17.6-1-windows-x64
+   User: postgres
+   Password: welcome
+
+   1.1. Install pgadmin4-9.8-x64 to create database
+
+   1.2 Copy or Restore Database backup sql file 
+
+
+2. Install Php php-8.2.12-Win32-vs16-x64.zip
+   2.1 copy files to c:/php 
+   2.2 run setx Path "%Path%;C:\php"
+2.3 verify php.ini  
+ extension=pdo_pgsql
+2.4 backend folder - install Laravel composer 
+2.5  Test cmd : php artisan serve 
+2.6  test DB http://localhost:8000/api/test900device
+
+
+3. Install Node.js 
+
+   3.1.  npm(npm install ) in nodescript folder 
+    npm init -y
+    npm install express
+	npm install pg
+	npm install cors
+	npm install dotenv
+
+	npm install mqtt@^5.14.0
+	npm install chokidar@^4.0.3
+	npm install axios@^1.11.0
+
+   3.2.Check nodescript folder .env file
+   3.3   test cmd:  watchCameraImages.js
+ 
+4. Install mqtt
+
+5. Frontend Folder 
+   test cmd : npx http-server dist -p 3000
+
+
+
+

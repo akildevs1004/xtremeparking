@@ -1,0 +1,90 @@
+1. Install Database - postgresql-17.6-1-windows-x64
+   User: postgres
+   Password: welcome
+
+   1.1. Install pgadmin4-9.8-x64 to create database
+
+   1.2 Copy or Restore Database backup sql file 
+
+
+2. Install Php php-8.2.12-Win32-vs16-x64.zip
+   2.1 copy files to c:/php 
+   2.2 run setx Path "%Path%;C:\php"
+   2.3 verify php.ini  
+     extension=pdo_pgsql
+  2.4 backend folder - install Laravel composer 
+  2.5  Test cmd : php artisan serve 
+  2.6  test DB http://localhost:8000/api/test900device
+
+
+3. Install Node.js 
+
+   3.1.  npm(npm install ) in nodescript folder 
+    npm init -y
+    npm install express
+	npm install pg
+	npm install cors
+	npm install dotenv
+
+	npm install mqtt@^5.14.0
+	npm install chokidar@^4.0.3
+	npm install axios@^1.11.0
+
+   3.2.Check nodescript folder .env file
+   3.3   test cmd:  watchCameraImages.js
+ 
+4. Install mqtt
+
+  4.1. Change mqtt configuration.config file to allow Listner to All IP address(network) 
+
+    open config file in powershell with admin permissions and update 
+	
+	cmd : notepad "C:\Program Files\mosquitto\mosquitto.conf"
+
+
+# --- Important for Mosquitto 2.x ---
+# If you define listeners, you must explicitly allow or configure auth.
+allow_anonymous true
+
+# --- TCP MQTT on localhost ---
+listener 1883 0.0.0.0
+protocol mqtt
+
+# --- WebSocket MQTT on localhost ---
+listener 8083 0.0.0.0
+protocol websockets
+
+5. Frontend Folder 
+   test cmd : npx http-server dist -p 3000
+   
+ 
+   
+6. Create a Folder to Store Camera Images with company Name 
+   ex: parking_camera_logs/8
+   create sftp user and map to parking_camera_logs folder 
+   
+8. Add SFTP login details in camera settings FTP   
+   
+7. Add SFTP Folder access to Store Camera Images
+   http://192.168.88.154/  admin/Hik@1234   
+   http://192.168.88.153/doc/page/preview.asp
+   
+8. Change Backend .ENV settings for MQTT connection 
+
+9. Change frontend .ENV settings for MQTT connection    
+
+
+
+10. Modify Camera setting using document CAMERA_PARKING_SETUP.doc
+
+11. Global or laravel : php.ini
+    enable extension=fileinfo
+	
+12. Final Testing All Vehicle Images should save to Folder  : 
+   20250908182641294_F53310_VEHICLE_DETECTION_CAMERAOUT_REVERSE_EMI_BACKGROUND.JPG
+
+
+
+
+
+

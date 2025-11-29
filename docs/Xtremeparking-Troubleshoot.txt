@@ -1,0 +1,14 @@
+1. Camera Store Image in parking_camera_logs folder with company id 
+   ex: parking_camera_logs/8/20250908182641294_F53310_VEHICLE_DETECTION_CAMERAOUT_REVERSE_EMI_BACKGROUND.jpg
+   
+2. watchCameraImages.js is read the File and collect the Time and vehicle parameters   
+    logpath :  \nodescript\logs	
+  
+
+  Node : Call API request backend api/camera_log_listner with vehicle params  
+    and response Publish MQTT topic to Display on Frontend UserDashboard area  
+
+
+    backend/storage/app/logs/parking-camera-logs-date.log
+
+3. 

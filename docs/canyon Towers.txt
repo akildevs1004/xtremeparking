@@ -1,0 +1,56 @@
+CT$@662!@fM
+
+
+camera : admin /hik@1234
+hik@1234
+
+
+192.168.88.201
+192.168.88.201
+
+
+pgsql - welcome root 
+
+
+http://192.168.2.211/
+ultraviewer 119 922 734 welcome123
+
+npm install -g serve
+serve dist
+
+php artisan queue:work
+
+
+FTP password :user : sftpuser2
+password:    welcome 
+
+-------------------------------------------------------
+
+
+net user sftpuser3 welcome /add
+
+icacls E:\parking_camera_logs /inheritance:r
+icacls E:\parking_camera_logs /grant "SYSTEM:(OI)(CI)F"
+icacls E:\parking_camera_logs /remove "sftpuser3"
+icacls E:\parking_camera_logs /grant "sftpuser3:(OI)(CI)F"
+
+# (Open this manually and add lines shown below)
+notepad "C:\ProgramData\ssh\sshd_config"
+
+
+# Match User sftpuser3
+#     ForceCommand internal-sftp
+#     PasswordAuthentication yes
+#     ChrootDirectory E:\parking_camera_logs
+#     AllowTcpForwarding no
+#     X11Forwarding no
+
+
+Restart-Service sshd
+
+----------------------
+
+test 
+sftp sftpuser3@localhost
+
+
