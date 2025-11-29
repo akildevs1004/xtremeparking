@@ -1,0 +1,205 @@
+
+.customerMapTitle {
+  /* background-color: #4285f4; */
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 10px 15px;
+  position: relative;
+}
+.secondary-text-color
+{
+  color: #a19797!important;
+}
+
+
+
+.customerMapTitle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translate(-50%, 0);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  /* border-top: 8px solid #4285f4; */
+}
+.mappopupContent td
+{
+  color:black!important;
+}
+.dashboard
+{
+  font-family: "Plus Jakarta Sans", sans-serif!important;
+}
+ .custom-card {
+    box-shadow: 0px 2px 1px -1px rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    border: 0px solid var(--default-border);
+    position: relative;
+    margin-block-end: 1.5rem;
+    width: 100%;
+}
+ .sos-border-bottom {
+    border-bottom: 2px solid red!important;
+}
+ .sos-border {
+    border: 1px solid red!important;
+}
+.sos
+{
+  color: red;
+}
+ .critical-border-bottom {
+    border-bottom: 2px solid #ffa909!important;
+} .critical-border {
+    border: 1px solid #ffa909!important;
+}
+.critical
+{
+  color: #ffa909;
+}
+.medical-border-bottom {
+    border-bottom: 2px solid #03b562!important;
+}.medical-border {
+    border: 1px solid #03b562!important;
+}
+.medical
+{
+  color: #03b562;
+}
+.fire-border-bottom
+{
+  border-bottom: 2px solid #fd4963!important;
+}.fire-border
+{
+  border: 1px solid #fd4963!important;
+}
+.fire
+{
+  color: #fd4963;
+}
+.water
+{
+  color: #fd4963;
+}
+.water-border-bottom
+{
+  border-bottom: 2px solid #0fbcf9!important;
+}.water-border
+{
+  border: 1px solid #0fbcf9!important;
+}
+.water
+{
+  color: #0fbcf9;
+}
+
+/*----------colors */
+.blue-border-bottom
+{
+  border-bottom: 2px solid #0fbcf9!important;
+}.blue-border
+{
+  border: 1px solid #0fbcf9!important;
+}
+.blue-text
+{
+  color: #0fbcf9!important;
+}
+.red-border-bottom
+{
+  border-bottom: 2px solid #fd4963!important;
+}.red-border
+{
+  border: 1px solid #fd4963!important;
+}
+.red-text
+{
+  color: #fd4963!important;
+}
+
+
+
+
+.green-border-bottom
+{
+  border-bottom: 2px solid #03b562!important;
+}.green-border
+{
+  border: 1px solid #03b562!important;
+}
+.green-text
+{
+  color: #03b562!important;
+}
+
+.yellow-border-bottom
+{
+  border-bottom: 2px solid yellow!important;
+}.yellow-border
+{
+  border: 1px solid yellow!important;
+}
+.yellow-text
+{
+  color: yellow!important;
+}
+.darkgreen-border-bottom
+{
+  border-bottom: 2px solid #0000ff!important;
+
+
+}.darkgreen-border
+{
+  border: 1px solid #0000ff!important;
+}
+.darkgreen-text
+{
+  color: #0000ff!important;
+}
+// bg-.blue
+// {
+//   background-color: #0fbcf9;
+// }
+
+
+
+
+
+
+
+
+
+.image-box
+{
+  background-color: transparent;
+                    border: 2px solid red;
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 6px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    margin: auto;
+}
+.image-box-simple
+{
+  background-color: transparent;
+                    // border: 2px solid rgb(255, 255, 255);
+                    border-radius: 2px;;
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 6px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    margin: auto;
+}
+
+
+.yellow-border {
+    border-bottom: 2px solid yellow!important;
+}

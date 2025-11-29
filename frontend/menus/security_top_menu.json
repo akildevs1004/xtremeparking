@@ -1,0 +1,23 @@
+[
+  {
+    "icon": "mdi-home",
+    "title": "Dashboard",
+    "to": "/security/dashboard",
+    "menu": "alarm_dashboard",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi-home",
+    "title": "Map",
+    "to": "/security/customersmap",
+    "menu": "alarm_customersmap",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi-home",
+    "title": "Tickets",
+    "to": "/security/tickets",
+    "menu": "security_tickets",
+    "module": "topmenu"
+  }
+]

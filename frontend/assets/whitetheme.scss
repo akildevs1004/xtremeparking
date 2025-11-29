@@ -1,0 +1,62 @@
+.theme--light .popup_background_noviolet button {
+  color: black !important;
+}
+body{
+  background-color: map-get($material-light, 'background') !important;
+
+}
+
+// .theme--light.v-application
+// {
+//   background-color: map-get($material-light, 'background') !important;
+
+// }
+.theme--dark .violet {
+  background-color: #6946dd;
+}
+.theme--light .customer-background
+{
+  background-color:#FFF!important;
+}
+.theme--light .v-dialog > .v-card > .popup_background_noviolet {
+  background-color: #ecf0f4 !important  ;
+  padding: 5px 6px 5px !important;
+  color: black !important;
+}
+.theme--light .font-color
+{
+color:black!important;
+}
+
+.theme--light .simpletable table,
+.theme--light .simpletable th,
+.theme--light .simpletable td {
+  border-bottom: 1px solid #353538;
+  border-collapse: collapse;
+}
+.theme--light .simpletable tr:last-child td {
+  border-bottom: 1px solid #353538;
+  border-collapse: collapse;
+}
+.theme--light .simpletable td {
+  height: 50px;
+  inline-size: 100px;
+  overflow: hidden;
+
+  vertical-align: middle;
+}
+
+.theme--light .background
+{
+  //  background-color: #FFF !important;
+  //  background-color:#ecf0f4 !important;
+  background-color: map-get($material-light, 'background') !important;
+
+
+}
+
+// .theme--light  .v-timeline-item__body > .v-card:not(.v-card--flat)::after
+
+// {
+//   border-right-color:rgb(221, 221, 221)!important;
+// }

@@ -1,0 +1,30 @@
+[
+  {
+    "icon": "mdi-home",
+    "title": "Dashboard",
+    "to": "/dashboard",
+    "menu": "dashboard",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi-clipboard-text-clock",
+    "title": "Employees",
+    "to": "/employees",
+    "menu": "employees",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi-clock-outline",
+    "title": "Attendance",
+    "to": "/shift",
+    "menu": "attendance",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi-bell",
+    "title": "Reports",
+    "to": "/attendance_report",
+    "menu": "reports",
+    "module": "topmenu"
+  }
+]

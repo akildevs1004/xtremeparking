@@ -1,0 +1,183 @@
+/* .v-application .main_bg_alarm-dashboard2 {
+  background-color: #333c5d !important;
+} */
+
+ .v-app-bar .v-toolbar.v-sheet
+{
+  background-color: #10103d !important;
+}
+
+
+
+  .dashboard-card {
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  /* background: linear-gradient(135deg, #2f3857 0%, #1b2845 100%); */
+  background-color: #10154d;;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+   .dashboard-card-small {
+  /* border-color: #20225d!important; */
+
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  /* background: linear-gradient(135deg, #2f3857 0%, #1b2845 100%); */
+  background-color: #10154d;;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+   .dashboard-card-small-pink {
+  border-color: #2d2527!important;
+  border-radius: 20px!important;
+  padding: 30px!important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1)!important;
+  /* background: linear-gradient(135deg, #7d66e5 0%, #0071bd 100%)!important; */
+  background: linear-gradient(135deg, #7d66e5 0%, #d45cb3 100%)!important;
+    /* background: linear-gradient(135deg, #7d66e5 0%, #ff0000 100%)!important;*/
+
+
+
+
+  color: white!important;
+  display: flex!important;
+  flex-direction: column!important;
+  justify-content: space-between!important;
+}
+.vue-gauge-item text
+{
+  color:#FFF!important;
+}
+
+
+/* Global SVG text styling */
+/* ::v-deep   svg text {
+  fill: white !important;
+  font-family: Arial, sans-serif;
+}
+
+
+::v-deep  .gauge-arc-label {
+  fill: white !important;
+  font-size: 12px;
+}
+
+::v-deep    .gauge-central-label {
+  fill: white !important;
+  font-size: 24px;
+  font-weight: bold;
+} */
+
+.theme--light .apexcharts-legend-text
+{
+color:black!important;
+}
+
+.theme--light .apexcharts-legend-text, .theme--light  .apexcharts-yaxis, .theme--light  .apexcharts-xaxis
+{
+color:black!important;
+}
+
+
+
+.weather-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.weather-card {
+  height: 100%;
+  transition: transform 0.3s;
+  border-radius: 12px !important;
+}
+
+.weather-card:hover {
+  transform: translateY(-5px);
+}
+
+.card-content {
+  padding: 20px;
+  text-align: center;
+}
+
+.weather-value {
+
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 10px 0;
+}
+
+.weather-label {
+
+  color: #FFF;
+  margin-bottom: 5px;
+}
+
+.weather-detail,
+.weather-feelslike {
+
+  color: #95a5a6;
+}
+
+.v-card-title {
+  font-weight: 500;
+  color: #2c3e50;
+  padding-bottom: 0;
+}
+
+.v-card-text {
+  padding-top: 10px;
+}
+/* .theme--light.v-label
+{
+  color:#FFF!important;
+} */
+
+.transparent-select ::v-deep .v-label {
+  color: white !important;
+}
+
+.transparent-select ::v-deep .v-input__slot {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.transparent-select ::v-deep .v-select__selection {
+  color: white !important;
+}
+
+.transparent-select ::v-deep .v-icon {
+  color: white !important;
+}
+
+.transparent-select ::v-deep fieldset {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+/* Modern deep selector syntax */
+::v-deep .white-select .v-label {
+  color: white !important;
+}
+
+::v-deep .white-select .v-input__slot {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+::v-deep .white-select .v-select__selection {
+  color: white !important;
+}
+
+::v-deep .white-select .v-icon {
+  color: white !important;
+}
+
+
+
+

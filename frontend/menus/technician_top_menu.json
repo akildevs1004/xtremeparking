@@ -1,0 +1,24 @@
+[
+  {
+    "icon": "mdi-home",
+    "title": "Dashboard",
+    "to": "/technician/dashboard",
+    "menu": "technician_dashboard",
+    "module": "topmenu"
+  },
+
+  {
+    "icon": "mdi-home",
+    "title": "Tickets",
+    "to": "/technician/tickets",
+    "menu": "technician_tickets",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi-home",
+    "title": "Events",
+    "to": "/technician/allevents",
+    "menu": "technician_allevents",
+    "module": "topmenu"
+  }
+]
