@@ -710,6 +710,9 @@ export default {
         alarm_devices: {
           elevation: 0,
           selected: "",
+        }, devices_devices: {
+          elevation: 0,
+          selected: "",
         },
         settings: {
           elevation: 0,
@@ -1078,9 +1081,9 @@ export default {
           name: "alarm_armed_reports",
           path: "/alarm/armedreports",
         },
-        "alarm-devices": {
-          name: "alarm_devices",
-          path: "/alarm/devices",
+        "devices_devices": {
+          name: "devices_devices",
+          path: "/devices/devices",
         },
 
         settings: {
@@ -1429,7 +1432,7 @@ export default {
       let bgColor = "violet";
       this.setMenus();
 
-      console.log("menu_name", menu_name);
+      console.log("menu_name", menu_name, page);
 
       // Check if menu_name exists in menuProperties// data sesction
       if (this.menuProperties.hasOwnProperty(menu_name)) {

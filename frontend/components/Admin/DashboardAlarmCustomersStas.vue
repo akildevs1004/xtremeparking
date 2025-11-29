@@ -3,28 +3,12 @@
     <div>
       <v-card class="py-2 mb-2">
         <v-row align-self="center">
-          <v-col
-            style="padding-left: 25px"
-            lg="6"
-            md="6"
-            sm="6"
-            xs="6"
-            class="laptop-padding"
-            align-self="center"
-            >Total Customers</v-col
-          >
+          <v-col style="padding-left: 25px" lg="6" md="6" sm="6" xs="6" class="laptop-padding" align-self="center">Total
+            Customers</v-col>
 
-          <v-col
-            lg="4"
-            md="4"
-            sm="4"
-            xs="4"
-            class="text-red bold text-h3 red--text laptop-padding"
-            align-self="center"
-            style="margin-left: 5px"
-          >
-            {{ data ? data.customersCount : 0 }}</v-col
-          >
+          <v-col lg="4" md="4" sm="4" xs="4" class="text-red bold text-h3 red--text laptop-padding" align-self="center"
+            style="margin-left: 5px">
+            {{ data ? data.customersCount : 0 }}</v-col>
         </v-row>
       </v-card>
       <v-row>
@@ -33,10 +17,7 @@
             <v-row class="pa-2">
               <v-row class="pa-0 ma-0" style="width: 100%">
                 <v-col md="6">
-                  <img
-                    src="/alarm_icons/google_alarm.png"
-                    style="width: 25px"
-                  />
+                  <img src="/alarm_icons/google_alarm.png" style="width: 25px" />
                   <!--<v-avatar color="#E65100">
                     <v-icon size="25" style="color: #fff"
                       >mdi-cellphone-information</v-icon
@@ -84,10 +65,7 @@
                       >mdi-card-account-mail-outline</v-icon
                     >
                   </v-avatar> -->
-                  <img
-                    src="/alarm_icons/google_closed_alarm.png"
-                    style="width: 25px"
-                  />
+                  <img src="/alarm_icons/google_closed_alarm.png" style="width: 25px" />
                 </v-col>
 
                 <v-col md="6" class="menu-icon-right">
@@ -131,10 +109,7 @@
                       >mdi-account-outline</v-icon
                     >
                   </v-avatar> -->
-                  <img
-                    src="/alarm_icons/google_armed.png"
-                    style="width: 25px"
-                  />
+                  <img src="/alarm_icons/google_armed.png" style="width: 25px" />
                 </v-col>
 
                 <v-col md="6" class="menu-icon-right text-end">
@@ -177,10 +152,7 @@
                       >mdi-account-minus-outline</v-icon
                     >
                   </v-avatar> -->
-                  <img
-                    src="/alarm_icons/google_disarm.png"
-                    style="width: 25px"
-                  />
+                  <img src="/alarm_icons/google_disarm.png" style="width: 25px" />
                 </v-col>
 
                 <v-col md="6" class="menu-icon-right text-end">
@@ -226,10 +198,7 @@
                     >
                   </v-avatar> -->
                   <!-- <v-icon color="blue" size="30" fill>mdi-airplane-takeoff</v-icon> -->
-                  <img
-                    src="/alarm_icons/google_online.png"
-                    style="width: 25px"
-                  />
+                  <img src="/alarm_icons/google_online.png" style="width: 25px" />
                 </v-col>
 
                 <v-col md="6" class="menu-icon-right">
@@ -271,10 +240,7 @@
                       >mdi-clock-time-eight-outline</v-icon
                     >
                   </v-avatar> -->
-                  <img
-                    src="/alarm_icons/google_offline.png"
-                    style="width: 25px"
-                  />
+                  <img src="/alarm_icons/google_offline.png" style="width: 25px" />
                 </v-col>
 
                 <v-col md="6" class="menu-icon-right">
@@ -336,7 +302,7 @@ export default {
       }, 1000 * 30);
     }
   },
-  created() {},
+  created() { },
 
   methods: {
     viewReports() {
@@ -344,7 +310,7 @@ export default {
     },
 
     viewDevices() {
-      this.$router.push("/alarm/devices");
+      this.$router.push("/devices/devices");
     },
     getDataFromApi() {
       let today = new Date();

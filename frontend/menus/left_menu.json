@@ -371,15 +371,6 @@
   },
 
   {
-    "icon": "mdi-cellphone-text",
-    "title": "Devices",
-    "to": "/alarm/devices",
-    "menu": "device_access",
-    "module": "settings",
-    "top_menu_name": "settings"
-  },
-
-  {
     "icon": "mdi-account-group",
     "title": "Reports",
     "to": "/alarm/customerseventsgroup",

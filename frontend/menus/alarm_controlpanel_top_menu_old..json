@@ -45,7 +45,7 @@
   {
     "icon": "mdi mdi-calendar-star-four-points",
     "title": "Devices",
-    "to": "/alarm/devices",
+    "to": "/devices/devices",
     "menu": "alarm_devices",
     "module": "topmenu"
   },
