@@ -61,7 +61,7 @@
                 <v-text-field class="pb-0" hide-details v-model="payload_serial_number.location" outlined dense
                   label="Device location"></v-text-field>
                 <span v-if="primary_errors && primary_errors.location" class="error--text">{{ primary_errors.location[0]
-                  }}
+                }}
                 </span>
               </v-col>
 
@@ -86,8 +86,8 @@
 
               <v-col cols="12" dense>
                 <v-select class="pb-0" :readonly="!editable" :filled="!editable" hide-details
-                  v-model="payload_serial_number.function" outlined dense label="Device Entry/Exit" :items="deviceTypes"
-                  item-value="value" item-text="name"></v-select>
+                  v-model="payload_serial_number.function" outlined dense label="Device Entry/Exit"
+                  :items="deviceFunction" item-value="value" item-text="name"></v-select>
 
 
                 <span v-if="errors && errors.function" class="error--text mt-2">{{ errors.function[0] }}</span>
@@ -160,7 +160,7 @@ export default {
     timeZones,
     customersList: [],
 
-    deviceTypes: [],
+    deviceFunction: [],
     deviceModels: [],
     show1: false,
     contactTypes: [],
@@ -217,10 +217,10 @@ export default {
     //     params: {},
     //   })
     //   .then((data) => {
-    //     if (data) this.deviceTypes = data.data;
+    //     if (data) this.deviceFunction = data.data;
     //   });
 
-    this.deviceTypes = [{ "name": "Entry", "value": "in" }, { "name": "Exit", "value": "out" }, { "name": "Entry and Exit", "value": "auto" }]
+    this.deviceFunction = [{ "name": "Entry", "value": "in" }, { "name": "Exit", "value": "out" }, { "name": "Entry and Exit", "value": "auto" }]
     this.$axios
       .get("device_models", {
         params: {},

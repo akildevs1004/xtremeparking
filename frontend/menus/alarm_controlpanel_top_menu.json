@@ -31,7 +31,7 @@
 
   {
     "icon": "mdi-bell",
-    "title": "Devices",
+    "title": "Devices/Rooms",
     "to": "/devices/devices",
     "menu": "devices_devices",
     "module": "topmenu"

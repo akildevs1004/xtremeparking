@@ -157,7 +157,7 @@
           {{ caps(item.location) }}<br />
           <span class="secondary-value">{{
             item.zone ? item.zone + ", " : ""
-          }}</span>
+            }}</span>
           <span class="secondary-value">{{ item.area }}</span>
         </template>
 
@@ -292,7 +292,7 @@
         </template>
 
         <template v-slot:item.function="{ item }">
-          <div v-if="item.function == 'all'">
+          <div v-if="item.function == 'all' || item.function == 'auto'">
             Entry and Exit
           </div>
           <div v-else-if="item.function == 'in'">

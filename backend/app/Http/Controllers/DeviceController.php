@@ -343,7 +343,7 @@ class DeviceController extends Controller
             "company_id" => "required",
             "name" => "required",
             "location" => "required",
-            "serial_number" => "required",
+            "serial_number" => "nullable",
             "utc_time_zone" => "required",
 
             "function" => "required",
@@ -433,7 +433,7 @@ class DeviceController extends Controller
                     $data["status_id"] = 2;
                     $data["device_id"] = $data["serial_number"];
 
-
+                    $data["device_type"] = "parking";
 
 
 
