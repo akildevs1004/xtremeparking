@@ -578,7 +578,7 @@
 </style>
 
 <script>
-import company_menus from "../menus/left_menu.json";
+import company_menus from "../menus/parking_menu_left.json";
 import employee_menus from "../menus/employee.json";
 import branch_menus from "../menus/branch.json";
 import guard_menus from "../menus/guard.json";
@@ -588,7 +588,7 @@ import company_top_menu from "../menus/company_modules_top.json";
 
 import employee_top_menu from "../menus/employee_modules_top.json";
 
-import controlpanel_top_menu from "../menus/alarm_controlpanel_top_menu.json";
+import controlpanel_top_menu from "../menus/parking_menu_top.json";
 
 import AlarmPopupAllAlarmEvents from "../components/Alarm/PopupAllAlarmEvents.vue";
 import TopMenuClock from "../components/Operator/TopMenuClock.vue";
