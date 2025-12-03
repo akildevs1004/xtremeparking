@@ -343,7 +343,7 @@ class DeviceController extends Controller
             "company_id" => "required",
             "name" => "required",
             "location" => "required",
-            "serial_number" => "nullable",
+            "serial_number" => "required",
             "utc_time_zone" => "required",
 
             "function" => "required",

@@ -2,7 +2,7 @@
   {
     "icon": "mdi-home",
     "title": "Dashboard",
-    "to": "/parking/dashboard",
+    "to": "/carwashing/dashboard",
     "menu": "parking_dashboard",
     "module": "topmenu"
   },
@@ -10,22 +10,8 @@
   {
     "icon": "mdi mdi-calendar-star-four-points",
     "title": "Reports",
-    "to": "/parking/reports",
+    "to": "/carwashing/reports",
     "menu": "parking_reports",
-    "module": "topmenu"
-  },
-  {
-    "icon": "mdi mdi-calendar-star-four-points",
-    "title": "Members",
-    "to": "/parking/members",
-    "menu": "parking_members",
-    "module": "topmenu"
-  },
-  {
-    "icon": "mdi mdi-calendar-star-four-points",
-    "title": "Payments",
-    "to": "/parking/invoices",
-    "menu": "parking_invoices",
     "module": "topmenu"
   },
 

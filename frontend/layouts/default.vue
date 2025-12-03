@@ -578,18 +578,23 @@
 </style>
 
 <script>
-import company_menus from "../menus/parking_menu_left.json";
+//parking
+// import company_menus from "../menus/parking_menu_left.json";
+// import controlpanel_top_menu from "../menus/parking_menu_top.json";
+
+
+//car washing
+import company_menus from "../menus/car_washing_menu_left.json";
+import controlpanel_top_menu from "../menus/car_washing_menu_top.json";
+
+
+
 import employee_menus from "../menus/employee.json";
 import branch_menus from "../menus/branch.json";
 import guard_menus from "../menus/guard.json";
 import host_menus from "../menus/host.json";
-
 import company_top_menu from "../menus/company_modules_top.json";
-
 import employee_top_menu from "../menus/employee_modules_top.json";
-
-import controlpanel_top_menu from "../menus/parking_menu_top.json";
-
 import AlarmPopupAllAlarmEvents from "../components/Alarm/PopupAllAlarmEvents.vue";
 import TopMenuClock from "../components/Operator/TopMenuClock.vue";
 import AudioSoundPlay from "../components/Alarm/AudioSoundPlay.vue";
@@ -3190,5 +3195,114 @@ td {
 .theme--dark .themed-outline.v-text-field--outlined>.v-input__control>.v-input__slot {
   border-color: #4B5563 !important;
   /* dark border */
+}
+</style>
+
+<style>
+.dashboard-bg {
+  background: #020617;
+  /* overall dark dashboard */
+}
+
+/* outer shell with gradient border */
+.card-shell {
+  position: relative;
+  border-radius: 18px;
+  padding: 2px;
+  margin-bottom: 22px;
+  background: linear-gradient(135deg, #1e293b, #020617);
+}
+
+.card-shell.inprogress {
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+}
+
+.card-shell.completed {
+  background: linear-gradient(135deg, #16a34a, #4ade80);
+}
+
+.car-card {
+  border-radius: 16px;
+  background: #020617;
+  color: #e5e7eb;
+  box-shadow: 0 18px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* status bar top */
+.card-status {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  margin-right: 8px;
+  background: #6b7280;
+}
+
+.status-dot.inprogress {
+  background: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+}
+
+.status-dot.completed {
+  background: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+}
+
+.status-text {
+  font-weight: 600;
+}
+
+.small-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #334155;
+}
+
+/* image */
+.car-img {
+  border-radius: 14px;
+  background: #0b1220;
+}
+
+/* titles */
+.car-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.car-reg {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/* times row */
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.meta-row label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.meta-row p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb;
 }
 </style>

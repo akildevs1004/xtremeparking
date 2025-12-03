@@ -61,7 +61,7 @@
                 <v-text-field class="pb-0" hide-details v-model="payload_serial_number.location" outlined dense
                   label="Device location"></v-text-field>
                 <span v-if="primary_errors && primary_errors.location" class="error--text">{{ primary_errors.location[0]
-                  }}
+                }}
                 </span>
               </v-col>
 
@@ -94,8 +94,8 @@
               </v-col>
 
               <v-col cols="12" dense>
-                <v-text-field label="Serial Number(ESP32 ID) - Optional" dense small outlined clearable
-                  autocomplete="off" v-model="payload_serial_number.serial_number" hide-details :readonly="!editable"
+                <v-text-field label="Serial Number(ESP32 ID)  " dense small outlined clearable autocomplete="off"
+                  v-model="payload_serial_number.serial_number" hide-details :readonly="!editable"
                   :filled="!editable"></v-text-field>
 
                 <span v-if="primary_errors && primary_errors.serial_number" class="text-danger mt-2">{{

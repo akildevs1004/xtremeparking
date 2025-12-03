@@ -66,11 +66,11 @@
 
     </v-dialog>
     <v-row class="dashboard">
-      <v-col style="max-width: 16.66%">
+      <v-col style="max-width: 25%">
 
         <AudioSoundPlay v-if="activeAudio" :notificationsMenuItemsCount="mqttNewMessage ? 1 : 0" />
-        <v-card elevation="2" style="height: 130px; border-radius: 0.5rem"
-          class="blue-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
+        <v-card elevation="2" style="height:80px; border-radius: 0.5rem"
+          class="blue-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
                 <div class="blue-text" style="font-size: 40px">{{ statisstics ? statisstics.total_parking_count : 0 }}
                 </div>
@@ -84,9 +84,9 @@
               </v-col>
             </v-row></v-card-text></v-card>
       </v-col>
-      <v-col style="max-width: 16.66%">
-        <v-card elevation="2" style="height: 130px; border-radius: 0.5rem"
-          class="red-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
+      <v-col style="max-width: 25%">
+        <v-card elevation="2" style="height:80px; border-radius: 0.5rem"
+          class="red-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
                 <div class="red-text" style="font-size: 40px">{{ statisstics ? statisstics.total_parked : 0 }}</div>
                 <br />
@@ -99,9 +99,9 @@
               </v-col>
             </v-row></v-card-text></v-card>
       </v-col>
-      <v-col style="max-width: 16.66%">
-        <v-card elevation="2" style="height: 130px; border-radius: 0.5rem"
-          class="green-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
+      <v-col style="max-width: 25%">
+        <v-card elevation="2" style="height: 80px; border-radius: 0.5rem"
+          class="green-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
                 <div class="green-text" style="font-size: 40px">{{ statisstics ? statisstics.total_available : 0 }}
                 </div>
@@ -115,9 +115,9 @@
               </v-col>
             </v-row></v-card-text></v-card>
       </v-col>
-      <v-col style="max-width: 16.66%">
-        <v-card elevation="2" style="height: 130px; border-radius: 0.5rem"
-          class="yellow-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
+      <v-col style="max-width: 25%">
+        <v-card elevation="2" style="height: 80px; border-radius: 0.5rem"
+          class="yellow-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
                 <div class="yellow-text" style="font-size: 40px">{{ statisstics ? statisstics.vehicle_count_today : 0 }}
                 </div>
@@ -131,64 +131,12 @@
               </v-col>
             </v-row></v-card-text></v-card>
       </v-col>
-      <v-col style="max-width: 16.66%">
-        <v-card elevation="2" style="height: 130px; border-radius: 0.5rem"
-          class="darkgreen-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
-              <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="darkgreen-text" style="font-size: 40px">{{ statisstics ? statisstics.total_payments : 0
-                }}</div>
-                <br />
-                <div style="font-size: 16px">Total Amount</div>
-              </v-col>
-              <v-col class="d-flex justify-right" style="max-width: 150px">
-                <div style="" class="image-box darkgreen-border">
-                  <v-icon color="green">mdi-cash-100</v-icon>
-                </div>
-              </v-col>
-            </v-row></v-card-text></v-card> </v-col><v-col style="max-width: 16.66%">
-        <v-card elevation="2" style="height: 130px; border-radius: 0.5rem"
-          class="sos-border-bottom custom-card"><v-card-text>
-            <v-row style="height: 45px">
-              <v-col style="padding: 5px">
-                <div style="font-size: 18px">Devices</div>
-              </v-col>
-            </v-row>
 
-            <v-row>
-              <v-col style="
-                  max-width: 50px;
-
-                  text-align: center;
-
-                  font-weight: bold;
-                ">
-                <v-icon size="60" style="margin-top:-28px;" color="yellow">mdi-boom-gate</v-icon>
-              </v-col>
-              <v-col style="
-                  padding: 0px;
-                  text-align: center;
-
-                  font-weight: bold;
-                ">
-                <div style="font-size: 30px; color: #06b050">
-                  {{ statisstics ? statisstics.devices_online_count : 0 }}
-                </div>
-                <div style="color: #06b050">Online</div>
-              </v-col>
-              <v-col style="
-                  padding: 0px;
-                  text-align: center;
-
-                  font-weight: bold;
-                ">
-                <div style="font-size: 30px; color: red">
-                  {{ statisstics ? statisstics.devices_offline_count : 0 }}
-                </div>
-                <div style="color: red">Offline</div>
-              </v-col>
-            </v-row></v-card-text></v-card>
-      </v-col>
     </v-row>
+
+    <DashboardRooms />
+
+
 
     <v-row class="pt-0 mt-0">
       <v-col cols="9" class="pt-0 mt-0">
@@ -407,12 +355,13 @@
 
 
 import AudioSoundPlay from "../../components/Alarm/AudioSoundPlay.vue";
+import DashboardRooms from "../../components/CarWashing/DashboardRooms.vue";
 import ParkingReports from "../../components/Parking/ParkingReports.vue";
 import mqtt from "mqtt";
 
 export default {
   components: {
-    ParkingReports, AudioSoundPlay
+    ParkingReports, AudioSoundPlay, DashboardRooms
   },
   data: () => ({
     vehicle_notification_status: "",
@@ -458,6 +407,69 @@ export default {
     paymentCompaltedStatus: false,
     vehicleStatusEntryExit: '',
     vehicleGustNoEntryImage: null,
+
+    cars: [
+      {
+        room: "Car washroom 1",
+        reg: "TN-04-GH-3456",
+        status: "inprogress",
+        statusText: "In-progress",
+        image: "car-red.png",
+        inTime: "01:15 PM",
+        duration: "0h 25m",
+        outTime: "--"
+      },
+      {
+        room: "Car washroom 2",
+        reg: "TN-04-GH-3456",
+        status: "inprogress",
+        statusText: "In-progress",
+        image: "car-blue.png",
+        inTime: "12:01 PM",
+        duration: "0h 55m",
+        outTime: "--"
+      },
+      {
+        room: "Car washroom 3",
+        reg: "TN-04-GH-3456",
+        status: "completed",
+        statusText: "Completed",
+        image: "car-red.png",
+        inTime: "12:01 PM",
+        duration: "0h 55m",
+        outTime: "12:56 PM"
+      },
+      {
+        room: "Car washroom 4",
+        reg: "TN-04-GH-3456",
+        status: "completed",
+        statusText: "Completed",
+        image: "car-red.png",
+        inTime: "12:01 PM",
+        duration: "0h 55m",
+        outTime: "12:56 PM"
+      },
+      {
+        room: "Car washroom 5",
+        reg: "TN-04-GH-3456",
+        status: "completed",
+        statusText: "Completed",
+        image: "car-white.png",
+        inTime: "12:01 PM",
+        duration: "0h 55m",
+        outTime: "12:56 PM"
+      },
+      {
+        room: "Car washroom 6",
+        reg: "TN-04-GH-3456",
+        status: "completed",
+        statusText: "Completed",
+        image: "car-red.png",
+        inTime: "12:01 PM",
+        duration: "0h 55m",
+        outTime: "12:56 PM"
+      }
+    ]
   }),
 
 
