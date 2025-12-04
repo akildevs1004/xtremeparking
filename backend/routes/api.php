@@ -51,3 +51,4 @@ include('alarm/api_dashboardphp');
 include('whatsapp_clients.php');
 
 include('parking.php');
+include('carwashing.php');

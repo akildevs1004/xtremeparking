@@ -381,6 +381,8 @@ class DeviceController extends Controller
                     if (!isset($data["serial_number"]) || $data["serial_number"] == null) {
                         $data["serial_number"] = '---';;
                         $data["device_id"] = '---';
+                    } else {
+                        $data["device_id"] = $data["serial_number"];
                     }
 
                     $data["device_type"] = "parking";
@@ -440,6 +442,8 @@ class DeviceController extends Controller
                     if (!isset($data["serial_number"]) || $data["serial_number"] == null) {
                         $data["serial_number"] = '---';;
                         $data["device_id"] = '---';
+                    } else {
+                        $data["device_id"] = $data["serial_number"];
                     }
 
                     $data["device_type"] = "parking";

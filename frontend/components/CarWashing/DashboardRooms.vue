@@ -1,47 +1,101 @@
 <template>
-  <v-container fluid class="dashboard-bg">
+  <div>
 
-    <!-- GRID with max 3 cards per row -->
     <div class="auto-grid">
-      <v-card v-for="car in cars" :key="car.id" class="car-card" :class="car.status" elevation="4">
-
-        <!-- HEADER (single row) -->
+      <v-card v-for="(car, index) in devicesList" :key="car.id" class="car-card" :class="car.status" elevation="4">
+        <!-- HEADER -->
         <div class="info-section px-4 py-3">
-          <div class="single-row">
 
-            <!-- Room + Reg -->
-            <div class="left-info">
-              <div class="car-title">{{ car.room }}</div>
-              <div class="car-reg">{{ car.reg }}</div>
+          <!-- TOP ROW: Room | Lane | vehicle_number | Lane | Status -->
+          <div class="header-top">
+
+            <!-- LEFT: Room -->
+            <div class="header-left">
+              <v-chip class="ma-1" color="red">
+                {{ index + 1 }}
+              </v-chip>
+              <v-chip small class="ma-2" color="green" outlined label>
+
+                {{ car.room }}
+              </v-chip>
             </div>
 
-            <!-- Meta inline -->
-            <div class="meta-inline">
-              <span><label>In:</label> {{ car.inTime }}</span>
-              <span><label>Dur:</label> {{ car.duration }}</span>
-              <span><label>Out:</label> {{ car.outTime || "--" }}</span>
+            <!-- CENTER GROUP: | Vehicle | -->
+            <div class="header-center">
+              <div class="lane-separator"></div>
+
+              <div class="car-number car-number-highlight">
+                <v-icon left small class="status-icon">mdi-car</v-icon> {{ car.vehicle_number }}
+              </div>
+
+              <div class="lane-separator"></div>
             </div>
 
-            <!-- Status -->
-            <v-chip small :color="car.status === 'completed' ? 'green'
-              : car.status === 'inprogress' ? 'blue'
-                : 'grey'" text-color="white">
-              {{ car.statusText }}
-            </v-chip>
+            <!-- RIGHT: Status chip -->
+            <div class="header-right">
+              <v-chip small :color="car.status === 'completed'
+                ? 'success'
+                : car.status === 'inprogress'
+                  ? 'info'
+                  : 'grey darken-1'" text-color="white" class="status-chip">
+                <v-icon left small class="status-icon">
+                  {{ getStatusIcon(car.status) }}
+                </v-icon>
+                {{ car.statusText }}
+              </v-chip>
+            </div>
 
           </div>
+
+          <!-- WHITE SEPARATOR LINE -->
+          <div class="header-white-line"></div>
+
+          <!-- BOTTOM ROW -->
+          <div class="header-bottom" style="font-size: 11px;;">
+
+            <!-- LEFT: In -->
+            <div class="meta-left">
+              <v-icon small class="meta-icon">mdi-clock-check-outline</v-icon>
+              <label>In:</label>
+              <span class="in-time">{{ car.inTime }}</span>
+            </div>
+
+            <!-- CENTER: Duration -->
+            <div class="meta-center" style="color:yellow">
+              <v-icon small class="meta-icon">mdi-timer-sand</v-icon>
+              <label> :</label>
+              <div v-if="car.status === 'empty'">---</div>
+              <div v-else>{{
+                $dateFormat.getTimeDifferenceStartEndOnlyMinutes(car.inTime,
+                  car.outTime || new
+                    Date().toString()) }}</div>
+            </div>
+
+            <!-- RIGHT: Out -->
+            <div class="meta-right">
+              <v-icon small class="meta-icon">mdi-clock-out</v-icon>
+              <label>Out:</label>
+              <span class="out-time">{{ car.outTime || "--" }}</span>
+            </div>
+
+          </div>
+
         </div>
 
-        <!-- IMAGE: cover entire width & height of this area -->
+        <!-- IMAGE -->
         <div class="img-wrapper">
-          <img :src="car.status === 'empty' ? '/empty_room.png' : '/car_blue.png'" class="cover-img"
-            alt="washroom/vehicle" />
+          <!-- <img :src="car.status === 'empty' ? '/empty_room.png' : '/car_blue.png'" class="cover-img"
+            alt="washroom / vehicle" /> -->
+
+          <img :src="getCarVehicleImage(car)" class="cover-img" alt="washroom / vehicle" />
+
+
         </div>
 
       </v-card>
     </div>
-
-  </v-container>
+    <br /><br />
+  </div>
 </template>
 
 <script>
@@ -50,192 +104,308 @@ export default {
 
   data() {
     return {
-      cars: [
-        {
-          id: 1,
-          room: "Car Washroom 1",
-          reg: "-",
-          status: "empty",
-          statusText: "Available",
-          inTime: "--",
-          duration: "0h 0m",
-          outTime: "--"
-        },
-        {
-          id: 2,
-          room: "Car Washroom 2",
-          reg: "TN-04-GH-3456",
-          status: "inprogress",
-          statusText: "In-progress",
-          inTime: "01:15 PM",
-          duration: "0h 25m",
-          outTime: "--"
-        },
-        {
-          id: 3,
-          room: "Car Washroom 3",
-          reg: "TN-04-GH-3456",
-          status: "completed",
-          statusText: "Completed",
-          inTime: "12:01 PM",
-          duration: "0h 55m",
-          outTime: "12:56 PM"
-        },
-        {
-          id: 4,
-          room: "Car Washroom 4",
-          reg: "-",
-          status: "empty",
-          statusText: "Available",
-          inTime: "--",
-          duration: "0h 0m",
-          outTime: "--"
-        },
-        {
-          id: 5,
-          room: "Car Washroom 5",
-          reg: "TN-04-GH-3456",
-          status: "inprogress",
-          statusText: "In-progress",
-          inTime: "12:01 PM",
-          duration: "0h 55m",
-          outTime: "--"
-        },
-        {
-          id: 6,
-          room: "Car Washroom 6",
-          reg: "-",
-          status: "empty",
-          statusText: "Available",
-          inTime: "--",
-          duration: "0h 0m",
-          outTime: "--"
-        }
-      ]
+      devicesList: []
     };
+  },
+  mounted() {
+    this.getDevicesList();
+
+  },
+  methods: {
+    async getDevicesList() {
+
+      const options = {
+        params: {
+          company_id: this.$auth.user.company_id,
+
+        },
+
+      };
+      const { data } = await this.$axios.get(`/dashboard_carwashingrooms`, options);
+
+      console.log(data);
+
+
+      this.devicesList = [];
+      if (data) {
+
+        for (let device of data) {
+
+
+
+          let dataInfo = {
+            id: device.id,
+            room: device.name,
+            vehicle_number: device.vehicle?.log_vehicle_number || "-",
+            status: device.vehicle?.out_time
+              ? "completed"
+              : device.vehicle?.in_time
+                ? "inprogress"
+                : "empty",
+            statusText: device.vehicle?.out_time
+              ? "completed"
+              : device.vehicle?.in_time
+                ? "inprogress"
+                : "empty",
+            inTime: device.vehicle?.in_time || null,
+            duration: "0h 0m",
+            outTime: device.vehicle?.out_time || null,
+            public_image_url: device.vehicle?.public_image_url || "",
+            in_background_file_name: device.vehicle?.in_background_file_name || ""
+          };
+
+          this.devicesList.push(dataInfo);
+        }
+      } else {
+
+      }
+
+
+
+
+
+      console.log(this.devicesList);
+
+    },
+    getStatusIcon(status) {
+      switch (status) {
+        case "completed":
+          return "mdi-check-circle-outline";
+        case "inprogress":
+          return "mdi-progress-clock";
+        default:
+          return "mdi-car-off";
+      }
+    },
+    getCarVehicleImage(vehicle) {
+      if (vehicle.status === 'empty') {
+        return '/empty_room.png';
+      } else {
+
+        return vehicle.public_image_url + "/" + vehicle.in_background_file_name.replace("_BACKGROUND", "_VEHICLE") + "?timestamp=" + new Date().getTime();
+        return '/car_blue.png';
+      }
+    }
   }
 };
 </script>
 
 <style scoped>
-/* PAGE BACKGROUND */
+/* page */
 .dashboard-bg {
-  background: #1E1E1E;
-  min-height: 100vh;
+  background: var(--bg-page);
+  height: (100vh);
   padding: 20px;
+
+  color: var(--text-main);
 }
 
-/* GRID: max 3 cards per row */
+/* grid layout */
 .auto-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 22px;
-  width: 100%;
 }
 
-/* Mobile: 1 per row */
 @media (max-width: 900px) {
   .auto-grid {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: 1fr;
   }
 }
 
-/* Tablet: 2 per row */
 @media (min-width: 900px) and (max-width: 1300px) {
   .auto-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr;
   }
 }
 
-/* Desktop: 3 per row */
-@media (min-width: 1300px) {
-  .auto-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* CARD */
+/* card */
 .car-card {
-  background: #262626;
+  background: var(--surface-1);
   border-radius: 16px;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  color: var(--text-main);
 }
 
-/* STATUS COLORS */
+/* card border colors */
 .car-card.inprogress {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.45);
+  box-shadow: 0 0 0 2px var(--status-inprogress);
 }
 
 .car-card.completed {
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.45);
+  box-shadow: 0 0 0 2px var(--status-completed);
 }
 
 .car-card.empty {
-  box-shadow: 0 0 0 2px rgba(150, 150, 150, 0.45);
+  box-shadow: 0 0 0 2px var(--status-empty);
 }
 
-/* HEADER SECTION */
+/* header bg */
 .info-section {
-  background: #2A2A2A;
-  border-bottom: 1px solid #333;
+  background: #19191c;
 }
 
-/* HEADER ROW */
-.single-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
+/* top row */
+.header-top {
+  display: flex;
+  align-items: center;
   gap: 10px;
+}
+
+/* vertical separator */
+.lane-separator {
+  width: 1px;
+  height: 18px;
+  background: var(--divider-soft);
+  opacity: 0.6;
+}
+
+/* highlight vehicle number */
+.car-number-highlight {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  background: var(--chip-badge-bg);
+  color: var(--chip-badge-text);
+  border: 1px solid var(--divider-soft);
+}
+
+/* white horizontal separator line */
+.header-white-line {
+  height: 1px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.45);
+  margin: 8px 0;
+  border-radius: 2px;
+}
+
+/* light theme override */
+:root[data-theme="light"] .header-white-line {
+  background: rgba(0, 0, 0, 0.20);
+}
+
+/* bottom row */
+.header-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
 }
 
-/* LEFT INFO */
-.left-info {
+/* row items */
+.meta-left,
+.meta-center,
+.meta-right {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
-.car-title {
-  font-size: 15px;
-  font-weight: 600;
+.meta-left {
+  justify-content: flex-start;
 }
 
-.car-reg {
-  font-size: 12px;
-  color: #cfcfcf;
+.meta-center {
+  justify-content: center;
 }
 
-/* META INFO */
-.meta-inline {
-  display: flex;
-  gap: 12px;
-  white-space: nowrap;
-  font-size: 13px;
+.meta-right {
+  justify-content: flex-end;
 }
 
-.meta-inline label {
+.meta-icon {
+  font-size: 16px !important;
+}
+
+.header-bottom label {
   font-size: 11px;
-  color: #aaa;
-  margin-right: 2px;
+  color: var(--text-soft);
 }
 
-/* IMAGE AREA – you control height here */
+/* theme colors for values */
+.in-time {
+  color: var(--accent-in);
+  /* font-weight: 600; */
+}
+
+.out-time {
+  color: var(--accent-out);
+  /* font-weight: 600; */
+}
+
+/* image section */
 .img-wrapper {
   width: 100%;
-  height: 40vh;
-  /* 🔥 40% of viewport height; use 50vh for half-screen */
+  height: 400px;
+  /*calc((100vh - 400px) / 2);*/
+
   overflow: hidden;
-  background: #000;
+  background: var(--surface-2);
 }
 
-/* IMAGE COVERS ENTIRE AREA */
 .cover-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  /* key: fills width & height */
-  object-position: center;
-  display: block;
+  /* object-fit: cover; */
+  object-fit: fill;
+
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  gap: 10px;
+}
+
+/* LEFT */
+.header-left {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  /* pushes center + right properly */
+}
+
+/* CENTER */
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* VEHICLE NUMBER */
+.car-number-highlight {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  background: var(--chip-badge-bg);
+  color: var(--chip-badge-text);
+  border: 1px solid var(--divider-soft);
+  white-space: nowrap;
+}
+
+/* RIGHT */
+.header-right {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+/* Separators */
+.lane-separator {
+  width: 1px;
+  height: 18px;
+  background: var(--divider-soft);
+  opacity: 0.7;
+  border-radius: 1px;
+}
+
+/* Status chip icon spacing */
+.status-icon {
+  margin-right: 4px;
 }
 </style>

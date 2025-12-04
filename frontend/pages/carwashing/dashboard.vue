@@ -72,7 +72,7 @@
         <v-card elevation="2" style="height:80px; border-radius: 0.5rem"
           class="blue-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="blue-text" style="font-size: 40px">{{ statisstics ? statisstics.total_parking_count : 0 }}
+                <div class="blue-text" style="font-size: 40px">{{ statisstics ? statisstics.totalRooms : 0 }}
                 </div>
                 <br />
                 <div style="font-size: 16px">Total Parking</div>
@@ -88,7 +88,7 @@
         <v-card elevation="2" style="height:80px; border-radius: 0.5rem"
           class="red-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="red-text" style="font-size: 40px">{{ statisstics ? statisstics.total_parked : 0 }}</div>
+                <div class="red-text" style="font-size: 40px">{{ statisstics ? statisstics.occupiedRooms : 0 }}</div>
                 <br />
                 <div style="font-size: 16px">Occupied</div>
               </v-col>
@@ -103,10 +103,10 @@
         <v-card elevation="2" style="height: 80px; border-radius: 0.5rem"
           class="green-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="green-text" style="font-size: 40px">{{ statisstics ? statisstics.total_available : 0 }}
+                <div class="green-text" style="font-size: 40px">{{ statisstics ? statisstics.availableRooms : 0 }}
                 </div>
                 <br />
-                <div style="font-size: 16px">Available</div>
+                <div style="font-size: 16px">Empty</div>
               </v-col>
               <v-col class="d-flex justify-right" style="max-width: 150px">
                 <div style="" class="image-box green-border">
@@ -119,10 +119,10 @@
         <v-card elevation="2" style="height: 80px; border-radius: 0.5rem"
           class="yellow-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="yellow-text" style="font-size: 40px">{{ statisstics ? statisstics.vehicle_count_today : 0 }}
+                <div class="yellow-text" style="font-size: 40px">{{ statisstics ? statisstics.todayVehiclesCount : 0 }}
                 </div>
                 <br />
-                <div style="font-size: 16px">Today Vehicles Count</div>
+                <div style="font-size: 16px">Today Washing Count</div>
               </v-col>
               <v-col class="d-flex justify-right" style="max-width: 150px">
                 <div style="" class="image-box yellow-border">
@@ -775,7 +775,7 @@ export default {
 
         };
 
-        const { data } = await this.$axios.get(`/parking_dashboard_statistics`, options);
+        const { data } = await this.$axios.get(`/dashboard_carwashingstatistics`, options);
 
 
 
@@ -784,10 +784,10 @@ export default {
           this.statisstics = data;
         }
 
-        if (this.statisstics.total_available <= 0) {
-          this.dialogParkingFull = true;
+        // if (this.statisstics.total_available <= 0) {
+        //   this.dialogParkingFull = true;
 
-        }
+        // }
 
       } catch (error) {
         this.snackbar = true;

@@ -429,7 +429,38 @@ export default ({ app }, inject) => {
         return `${hours}h:${minutes}m`;
       }
     },
+    getTimeDifferenceStartEndOnlyMinutes(startDate, targetDate) {
+      const now = new Date(startDate); // Current date and time
+      const target = new Date(targetDate); // Target date and time
 
+      // Calculate the difference in milliseconds
+      const differenceInMs = Math.abs(target - now);
+
+      // Calculate days, hours, minutes, and seconds
+      const days = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (differenceInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      )
+        .toString()
+        .padStart(2, "0");
+      const minutes = Math.floor(
+        (differenceInMs % (1000 * 60 * 60)) / (1000 * 60)
+      )
+        .toString()
+        .padStart(2, "0");
+      const seconds = Math.floor((differenceInMs % (1000 * 60)) / 1000)
+        .toString()
+        .padStart(2, "0");
+
+      // Return formatted result
+      if (days > 0) {
+        return `${days}d ${hours}h:${minutes}m`;
+      } else if (hours == 0) {
+        return `${minutes} Min`;
+      } else {
+        return `${hours}h:${minutes}m`;
+      }
+    },
     format6: (inputdate) => {
       if (!inputdate || inputdate == "--") return "---";
       //20:30
