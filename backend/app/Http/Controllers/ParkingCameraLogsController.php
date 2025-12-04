@@ -28,10 +28,10 @@ class ParkingCameraLogsController extends Controller
 
         $model->when($request->filled('filter_duration'), function ($q) use ($request) {
 
-            if ($request->filter_duration == 'MoreThanOneHour')
+            if ($request->filter_duration == '1')
                 $q->where('duration_in_minutes', '>', 60);
 
-            else if ($request->filter_duration == 'LessThanOneHour')
+            else if ($request->filter_duration == '2')
                 $q->where('duration_in_minutes', '<=', 60);
         });
         $model->when($request->filled('date_from'), function ($q) use ($request) {

@@ -66,7 +66,7 @@
                         min-width: 100%;
                         width: 200px;
                       " height="25px" outlined v-model="filterDuration" dense :items="allDurationOptionsList"
-                      item-text="name" item-value="name" hide-details></v-select>
+                      item-text="name" item-value="id" hide-details></v-select>
                   </v-col>
                   <!-- <v-col style="max-width: 200px; padding-right: 0px; margin: auto">
 
@@ -226,7 +226,7 @@
 <script>
 import { mqttRequestReply } from '@/utils/mqttRequestReplyClient.js'; // adjust path
 import CarWashingInfo from './CarWashingInfo.vue';
-import { filter } from 'core-js/core/array';
+
 
 export default {
 
@@ -275,7 +275,7 @@ export default {
       viewCustomerId: null,
       popupEventText: "",
       filterPayment: "All",
-      filterDuration: "All Duration",
+      filterDuration: null,
       showTable: true,
       requestStatus: false,
       tab: 0,
