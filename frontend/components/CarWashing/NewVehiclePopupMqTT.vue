@@ -51,7 +51,7 @@
         </v-card-text></v-card>
 
     </v-dialog>
-    <!-- <v-dialog v-model="dialogImagePreview" max-width="600px">
+    <v-dialog v-model="dialogImagePreview" max-width="600px">
       <v-card>
         <v-card-title dense class="popup_background">
           Image Preview
@@ -64,103 +64,216 @@
           <v-img :src="dialogImageUrl" @click:outside="dialogImagePreview = false"></v-img>
         </v-card-text></v-card>
 
-    </v-dialog> -->
-    <v-row class="dashboard">
-      <v-col style="max-width: 25%">
+    </v-dialog>
+    <AudioSoundPlay v-if="activeAudio" :notificationsMenuItemsCount="mqttNewMessage ? 1 : 0" />
 
-        <AudioSoundPlay v-if="activeAudio" :notificationsMenuItemsCount="mqttNewMessage ? 1 : 0" />
-        <v-card elevation="2" style="height:80px; border-radius: 0.5rem"
-          class="blue-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
-              <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="blue-text" style="font-size: 40px">{{ statisstics ? statisstics.totalRooms : 0 }}
-                </div>
-                <br />
-                <div style="font-size: 16px">Total Parking</div>
-              </v-col>
-              <v-col class="d-flex justify-right" style="max-width: 150px">
-                <div style="" class="image-box blue-border">
-                  <v-icon color="blue">mdi-car</v-icon>
-                </div>
-              </v-col>
-            </v-row></v-card-text></v-card>
+
+
+
+
+    <v-row class="pt-0 mt-0">
+      <v-col cols="9" class="pt-0 mt-0">
+
+        <v-card elevation="2" class="eventslistscroll table-font12" :loading="mqttLoading">
+          <v-card-text class="pa-1">
+            <img v-if="mqttNewMessage?.response.record.image_vehicle"
+              style="width: 100%;height:700px;border-radius: 10px;"
+              :src="mqttNewMessage.response.record.image_vehicle"></img>
+
+            <img v-else style="width: 100%;height:700px;;border-radius: 10px;" src="/novehicle.png"></img>
+          </v-card-text>
+        </v-card>
       </v-col>
-      <v-col style="max-width: 25%">
-        <v-card elevation="2" style="height:80px; border-radius: 0.5rem"
-          class="red-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
-              <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="red-text" style="font-size: 40px">{{ statisstics ? statisstics.occupiedRooms : 0 }}</div>
-                <br />
-                <div style="font-size: 16px">Occupied</div>
+
+      <v-col cols="3" class="pt-0 mt-0">
+
+        <v-card class="pa-4" style="background:#111; color:#fff; border-radius:15px;">
+          <v-card-text>
+            <!-- Header -->
+            <!-- <div class="text-center mb-4">
+            <h3 class="mb-1">Vehicle Details</h3>
+
+          </div> -->
+
+            <!-- Vehicle Number -->
+            <v-card flat class="d-flex1  justify-center align-center mb-4 pa-5"
+              style="background:#222; border-radius:10px;text-align: center;">
+              <div style="color:#777777;  " v-if="mqttNewMessage">
+
+                {{
+                  mqttNewMessage ? mqttNewMessage.response.record.out_time == null ? ' Entry' : ' Exit ' :
+                    '---'
+                }} Vehicle Number
+              </div>
+
+              <div>
+                <h2 style="color:#6cf; text-shadow:0 0 8px #6cf;font-size: 40px;"> {{
+                  mqttNewMessage?.response.record.log_vehicle_number || '---' }}</h2>
+              </div>
+
+            </v-card>
+
+            <!-- Entry & Exit -->
+            <v-row class=" ">
+              <v-col>
+                <v-card flat class="pa-3 text-center" style="background:#222;">
+
+
+                  <h3> {{ this.mqttNewMessage ?
+                    $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.in_time) :
+                    '---'
+                  }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                      $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.in_time) :
+                      ' '
+                    }}</span></h3>
+
+                  <div class="grey--text">Entry</div>
+                </v-card>
               </v-col>
-              <v-col class="d-flex justify-right" style="max-width: 150px">
-                <div style="" class="image-box red-border">
-                  <v-icon color="red">mdi-car</v-icon>
+              <v-col>
+                <v-card flat class="pa-3 text-center" style="background:#222;">
+
+                  <h3> {{ this.mqttNewMessage ?
+                    $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.out_time) :
+                    '---'
+                  }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                      $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.out_time) :
+                      ' '
+                    }}</span></h3>
+
+                  <div class="red--text">Exit</div>
+                </v-card>
+              </v-col>
+            </v-row>
+
+            <!-- Duration & Billing Hours -->
+            <v-row class="mb-2">
+              <v-col>
+                <v-card flat class="pa-3 text-center" style="background:#222;">
+
+                  <h3> {{ this.mqttNewMessage && this.mqttNewMessage.response.record.out_time ?
+                    $dateFormat.minutesToHHMM(this.mqttNewMessage.response.record.duration_in_minutes) : '---' }}
+                  </h3>
+                  <div class="grey--text">Duration</div>
+                </v-card>
+              </v-col>
+              <v-col>
+                <v-card flat class="pa-3 text-center" style="background:#222;">
+
+                  <h3>{{ this.mqttNewMessage ?
+                    this.mqttNewMessage.response.record.duration_in_hours ?
+                      this.mqttNewMessage.response.record.duration_in_hours + ' hour(s)' :
+                      '---' : '---'
+                  }}</h3>
+                  <div class="grey--text">Billing Hours</div>
+                </v-card>
+              </v-col>
+            </v-row>
+
+            <!-- Tenant/Member -->
+            <v-card flat class="pa-3 text-center mb-4" style="background:#1e2b40; border-radius:10px; color:#55CEE3;">
+              <div v-if="this.mqttNewMessage?.response.record.membership_id">
+
+                <strong>{{ this.mqttNewMessage?.response.record.member_type }}</strong>
+                <strong>Tenant/Member - {{ this.mqttNewMessage?.response.record.membership_status }}</strong>
+                <div class="green--text"> <v-icon size="20"
+                    :color="this.mqttNewMessage?.response.record.parking_allowed_status ? 'green' : 'red'">
+                    mdi-calendar-check</v-icon> {{
+                      $dateFormat.formatDateDayYear(this.mqttNewMessage?.response.record.membership_start_date) }} -
+                  {{
+                    $dateFormat.formatDateDayYear(this.mqttNewMessage?.response.record.membership_end_date) }}</div>
+
+              </div>
+              <div v-else> <strong>GUEST</strong>
+              </div>
+            </v-card>
+
+            <!-- Total -->
+            <v-card flat class="pa-3 text-center mb-4" style="background:#222;">
+
+              <v-row v-if="this.mqttNewMessage?.response.record.total_amount">
+                <v-col cols="6">
+                  <div class="grey--text text-left" style="color:#FFF;font-size: 30px;">Total</div>
+                </v-col>
+                <v-col cols="6" class="text-right">
+                  <h3 style="color:#FFF;font-size: 30px;">{{ this.mqttNewMessage?.response.record.total_amount }}
+                    AED
+                  </h3>
+                  <small class="grey--text">{{ this.mqttNewMessage?.response.record.duration_in_hours
+                  }}H × {{ this.mqttNewMessage?.response.record.duration_per_hour_amount
+                    }}Dhr</small>
+                </v-col>
+              </v-row>
+              <div v-else-if="this.mqttNewMessage?.response.record.total_amount == 0">
+                Membership Pass / Guest FREE
+              </div>
+              <div v-else>---</div>
+
+            </v-card>
+
+            <v-card class="mt-1" elevation="2" style="height: 160px; " v-if="mqttNewMessage">
+              <v-card-text>
+                <div>
+                  <div v-if="mqttNewMessage.response.record.out_time">
+                    <v-row style="font-size: 20px;" v-if="this.mqttNewMessage?.response.record.total_amount > 0">
+                      <v-col cols="6">
+                        <v-btn @click="paymentProcess('cash', mqttNewMessage?.response.record.id)" height="60px"
+                          elevation="2"> <v-icon size="30">mdi-cash-100</v-icon> Cash
+                          Payment
+                        </v-btn>
+                      </v-col>
+                      <v-col cols="6">
+                        <v-btn @click="paymentProcess('card', mqttNewMessage?.response.record.id)" height="60px"
+                          elevation="2"> <v-icon size="30">mdi-credit-card</v-icon>
+                          Card
+                          Payment
+                        </v-btn>
+                      </v-col>
+                    </v-row>
+                    <v-row class="mt-2">
+                      <v-col>
+
+                        <v-btn :disabled="!gatePassStatus" @click="openGate" width="100%" height="50px" elevation="2"
+                          color="red" style="font-size: 25px;"> <v-icon size="40">mdi-boom-gate-arrow-up</v-icon> Open
+                          Gate </v-btn>
+                      </v-col>
+                    </v-row>
+                  </div>
+                  <div v-else-if="!mqttNewMessage.response.record.out_time"
+                    style="margin:auto; display:flex; justify-content:center; align-items:center; height:100px; text-align:center;">
+
+                    Entry vehicle Recorded
+
+                  </div>
+
                 </div>
-              </v-col>
-            </v-row></v-card-text></v-card>
-      </v-col>
-      <v-col style="max-width: 25%">
-        <v-card elevation="2" style="height: 80px; border-radius: 0.5rem"
-          class="green-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
-              <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="green-text" style="font-size: 40px">{{ statisstics ? statisstics.availableRooms : 0 }}
+
+
+
+
+              </v-card-text>
+            </v-card>
+            <v-card v-else class="mt-1" elevation="2" style="height: 240px; ">
+              <v-card-text>
+                <div
+                  style="margin:auto; display:flex; justify-content:center; align-items:center;   text-align:center;">
+                  Waiting for Next Vehicle .........
                 </div>
-                <br />
-                <div style="font-size: 16px">Empty</div>
-              </v-col>
-              <v-col class="d-flex justify-right" style="max-width: 150px">
-                <div style="" class="image-box green-border">
-                  <v-icon color="green">mdi-car</v-icon>
-                </div>
-              </v-col>
-            </v-row></v-card-text></v-card>
-      </v-col>
-      <v-col style="max-width: 25%">
-        <v-card elevation="2" style="height: 80px; border-radius: 0.5rem"
-          class="yellow-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
-              <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="yellow-text" style="font-size: 40px">{{ statisstics ? statisstics.todayVehiclesCount : 0 }}
-                </div>
-                <br />
-                <div style="font-size: 16px">Today Washing Count</div>
-              </v-col>
-              <v-col class="d-flex justify-right" style="max-width: 150px">
-                <div style="" class="image-box yellow-border">
-                  <v-icon color="yellow">mdi-car</v-icon>
-                </div>
-              </v-col>
-            </v-row></v-card-text></v-card>
+              </v-card-text>
+            </v-card>
+
+          </v-card-text>
+        </v-card>
+
+
       </v-col>
 
     </v-row>
 
-    <DashboardRooms />
-
-    <v-dialog v-model="dialogMQTTVehicleInfo" max-width="80%">
-      <v-card style="padding:0px!important">
-        <v-card-title dense class="popup_background" style="background-color: #4caf50!important;padding:0px!important">
-          New Vehicle Information
-          <v-spacer></v-spacer>
-          <v-btn icon @click="dialogMQTTVehicleInfo = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text>
-
-          <NewVehiclePopupMqTT />
-        </v-card-text></v-card>
-    </v-dialog>
     <!-- <v-btn @click="openGate" :disabled="this.status != 'Connected'" width="100%" height="50px" elevation="2" color="red"
       style="font-size: 25px;"> <v-icon size="40">mdi-boom-gate-arrow-up</v-icon> Open
       Gate {{ this.status != "Connected" ? ' - Error Gate is not Connected' : '' }}</v-btn> -->
-    <v-row class="padding:0px">
-      <v-col cols="12">
-        <v-card style="height: 500px; overflow-y: auto; overflow-x: hidden" elevation="2"
-          class="eventslistscroll table-font12"><v-card-text>
-            <ParkingReports :showFilters="true" :key="mqttNewMessage?.response.record.id || 1" />
-          </v-card-text></v-card>
-      </v-col>
-    </v-row>
+
 
 
   </div>
@@ -172,13 +285,12 @@
 
 import AudioSoundPlay from "../../components/Alarm/AudioSoundPlay.vue";
 import DashboardRooms from "../../components/CarWashing/DashboardRooms.vue";
-import NewVehiclePopupMqTT from "../../components/CarWashing/NewVehiclePopupMqTT.vue";
 import ParkingReports from "../../components/Parking/ParkingReports.vue";
 import mqtt from "mqtt";
 
 export default {
   components: {
-    ParkingReports, AudioSoundPlay, DashboardRooms, NewVehiclePopupMqTT
+    ParkingReports, AudioSoundPlay, DashboardRooms
   },
   data: () => ({
     dialogMQTTVehicleInfo: true,
@@ -240,10 +352,10 @@ export default {
 
   },
   mounted() {
-    this.getStatistics();
+    //this.getStatistics();
     // this.getDashboardData();
 
-    //this.initMqtt();
+    this.initMqtt();
 
 
     // this.mqttNewMessage = {
@@ -352,7 +464,6 @@ export default {
       this.dialogImagePreview = true;
       this.dialogImageUrl = imageUrl;
     },
-    /*
     async initMqtt() {
       // Example: ws://test.mosquitto.org:8080
       const options = {
@@ -516,7 +627,7 @@ export default {
 
 
 
-    },*/
+    },
     sendMessage() {
       if (this.client && this.client.connected) {
         this.client.publish("test/vue2", "Hello from Vue2 + MQTT");
@@ -556,7 +667,6 @@ export default {
 
       }
     },
-    /*
     async paymentProcess(paymentMethod, id) {
       console.log("Processing payment for method:", paymentMethod);
 
@@ -600,7 +710,7 @@ export default {
 
         }
       }
-    }*/
+    }
   },
 };
 </script>

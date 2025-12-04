@@ -42,7 +42,7 @@
           <v-card-text>
             <v-row>
               <v-col class="text-left mt-1" :cols="sensorItems.length > 1 ? 4 : 4">
-                <h3 style="font-weight: normal">Parking Logs - History</h3>
+                <h3 style="font-weight: normal"> Logs - History</h3>
 
                 <!-- <v-icon @click="getDataFromApi()">mdi-reload</v-icon> -->
               </v-col>
