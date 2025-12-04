@@ -31,7 +31,7 @@ class CarDashboardController extends Controller
         $companyId = $request->company_id;
         $today     = Carbon::today()->toDateString();
 
-        // Total rooms for this company
+        // Total rooms
         $totalRooms = Device::where('company_id', $companyId)->count();
 
         // Base query for today's logs
@@ -41,18 +41,31 @@ class CarDashboardController extends Controller
         // All logs for today
         $logs = $todayLogsQuery->get();
 
-        // Rooms currently occupied = in today & out_time is NULL
+        // Occupied rooms = in today & out_time is NULL
         $occupiedRooms = (clone $todayLogsQuery)
-            ->whereNull('out_time')   // <--- make sure this matches your DB column
+            ->whereNull('out_time')
             ->count();
 
-        $availableRooms = $totalRooms - $occupiedRooms;
+        $availableRooms = max($totalRooms - $occupiedRooms, 0);
+
+        // ⏱️ Duration-based counts
+        $moreThanOneHour = (clone $todayLogsQuery)
+            ->where('duration_in_minutes', '>', 60)
+            ->count();
+
+        $lessThanOneHour = (clone $todayLogsQuery)
+            ->where('duration_in_minutes', '<=', 60)
+            ->count();
 
         $data = [
             'totalRooms'         => $totalRooms,
             'occupiedRooms'      => $occupiedRooms,
-            'availableRooms'     => max($availableRooms, 0),
+            'availableRooms'     => $availableRooms,
             'todayVehiclesCount' => $logs->count(),
+
+            // New
+            'moreThanOneHour'    => $moreThanOneHour,
+            'lessThanOneHour'    => $lessThanOneHour,
         ];
 
         return response()->json($data);

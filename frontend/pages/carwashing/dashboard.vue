@@ -66,7 +66,7 @@
 
     </v-dialog> -->
     <v-row class="dashboard">
-      <v-col style="max-width: 25%">
+      <v-col style="max-width: 16.66%">
 
         <AudioSoundPlay v-if="activeAudio" :notificationsMenuItemsCount="mqttNewMessage ? 1 : 0" />
         <v-card elevation="2" style="height:80px; border-radius: 0.5rem"
@@ -75,16 +75,16 @@
                 <div class="blue-text" style="font-size: 40px">{{ statisstics ? statisstics.totalRooms : 0 }}
                 </div>
                 <br />
-                <div style="font-size: 16px">Total Parking</div>
+                <div style="font-size: 16px">Car Wash Rooms</div>
               </v-col>
-              <v-col class="d-flex justify-right" style="max-width: 150px">
+              <v-col class="d-flex justify-right" style="max-width: 100px">
                 <div style="" class="image-box blue-border">
                   <v-icon color="blue">mdi-car</v-icon>
                 </div>
               </v-col>
             </v-row></v-card-text></v-card>
       </v-col>
-      <v-col style="max-width: 25%">
+      <v-col style="max-width: 16.66%">
         <v-card elevation="2" style="height:80px; border-radius: 0.5rem"
           class="red-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
@@ -92,14 +92,14 @@
                 <br />
                 <div style="font-size: 16px">Occupied</div>
               </v-col>
-              <v-col class="d-flex justify-right" style="max-width: 150px">
+              <v-col class="d-flex justify-right" style="max-width: 100px">
                 <div style="" class="image-box red-border">
                   <v-icon color="red">mdi-car</v-icon>
                 </div>
               </v-col>
             </v-row></v-card-text></v-card>
       </v-col>
-      <v-col style="max-width: 25%">
+      <v-col style="max-width: 16.66%">
         <v-card elevation="2" style="height: 80px; border-radius: 0.5rem"
           class="green-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
@@ -108,14 +108,14 @@
                 <br />
                 <div style="font-size: 16px">Empty</div>
               </v-col>
-              <v-col class="d-flex justify-right" style="max-width: 150px">
+              <v-col class="d-flex justify-right" style="max-width: 100px">
                 <div style="" class="image-box green-border">
                   <v-icon color="green">mdi-car</v-icon>
                 </div>
               </v-col>
             </v-row></v-card-text></v-card>
       </v-col>
-      <v-col style="max-width: 25%">
+      <v-col style="max-width: 16.66%">
         <v-card elevation="2" style="height: 80px; border-radius: 0.5rem"
           class="yellow-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
@@ -124,19 +124,52 @@
                 <br />
                 <div style="font-size: 16px">Today Washing Count</div>
               </v-col>
-              <v-col class="d-flex justify-right" style="max-width: 150px">
+              <v-col class="d-flex justify-right" style="max-width: 100px">
                 <div style="" class="image-box yellow-border">
                   <v-icon color="yellow">mdi-car</v-icon>
                 </div>
               </v-col>
             </v-row></v-card-text></v-card>
+      </v-col><v-col style="max-width: 16.66%">
+        <v-card elevation="2" style="height: 80px; border-radius: 0.5rem"
+          class="purple-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
+              <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
+                <div class="purple-text" style="font-size: 40px">{{ statisstics ? statisstics.lessThanOneHour : 0
+                }}
+                </div>
+                <br />
+                <div style="font-size: 16px">Less than 1 Hour</div>
+              </v-col>
+              <v-col class="d-flex justify-right" style="max-width: 100px">
+                <div style="" class="image-box purple-border">
+                  <v-icon color="purple">mdi-clock</v-icon>
+                </div>
+              </v-col>
+            </v-row></v-card-text></v-card>
       </v-col>
+      <v-col style="max-width: 16.66%">
+        <v-card elevation="2" style="height: 80px; border-radius: 0.5rem"
+          class="teal-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
+              <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
+                <div class="teal-text" style="font-size: 40px">{{ statisstics ? statisstics.moreThanOneHour : 0 }}
+                </div>
+                <br />
+                <div style="font-size: 16px">More than 1 Hour</div>
+              </v-col>
+              <v-col class="d-flex justify-right" style="max-width: 100px">
+                <div style="" class="image-box teal-border">
+                  <v-icon color="teal">mdi-clock</v-icon>
+                </div>
+              </v-col>
+            </v-row></v-card-text></v-card>
+      </v-col>
+
 
     </v-row>
 
     <DashboardRooms />
 
-    <v-dialog v-model="dialogMQTTVehicleInfo" max-width="80%">
+    <!-- <v-dialog v-model="dialogMQTTVehicleInfo" max-width="80%">
       <v-card style="padding:0px!important">
         <v-card-title dense class="popup_background" style="background-color: #4caf50!important;padding:0px!important">
           New Vehicle Information
@@ -145,11 +178,11 @@
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
-        <v-card-text>
+        <v-card-text> -->
 
-          <NewVehiclePopupMqTT />
-        </v-card-text></v-card>
-    </v-dialog>
+    <NewVehiclePopupMqTT />
+    <!-- </v-card-text></v-card>
+    </v-dialog> -->
     <!-- <v-btn @click="openGate" :disabled="this.status != 'Connected'" width="100%" height="50px" elevation="2" color="red"
       style="font-size: 25px;"> <v-icon size="40">mdi-boom-gate-arrow-up</v-icon> Open
       Gate {{ this.status != "Connected" ? ' - Error Gate is not Connected' : '' }}</v-btn> -->
@@ -157,7 +190,7 @@
       <v-col cols="12">
         <v-card style="height: 500px; overflow-y: auto; overflow-x: hidden" elevation="2"
           class="eventslistscroll table-font12"><v-card-text>
-            <ParkingReports :showFilters="true" :key="mqttNewMessage?.response.record.id || 1" />
+            <CarWashingReports :showFilters="true" :key="mqttNewMessage?.response.record.id || 1" />
           </v-card-text></v-card>
       </v-col>
     </v-row>
@@ -171,17 +204,18 @@
 
 
 import AudioSoundPlay from "../../components/Alarm/AudioSoundPlay.vue";
+
 import DashboardRooms from "../../components/CarWashing/DashboardRooms.vue";
 import NewVehiclePopupMqTT from "../../components/CarWashing/NewVehiclePopupMqTT.vue";
-import ParkingReports from "../../components/Parking/ParkingReports.vue";
-import mqtt from "mqtt";
+import CarWashingReports from "../../components/CarWashing/CarWashingReports.vue";
+
 
 export default {
   components: {
-    ParkingReports, AudioSoundPlay, DashboardRooms, NewVehiclePopupMqTT
+    AudioSoundPlay, DashboardRooms, NewVehiclePopupMqTT, CarWashingReports
   },
   data: () => ({
-    dialogMQTTVehicleInfo: true,
+    dialogMQTTVehicleInfo: false,
     vehicle_notification_status: "",
     dialogParkingFull: false,
     gatePassStatus: false,
@@ -316,6 +350,11 @@ export default {
 
 
   methods: {
+
+    UpdateStatusfromComponent(data) {
+      this.dialogMQTTVehicleInfo = data.dialogStatus;
+      this.getStatistics();
+    },
     /*
         async openGate(timeout = 5000, trigger = 'manual') {
           this.$axios.post("/parking_open_gate", {

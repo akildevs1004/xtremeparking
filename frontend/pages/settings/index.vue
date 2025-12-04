@@ -143,7 +143,7 @@
                         $dateFormat.formatDate(company_payload.expiry)
                       }}</v-col>
 
-                    <v-col cols="6">
+                    <!--<v-col cols="6">
                       <v-icon size="15">mdi-office-building-marker-outline</v-icon>
                       Max Branches
                     </v-col>
@@ -160,7 +160,7 @@
                       Max Employees
                     </v-col>
 
-                    <v-col cols="6" style="color: #a19797">: {{ company_payload.max_employee }}</v-col>
+                    <v-col cols="6" style="color: #a19797">: {{ company_payload.max_employee }}</v-col> -->
                   </v-row>
                 </v-card-text>
               </v-card>
@@ -171,12 +171,8 @@
           <v-card>
             <v-tabs class="pt-3" :vertical="vertical" :style="'height:815px'">
               <v-tabs-slider color="violet"></v-tabs-slider>
-              <!-- <v-tab>
-                <span>Company Profile</span>
-              </v-tab> -->
-              <v-tab>
-                <span>Parking Settings</span>
-              </v-tab>
+
+
               <v-tab>
                 <span>Company Profile</span>
               </v-tab>
@@ -192,26 +188,9 @@
               <v-tab>
                 <span>Password</span>
               </v-tab>
-              <v-tab>
-                <span>Currency </span>
-              </v-tab>
-              <v-tab>
-                <span>Tax Slabs </span>
-              </v-tab>
 
-              <v-tab>
-                <span>Whatsapp</span>
-              </v-tab>
-              <v-tab>
-                <span>Settings</span>
-              </v-tab>
-              <v-tab-item>
-                <!-- <ParkingSettings :minutes="company_payload.notification_popup_pause_minutes"
-                  :dashboard_alarm_open_count_days="company_payload.dashboard_alarm_open_count_days
-                    " /> -->
 
-                <ParkingSettings :company="company_payload" />
-              </v-tab-item>
+
               <v-tab-item>
                 <v-card flat>
                   <v-card-text>
@@ -267,7 +246,7 @@
                                 <v-text-field label="Company Email" readonly dense outlined hide-details
                                   v-model="user_payload.email"></v-text-field>
                                 <span v-if="errors && errors.email" class="text-danger mt-2">{{ errors.email[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -282,7 +261,7 @@
                                   v-model="contact_payload.number" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.number" class="text-danger mt-2">{{ errors.number[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -290,7 +269,7 @@
                                   v-model="contact_payload.position" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.position" class="text-danger mt-2">{{ errors.position[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -298,14 +277,14 @@
                                   v-model="contact_payload.whatsapp" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.whatsapp" class="text-danger mt-2">{{ errors.whatsapp[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
                               <v-col cols="4">
                                 <v-text-field readonly label="Mobile Number" color="primary" dense outlined
                                   v-model="company_payload.mol_id" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.mol_id" class="text-danger mt-2">{{ errors.mol_id[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -314,7 +293,7 @@
                                     "></v-text-field>
                                 <span v-if="errors && errors.p_o_box_no" class="text-danger mt-2">{{
                                   errors.p_o_box_no[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
                               <v-col cols="4">
                                 <v-text-field readonly label="Latitude" dense outlined v-model="geographic_payload.lat"
@@ -334,7 +313,7 @@
                                     ">
                                 </v-textarea>
                                 <span v-if="errors && errors.location" class="text-danger mt-2">{{ errors.location[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -348,7 +327,7 @@
                                 <v-text-field label="Expiry Date" readonly dense outlined hide-details
                                   v-model="company_payload.expiry"></v-text-field>
                                 <span v-if="errors && errors.expiry" class="text-danger mt-2">{{ errors.expiry[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -393,7 +372,7 @@
                                   v-model="contact_payload.number" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.number" class="text-danger mt-2">{{ errors.number[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="6">
@@ -401,7 +380,7 @@
                                   v-model="contact_payload.position" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.position" class="text-danger mt-2">{{ errors.position[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="6">
@@ -409,14 +388,14 @@
                                   v-model="contact_payload.whatsapp" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.whatsapp" class="text-danger mt-2">{{ errors.whatsapp[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
                               <v-col cols="6" md="6" sm="6">
                                 <v-text-field label="Mobile Number" color="primary" dense outlined
                                   v-model="company_payload.mol_id" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.mol_id" class="text-danger mt-2">{{ errors.mol_id[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="6" md="6" sm="6">
@@ -425,7 +404,7 @@
                                     "></v-text-field>
                                 <span v-if="errors && errors.p_o_box_no" class="text-danger mt-2">{{
                                   errors.p_o_box_no[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
                               <v-col cols="6">
                                 <v-text-field label="Latitude" dense outlined v-model="geographic_payload.lat"
@@ -445,7 +424,7 @@
                                     ">
                                 </v-textarea>
                                 <span v-if="errors && errors.location" class="text-danger mt-2">{{ errors.location[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
                               <v-col>
                                 <v-autocomplete class="pb-0" hide-details v-model="geographic_payload.utc_time_zone"
@@ -556,7 +535,7 @@
                           :disabled="!$pagePermission.can('company_edit', this)"></v-text-field>
                         <span v-if="errors && errors.business_makeem_number" class="text-danger mt-2">{{
                           errors.business_makeem_number[0]
-                        }}</span>
+                          }}</span>
                       </v-col>
                     </v-row>
 
@@ -674,7 +653,7 @@
                   </v-row>
                 </v-container>
               </v-tab-item>
-              <v-tab-item>
+              <!-- <v-tab-item>
                 <v-card>
                   <v-card-text>
                     <v-row>
@@ -706,18 +685,14 @@
                     </v-row>
                   </v-card-text>
                 </v-card>
-              </v-tab-item>
-              <v-tab-item>
+              </v-tab-item> -->
+              <!-- <v-tab-item>
                 <TaxSlabs />
               </v-tab-item>
               <v-tab-item>
                 <Whatsapp />
-              </v-tab-item>
-              <v-tab-item>
-                <NotificationSettings :minutes="company_payload.notification_popup_pause_minutes"
-                  :dashboard_alarm_open_count_days="company_payload.dashboard_alarm_open_count_days
-                    " />
-              </v-tab-item>
+              </v-tab-item> -->
+
 
             </v-tabs>
           </v-card>

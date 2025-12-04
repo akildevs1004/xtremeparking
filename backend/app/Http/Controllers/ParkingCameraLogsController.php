@@ -26,10 +26,18 @@ class ParkingCameraLogsController extends Controller
             $q->where('membership_id', $request->member_id);
         });
 
-        // $model->when($request->filled('date_from'), function ($q) use ($request) {
-        //     $q->whereDate('in_time', '>=', $request->date_from);
-        //     $q->whereDate('in_time', '<=', $request->date_to);
-        // });
+        $model->when($request->filled('filter_duration'), function ($q) use ($request) {
+
+            if ($request->filter_duration == 'MoreThanOneHour')
+                $q->where('duration_in_minutes', '>', 60);
+
+            else if ($request->filter_duration == 'LessThanOneHour')
+                $q->where('duration_in_minutes', '<=', 60);
+        });
+        $model->when($request->filled('date_from'), function ($q) use ($request) {
+            $q->whereDate('in_time', '>=', $request->date_from);
+            $q->whereDate('in_time', '<=', $request->date_to);
+        });
         // $model->when($request->filled('filter_payment'), function ($q) use ($request) {
         //     if ($request->filter_payment == 'Cash')
         //         $q->where('payment_mode', "cash");
@@ -39,24 +47,24 @@ class ParkingCameraLogsController extends Controller
         //     else if ($request->filter_payment == 'Pending')
         //         $q->where('payment_mode', null);
         // });
-        // $model->when($request->filled('common_search'), function ($q) use ($request) {
-        //     $q->where(function ($q) use ($request) {
-        //         $q->where('total_amount', 'ILIKE', "%$request->common_search%")
-        //             ->orWhere('log_vehicle_number', 'ILIKE', "%$request->common_search%")
+        $model->when($request->filled('common_search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('total_amount', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('log_vehicle_number', 'ILIKE', "%$request->common_search%")
 
-        //             ->orWhere('raw_plate_no', 'ILIKE', "%$request->common_search%")
-        //             ->orWhere('raw_vehicle_color', 'ILIKE', "%$request->common_search%")
-        //             ->orWhere('raw_vehicle_type', 'ILIKE', "%$request->common_search%")
-        //             ->orWhere('raw_vehicle_brand', 'ILIKE', "%$request->common_search%")
-        //             ->orWhere('raw_country_region', 'ILIKE', "%$request->common_search%")
-        //             ->orWhere('raw_plate_color', 'ILIKE', "%$request->common_search%")
-        //             ->orWhere('raw_plate_size', 'ILIKE', "%$request->common_search%")
-        //             ->orWhere('raw_plate_type', 'ILIKE', "%$request->common_search%")
-        //             ->orWhere('raw_province', 'ILIKE', "%$request->common_search%")
-        //             ->orWhere('raw_camera_no', 'ILIKE', "%$request->common_search%")
-        //             ->orWhere('raw_event_category', 'ILIKE', "%$request->common_search%");
-        //     });
-        // });
+                    ->orWhere('raw_plate_no', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_vehicle_color', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_vehicle_type', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_vehicle_brand', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_country_region', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_plate_color', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_plate_size', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_plate_type', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_province', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_camera_no', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_event_category', 'ILIKE', "%$request->common_search%");
+            });
+        });
 
         // $model->when($request->filled('branch_id'), function ($q) use ($request) {
         //     $q->where('branch_id', $request->branch_id);

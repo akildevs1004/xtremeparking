@@ -1,7 +1,7 @@
 <template>
   <NoAccess v-if="!$pagePermission.can('dashboard_view', this)" />
   <div v-else-if="!isMobileDevice">
-    <ParkingReports />
+    <CarWashingReports />
   </div>
 
 </template>
@@ -9,12 +9,12 @@
 <script>
 
 
-import ParkingReports from "../../components/Parking/ParkingReports.vue";
+import CarWashingReports from "../../components/CarWashing/CarWashingReports.vue";
 
 
 export default {
   components: {
-    ParkingReports
+    CarWashingReports
   },
   data: () => ({
     isMobileDevice: false

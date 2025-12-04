@@ -348,9 +348,10 @@ export default ({ app }, inject) => {
       return (
         (hours < 10 ? "0" : "") +
         hours +
-        ":" +
+        "h:" +
         (remainingMinutes < 10 ? "0" : "") +
-        remainingMinutes // +
+        remainingMinutes +
+        "m" // +
         // ":00"
       );
     },
