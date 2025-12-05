@@ -136,7 +136,7 @@
           class="darkgreen-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
                 <div class="darkgreen-text" style="font-size: 40px">{{ statisstics ? statisstics.total_payments : 0
-                }}</div>
+                  }}</div>
                 <br />
                 <div style="font-size: 16px">Total Amount</div>
               </v-col>
@@ -241,10 +241,10 @@
                   <h3> {{ this.mqttNewMessage ?
                     $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.in_time) :
                     '---'
-                  }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                    }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                       $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.in_time) :
                       ' '
-                    }}</span></h3>
+                      }}</span></h3>
 
                   <div class="grey--text">Entry</div>
                 </v-card>
@@ -255,10 +255,10 @@
                   <h3> {{ this.mqttNewMessage ?
                     $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.out_time) :
                     '---'
-                  }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                    }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                       $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.out_time) :
                       ' '
-                    }}</span></h3>
+                      }}</span></h3>
 
                   <div class="red--text">Exit</div>
                 </v-card>
@@ -316,7 +316,7 @@
                   <h3 style="color:#FFF;font-size: 30px;">{{ this.mqttNewMessage?.response.record.total_amount }} AED
                   </h3>
                   <small class="grey--text">{{ this.mqttNewMessage?.response.record.duration_in_hours
-                  }}H × {{ this.mqttNewMessage?.response.record.duration_per_hour_amount
+                    }}H × {{ this.mqttNewMessage?.response.record.duration_per_hour_amount
                     }}Dhr</small>
                 </v-col>
               </v-row>
@@ -543,12 +543,14 @@ export default {
 
   },
 
-  created() {
+  mounted() {
+    try {
+      if (window)
+        if (window.__APP_CONFIG__.PARKING_MODE == false || window.__APP_CONFIG__.PARKING_MODE == 'false') {
 
-    if (process.env.PARKING_MODE == false || process.env.PARKING_MODE == 'false') {
-
-      this.$router.push('/carwashing/dashboard');
-    }
+          this.$router.push('/carwashing/dashboard');
+        }
+    } catch (ex) { }
   },
 
 
