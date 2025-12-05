@@ -543,7 +543,13 @@ export default {
 
   },
 
+  created() {
 
+    if (process.env.PARKING_MODE == false || process.env.PARKING_MODE == 'false') {
+
+      this.$router.push('/carwashing/dashboard');
+    }
+  },
 
 
   methods: {
