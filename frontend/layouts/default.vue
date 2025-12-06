@@ -579,13 +579,13 @@
 
 <script>
 //parking
-// import company_menus from "../menus/parking_menu_left.json";
-// import controlpanel_top_menu from "../menus/parking_menu_top.json";
+import company_menus from "../menus/parking_menu_left.json";
+import controlpanel_top_menu from "../menus/parking_menu_top.json";
 
 
 //car washing
-import company_menus from "../menus/car_washing_menu_left.json";
-import controlpanel_top_menu from "../menus/car_washing_menu_top.json";
+// import company_menus from "../menus/car_washing_menu_left.json";
+// import controlpanel_top_menu from "../menus/car_washing_menu_top.json";
 
 
 
@@ -796,6 +796,38 @@ export default {
   },
 
   async mounted() {
+
+    // let company_menus = null;
+    // let controlpanel_top_menu = null;
+
+    try {
+      const isParking =
+        window &&
+        (window.__APP_CONFIG__.PARKING_MODE === true ||
+          window.__APP_CONFIG__.PARKING_MODE === "true");
+
+      if (!isParking) {
+        // car washing menus
+        const left = await import("../menus/car_washing_menu_left.json");
+        const top = await import("../menus/car_washing_menu_top.json");
+
+        this.company_menus = left.default;
+        this.controlpanel_top_menu = top.default;
+
+        console.log("car washing mode enabled");
+      } else {
+        // parking menus
+        const left = await import("../menus/parking_menu_left.json");
+        const top = await import("../menus/parking_menu_top.json");
+        console.log("parking mode enabled");
+
+        this.company_menus = left.default;
+        this.controlpanel_top_menu = top.default;
+      }
+    } catch (ex) {
+      console.error("Error loading menus:", ex);
+    }
+
     this.handleResize();
     window.addEventListener("resize", this.handleResize);
     if (typeof window !== "undefined" && window.innerWidth < 700) {
