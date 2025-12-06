@@ -129,10 +129,10 @@
                         <h3> {{ this.mqttNewMessage ?
                           $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.in_time) :
                           '---'
-                          }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                        }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                             $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.in_time) :
                             ' '
-                            }}</span></h3>
+                          }}</span></h3>
 
                         <div class="grey--text">Entry</div>
                       </v-card>
@@ -143,10 +143,10 @@
                         <h3> {{ this.mqttNewMessage ?
                           $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.out_time) :
                           '---'
-                          }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                        }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                             $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.out_time) :
                             ' '
-                            }}</span></h3>
+                          }}</span></h3>
 
                         <div class="red--text">Exit</div>
                       </v-card>
@@ -683,7 +683,7 @@ export default {
           },
 
         };
-        this.$emit('refreshStatistics', {});
+        this.$emit('updateDashboard', {});
         // const { data } = await this.$axios.get(`/dashboard_carwashingstatistics`, options);
 
 
