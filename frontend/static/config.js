@@ -3,4 +3,5 @@ window.__APP_CONFIG__ = {
   //apiUrl: "https://parkingbackend.xtremeguard.org/api/",
   PARKING_MODE: false,
   // PARKING_MODE: false,
+  // PARKING_MODE: false,
 };
