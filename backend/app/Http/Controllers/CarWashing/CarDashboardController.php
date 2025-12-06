@@ -83,22 +83,41 @@ class CarDashboardController extends Controller
             $lastEvent = ParkingCameraLogs::where('device_id_in', $room->id)
                 ->where('company_id', $request->company_id)
                 ->orderBy('in_time', 'desc')
-
                 ->first();
 
-
+            // Get device timezone or fallback to Asia/Dubai
+            $tz = $room->utc_time_zone ?? 'Asia/Dubai';
 
             if ($lastEvent) {
 
-                $lastEvent["public_image_url"] =  env("BASE_URL") . '/api/parking_camera_logs' . '/' .  $lastEvent->company_id;
+                // "Now" in device timezone
+                $deviceNow = now()->setTimezone($tz);
 
+                // out_time in device timezone (if exists)
+                $outTime = $lastEvent->out_time
+                    ? Carbon::parse($lastEvent->out_time)->setTimezone($tz)
+                    : null;
 
-                $roomsList[$key]->vehicle =  $lastEvent;
-                $roomsList[$key]->status = $lastEvent->event_type;
-                $roomsList[$key]->last_event_time = $lastEvent->created_at;
+                // If out_time exists AND more than 1 hour ago in device time → mark as empty
+                if ($outTime && $deviceNow->diffInHours($outTime) > 1) {
+
+                    $roomsList[$key]->vehicle = null;
+                    $roomsList[$key]->status  = 'empty';
+                    $roomsList[$key]->last_event_time = null;
+                } else {
+
+                    // Valid event (no out_time or within 1 hour)
+                    $lastEvent->public_image_url = env("BASE_URL") . '/api/parking_camera_logs/' . $lastEvent->company_id;
+
+                    $roomsList[$key]->vehicle = $lastEvent;
+                    $roomsList[$key]->status  = $lastEvent->event_type;
+                    $roomsList[$key]->last_event_time = $lastEvent->created_at;
+                }
             } else {
-                $roomsList[$key]->vehicle =  null;
-                $roomsList[$key]->status = 'empty';
+
+                // No event at all
+                $roomsList[$key]->vehicle = null;
+                $roomsList[$key]->status  = 'empty';
                 $roomsList[$key]->last_event_time = null;
             }
         }
