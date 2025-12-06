@@ -621,7 +621,9 @@ export default {
             setTimeout(() => {
 
               this.snackbar = false;
-              this.response = "";
+              this.response = "Closing vehicle information popup.";
+
+              this.dialogMQTTVehicleInfo = false;
 
             }, 1000 * 10);
           }

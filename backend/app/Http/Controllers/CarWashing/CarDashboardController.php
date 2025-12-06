@@ -35,8 +35,8 @@ class CarDashboardController extends Controller
         $totalRooms = Device::where('company_id', $companyId)->count();
 
         // Base query for today's logs
-        $todayLogsQuery = ParkingCameraLogs::where('company_id', $companyId)
-            ->whereDate('in_time', $today);
+        $todayLogsQuery = ParkingCameraLogs::where('company_id', $companyId);
+        // ->whereDate('in_time', $today);
 
         // All logs for today
         $logs = $todayLogsQuery->get();
