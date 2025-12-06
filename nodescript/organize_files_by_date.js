@@ -8,6 +8,7 @@
 const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
+//
 
 const COMPANY_ID = process.env.COMPANY_ID;
 const ROOT_DIR = process.env.WATCH_DIR || "./inbox"; // <-- size check here
