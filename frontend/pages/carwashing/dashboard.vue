@@ -135,7 +135,7 @@
           class="purple-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
                 <div class="purple-text" style="font-size: 40px">{{ statisstics ? statisstics.lessThanOneHour : 0
-                }}
+                  }}
                 </div>
                 <br />
                 <div style="font-size: 16px">Less than 1 Hour</div>
@@ -274,6 +274,16 @@ export default {
 
   },
   mounted() {
+    try {
+      if (window)
+        if (window.__APP_CONFIG__.PARKING_MODE == true || window.__APP_CONFIG__.PARKING_MODE == 'true') {
+
+          this.$router.push('/parking/dashboard');
+
+          return;
+        }
+    } catch (ex) { }
+
     this.getStatistics();
     // this.getDashboardData();
 

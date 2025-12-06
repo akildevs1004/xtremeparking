@@ -471,6 +471,14 @@ export default {
 
   },
   mounted() {
+
+    try {
+      if (window)
+        if (window.__APP_CONFIG__.PARKING_MODE == false || window.__APP_CONFIG__.PARKING_MODE == 'false') {
+
+          this.$router.push('/carwashing/dashboard');
+        }
+    } catch (ex) { }
     this.getStatistics();
     // this.getDashboardData();
 
@@ -541,16 +549,8 @@ export default {
     // }
 
 
-  },
 
-  mounted() {
-    try {
-      if (window)
-        if (window.__APP_CONFIG__.PARKING_MODE == false || window.__APP_CONFIG__.PARKING_MODE == 'false') {
 
-          this.$router.push('/carwashing/dashboard');
-        }
-    } catch (ex) { }
   },
 
 
