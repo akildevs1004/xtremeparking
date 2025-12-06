@@ -167,7 +167,7 @@
 
     </v-row>
 
-    <DashboardRooms />
+    <DashboardRooms :updateKey="updateKey" />
 
     <!-- <v-dialog v-model="dialogMQTTVehicleInfo" max-width="80%">
       <v-card style="padding:0px!important">
@@ -180,7 +180,7 @@
         </v-card-title>
         <v-card-text> -->
 
-    <NewVehiclePopupMqTT />
+    <NewVehiclePopupMqTT @updateDashboard="getStatistics()" />
     <!-- </v-card-text></v-card>
     </v-dialog> -->
     <!-- <v-btn @click="openGate" :disabled="this.status != 'Connected'" width="100%" height="50px" elevation="2" color="red"
@@ -259,7 +259,7 @@ export default {
     paymentCompaltedStatus: false,
     vehicleStatusEntryExit: '',
     vehicleGustNoEntryImage: null,
-
+    updateKey: 1,
 
   }),
 
@@ -587,6 +587,8 @@ export default {
         //   this.dialogParkingFull = true;
 
         // }
+
+        this.updateKey++;
 
       } catch (error) {
         this.snackbar = true;

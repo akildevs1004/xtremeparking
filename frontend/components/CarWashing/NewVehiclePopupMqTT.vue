@@ -681,15 +681,15 @@ export default {
           },
 
         };
+        this.$emit('refreshStatistics', {});
+        // const { data } = await this.$axios.get(`/dashboard_carwashingstatistics`, options);
 
-        const { data } = await this.$axios.get(`/dashboard_carwashingstatistics`, options);
 
 
-
-        // Update data
-        if (data) {
-          this.statisstics = data;
-        }
+        // // Update data
+        // if (data) {
+        //   this.statisstics = data;
+        // }
 
         // if (this.statisstics.total_available <= 0) {
         //   this.dialogParkingFull = true;

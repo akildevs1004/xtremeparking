@@ -99,9 +99,16 @@
 </template>
 
 <script>
+
 export default {
   name: "CarWashDashboard",
-
+  props: {
+    updateKey: {
+      type: Number,
+      required: false,
+      default: 0
+    },
+  },
   data() {
     return {
       devicesList: []
@@ -110,6 +117,11 @@ export default {
   mounted() {
     this.getDevicesList();
 
+  },
+  watch: {
+    updateKey(newVal, oldVal) {
+      this.getDevicesList();
+    }
   },
   methods: {
     async getDevicesList() {
@@ -123,7 +135,6 @@ export default {
       };
       const { data } = await this.$axios.get(`/dashboard_carwashingrooms`, options);
 
-      console.log(data);
 
 
       this.devicesList = [];
@@ -164,7 +175,6 @@ export default {
 
 
 
-      console.log(this.devicesList);
 
     },
     getStatusIcon(status) {
