@@ -109,6 +109,9 @@ export default {
       default: 0
     },
   },
+
+
+
   data() {
     return {
       devicesList: []
