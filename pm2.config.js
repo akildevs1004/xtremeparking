@@ -8,6 +8,14 @@ module.exports = {
       exec_mode: "fork",
       watch: false
     },
+	{
+      name: "parking-carwash-frontend",
+       
+      script: "npx",
+      args: "http-server dist -p 6031 -c-1",
+      cwd: "/var/www/carwash",
+      watch: false
+    },
 
     {
       name: "parking-queue-worker",
@@ -34,6 +42,15 @@ module.exports = {
       args: "watchCameraImages.js",
       exec_mode: "fork",
       watch: false
-    }
+    },
+	{
+      name: "parking-images-organizer",
+      cwd: "/var/www/parking/nodescript",
+      script: "node",
+      args: "organize_files_by_date.js",
+      exec_mode: "fork",
+      watch: false
+    },
+	 
   ]
 }

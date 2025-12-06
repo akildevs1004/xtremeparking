@@ -120,6 +120,10 @@ export default {
   mounted() {
     this.getDevicesList();
 
+    setInterval(() => {
+      this.getDevicesList();
+    }, 1000 * 60);
+
   },
   watch: {
     updateKey(newVal, oldVal) {
