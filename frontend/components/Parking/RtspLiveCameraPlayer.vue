@@ -30,7 +30,7 @@
 
     <!-- Canvas area -->
     <div class="nvr-camera-body d-flex align-center justify-center">
-      <canvas ref="canvas" :width="width" :height="height" class="nvr-canvas"></canvas>
+      <canvas ref="canvas" :width="width" :height="height" style="" class="nvr-canvas"></canvas>
     </div>
   </div>
 </template>

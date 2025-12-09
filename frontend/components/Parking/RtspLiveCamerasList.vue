@@ -8,11 +8,13 @@
         Preview
       </v-btn>
 
+      <!-- AUTO = fit all cameras into one grid, rows/cols chosen automatically -->
       <v-btn v-if="cameraCount > 0" small class="mr-1"
         :color="mode === 'grid' && gridColsMode === 'auto' ? 'primary' : undefined" @click="setAllCameras">
-        All (Auto 2 Rows)
+        All (Auto Grid)
       </v-btn>
 
+      <!-- Fixed layouts -->
       <v-btn v-if="cameraCount >= 2" small class="mr-1" :color="isGrid(2)" @click="setGridMode(2)">
         2/row
       </v-btn>
@@ -31,8 +33,8 @@
 
       <v-spacer></v-spacer>
 
-      <v-btn small text @click="setAllCameras">
-        Restore
+      <v-btn small color="green" @click="setAllCameras">
+        <v-icon>mdi-refresh</v-icon> Reset View
       </v-btn>
     </div>
 
@@ -52,7 +54,7 @@
         <img :src="previewImage" class="nvr-preview-image" />
       </div>
 
-      <!-- GRID MODE -->
+      <!-- GRID MODE (ALL CAMERAS) -->
       <div v-else class="nvr-grid">
         <v-row dense no-gutters class="nvr-grid-row">
           <v-col v-for="(cam, index) in cameras" :key="cam.id" cols="12" :md="12 / gridColumns" :lg="12 / gridColumns"
@@ -110,13 +112,20 @@ export default {
       );
     },
 
-    // AUTO: arrange all cameras in max 2 rows
+    /**
+     * AUTO GRID LOGIC:
+     *  - setAllCameras() => gridColsMode = 'auto'
+     *  - we choose columns close to sqrt(n)
+     *  - rows = ceil(n / columns)
+     *  - This keeps grid roughly square and ALWAYS displays all cameras
+     *    in a single full-screen grid (no scrolling).
+     */
     gridColumns() {
       const n = this.cameraCount || 1;
       if (this.mode !== "grid") return 1;
 
       if (this.gridColsMode === "auto") {
-        return Math.max(1, Math.ceil(n / 2)); // ≤ 2 rows
+        return Math.max(1, Math.ceil(Math.sqrt(n)));
       }
 
       return Math.min(Number(this.gridColsMode), n);
@@ -145,11 +154,13 @@ export default {
       this.mode = "preview";
     },
 
+    // 🔵 AUTO: show all cameras in one grid, rows/cols chosen automatically
     setAllCameras() {
       this.mode = "grid";
       this.gridColsMode = "auto";
     },
 
+    // fixed columns
     setGridMode(cols) {
       this.mode = "grid";
       this.gridColsMode = cols;
@@ -161,6 +172,7 @@ export default {
         : undefined;
     },
 
+    // focus on single cam
     focusCamera(index) {
       this.selectedIndex = index;
       this.mode = "focus";
@@ -173,12 +185,15 @@ export default {
 .nvr-root {
   display: flex;
   flex-direction: column;
-  height: 700px;
-  /* full browser height */
+  height: 100vh;
+  /* full browser window */
   background: #050505;
   color: #eee;
   border-radius: 4px;
-  overflow: scroll;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  max-height: 750px;
 }
 
 /* top bar */
@@ -193,14 +208,14 @@ export default {
   font-weight: 600;
 }
 
-/* main area */
+/* main content */
 .nvr-content {
   flex: 1 1 auto;
   display: flex;
   padding: 4px;
 }
 
-/* all main modes fill height */
+/* each mode fills area */
 .nvr-focus,
 .nvr-preview,
 .nvr-grid {
@@ -241,7 +256,7 @@ export default {
   flex: 1 1 auto;
 }
 
-/* empty state */
+/* empty */
 .nvr-empty {
   flex: 1 1 auto;
   color: #999;
