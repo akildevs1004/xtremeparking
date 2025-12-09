@@ -197,7 +197,7 @@
             -->
 
         <RtspLiveCamerasList :mqttNewMessage="mqttNewMessage" :mqttLoading="mqttLoading"></RtspLiveCamerasList>
-
+        <NewVehiclePopupMqTT @updateDashboard="getStatistics()" />
         <!-- <v-card elevation="2" class="eventslistscroll table-font12" :loading="mqttLoading">
           <v-card-text class="pa-1">
             <img v-if="mqttNewMessage?.response.record.image_vehicle"
@@ -416,10 +416,11 @@ import ParkingReports from "../../components/Parking/ParkingReports.vue";
 import mqtt from "mqtt";
 import RtspLiveCamera from "../../components/Parking/RtspLiveCamera.vue";
 import RtspLiveCamerasList from "../../components/Parking/RtspLiveCamerasList.vue";
+import NewVehiclePopupMqTT from "../../components/CarWashing/NewVehiclePopupMqTT.vue";
 
 export default {
   components: {
-    ParkingReports, AudioSoundPlay, RtspLiveCamera, RtspLiveCamerasList
+    ParkingReports, AudioSoundPlay, RtspLiveCamera, RtspLiveCamerasList, NewVehiclePopupMqTT
   },
   data: () => ({
     vehicle_notification_status: "",
@@ -611,6 +612,12 @@ export default {
 
 
       const { data } = await this.$axios.get(`/get_mqtt_server`);
+      if (data.host.includes("192.168.") || data.host.includes("localhost") || data.host.includes("127.0.0.1")) {
+
+      }
+      else {
+        options.protocol = 'wss';
+      }
 
 
       // this.client = mqtt.connect(host, options);

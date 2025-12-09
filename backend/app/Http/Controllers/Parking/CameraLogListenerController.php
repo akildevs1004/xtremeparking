@@ -40,13 +40,13 @@ class CameraLogListenerController extends Controller
                     "id" => 1,
                     "name" => "Entrance Camera",
                     "rtsp_url" => "rtsp://admin:hik@1234@192.168.2.218:554/Streaming/Channels/101",
-                    "node_server_id" => "192.168.2.16",
+                    "node_server_ip" => "192.168.2.16",
                 ],
                 [
                     "id" => 2,
                     "name" => "Exit Camera",
                     "rtsp_url" => "rtsp://admin:hik@1234@192.168.2.219:554/Streaming/Channels/101",
-                    "node_server_id" => "192.168.2.16",
+                    "node_server_ip" => "192.168.2.16",
                 ],
                 // [
                 //     "id" => 1,
