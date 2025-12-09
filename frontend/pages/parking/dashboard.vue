@@ -136,7 +136,7 @@
           class="darkgreen-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
                 <div class="darkgreen-text" style="font-size: 40px">{{ statisstics ? statisstics.total_payments : 0
-                  }}</div>
+                }}</div>
                 <br />
                 <div style="font-size: 16px">Total Amount</div>
               </v-col>
@@ -192,13 +192,13 @@
 
     <v-row class="pt-0 mt-0">
       <v-col cols="9" class="pt-0 mt-0">
-        <v-container fluid>
-          <!-- <RtspLiveCamera :ws-port="8082" title="Camera 1 Live"></RtspLiveCamera>
+
+        <!-- <RtspLiveCamera :ws-port="8082" title="Camera 1 Live"></RtspLiveCamera>
             -->
 
-          <RtspLiveCamerasList></RtspLiveCamerasList>
-        </v-container>
-        <v-card elevation="2" class="eventslistscroll table-font12" :loading="mqttLoading">
+        <RtspLiveCamerasList :mqttNewMessage="mqttNewMessage" :mqttLoading="mqttLoading"></RtspLiveCamerasList>
+
+        <!-- <v-card elevation="2" class="eventslistscroll table-font12" :loading="mqttLoading">
           <v-card-text class="pa-1">
             <img v-if="mqttNewMessage?.response.record.image_vehicle"
               style="width: 100%;height:700px;border-radius: 10px;"
@@ -206,7 +206,7 @@
 
             <img v-else style="width: 100%;height:700px;;border-radius: 10px;" src="/novehicle.png"></img>
           </v-card-text>
-        </v-card>
+        </v-card> -->
       </v-col>
 
       <v-col cols="3" class="pt-0 mt-0">
@@ -246,10 +246,10 @@
                   <h3> {{ this.mqttNewMessage ?
                     $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.in_time) :
                     '---'
-                    }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                  }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                       $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.in_time) :
                       ' '
-                      }}</span></h3>
+                    }}</span></h3>
 
                   <div class="grey--text">Entry</div>
                 </v-card>
@@ -260,10 +260,10 @@
                   <h3> {{ this.mqttNewMessage ?
                     $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.out_time) :
                     '---'
-                    }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                  }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                       $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.out_time) :
                       ' '
-                      }}</span></h3>
+                    }}</span></h3>
 
                   <div class="red--text">Exit</div>
                 </v-card>
@@ -321,7 +321,7 @@
                   <h3 style="color:#FFF;font-size: 30px;">{{ this.mqttNewMessage?.response.record.total_amount }} AED
                   </h3>
                   <small class="grey--text">{{ this.mqttNewMessage?.response.record.duration_in_hours
-                    }}H × {{ this.mqttNewMessage?.response.record.duration_per_hour_amount
+                  }}H × {{ this.mqttNewMessage?.response.record.duration_per_hour_amount
                     }}Dhr</small>
                 </v-col>
               </v-row>

@@ -1,55 +1,48 @@
 <template>
-  <v-card class="fill-height d-flex flex-column pa-0" outlined>
-    <!-- Header -->
-    <v-toolbar dense flat class="elevation-2">
-      <v-toolbar-title class="text-subtitle-1 font-weight-medium">
-        {{ title }}
-      </v-toolbar-title>
+  <div class="nvr-camera-tile">
+    <!-- Header: status + title + controls -->
+    <div class="nvr-camera-header d-flex align-center">
+      <div class="d-flex align-center">
+        <span class="status-dot" :class="connected ? 'status-dot--online' : 'status-dot--offline'"></span>
+        <span class="ml-2 nvr-title">
+          {{ title }}
+        </span>
+      </div>
 
-      <v-spacer></v-spacer>
+      <div class="ml-auto d-flex align-center">
+        <v-btn icon small :disabled="!player || isPlaying || connecting" @click="play">
+          <v-icon small>mdi-play</v-icon>
+        </v-btn>
 
-      <v-btn small color="primary" :disabled="!player || isPlaying || connecting" @click="play">
-        Play
-      </v-btn>
+        <v-btn icon small class="ml-1" :disabled="!player || !isPlaying" @click="pause">
+          <v-icon small>mdi-pause</v-icon>
+        </v-btn>
 
-      <v-btn small class="ml-1" color="grey darken-2" :disabled="!player || !isPlaying" @click="pause">
-        Pause
-      </v-btn>
+        <v-btn icon small class="ml-1" :disabled="connecting" @click="reconnect">
+          <v-icon small>mdi-reload</v-icon>
+        </v-btn>
 
-      <v-btn small class="ml-1" color="grey darken-2" :disabled="connecting" @click="reconnect">
-        Reconnect
-      </v-btn>
-
-      <v-btn small class="ml-1" color="grey darken-2" @click="fullscreen">
-        Fullscreen
-      </v-btn>
-
-      <span class="ml-3 caption grey--text text--lighten-1">
-        {{ statusText }}
-      </span>
-    </v-toolbar>
-
-    <!-- Canvas -->
-    <div class="flex-grow-1 d-flex align-center justify-center rtsp-container">
-      <canvas ref="canvas" :width="width" :height="height" class="rtsp-canvas"></canvas>
+        <v-btn icon small class="ml-1" @click="fullscreen">
+          <v-icon small>mdi-fullscreen</v-icon>
+        </v-btn>
+      </div>
     </div>
-  </v-card>
+
+    <!-- Canvas area -->
+    <div class="nvr-camera-body d-flex align-center justify-center">
+      <canvas ref="canvas" :width="width" :height="height" class="nvr-canvas"></canvas>
+    </div>
+  </div>
 </template>
 
 <script>
 export default {
-  name: "RtspLivePlayer",
+  name: "RtspLiveCameraPlayer",
 
   props: {
-    title: { type: String, default: "RTSP Live View" },
-
-    // WebSocket port for this camera (9991, 9992, 9993, ...)
+    title: { type: String, default: "Camera" },
     wsPort: { type: Number, required: true },
-
-    // Optional: explicit host/IP of Node streaming server
-    // e.g. "192.168.2.200" (Windows PC running server_stream.js)
-    wsHost: { type: String, default: "" },
-
+    wsHost: { type: String, required: true },
     width: { type: Number, default: 1280 },
     height: { type: Number, default: 720 }
   },
@@ -59,6 +52,7 @@ export default {
       player: null,
       connecting: false,
       isPlaying: false,
+      connected: false,
       statusText: "Idle"
     };
   },
@@ -66,26 +60,20 @@ export default {
   computed: {
     wsUrl() {
       if (!process.client) return "";
-
       const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-
-      // If wsHost prop is passed, use that. Otherwise, fallback to current host.
-      const host = this.wsHost || window.location.hostname;
-
-      return `${protocol}://${host}:${this.wsPort}`;
+      return `${protocol}://${this.wsHost}:${this.wsPort}`;
     }
   },
 
   mounted() {
     if (!process.client) return;
 
-    // Load JSMpeg from /static/jsmpeg.min.js if not already loaded
     if (window.JSMpeg) {
       this.connect();
     } else {
       this.setStatus("Loading JSMpeg...");
       const script = document.createElement("script");
-      script.src = "/jsmpeg.min.js"; // Nuxt static: /static/jsmpeg.min.js
+      script.src = "/jsmpeg.min.js"; // from /static/jsmpeg.min.js
       script.async = true;
       script.onload = () => {
         this.setStatus("JSMpeg loaded. Connecting...");
@@ -123,6 +111,7 @@ export default {
       }
       this.player = null;
       this.isPlaying = false;
+      this.connected = false;
     },
 
     connect() {
@@ -140,7 +129,8 @@ export default {
       }
 
       this.connecting = true;
-      this.setStatus(`Connecting to ${this.wsUrl} ...`);
+      this.connected = false;
+      this.setStatus("Connecting...");
       this.destroyPlayer();
 
       const canvas = this.$refs.canvas;
@@ -152,20 +142,24 @@ export default {
           pauseWhenHidden: false,
           onSourceEstablished: () => {
             this.connecting = false;
+            this.connected = true;
             this.isPlaying = true;
-            this.setStatus("Stream Connected ✅");
+            this.setStatus("Connected");
+            this.$emit("connected");
           },
           onSourceClosed: () => {
             this.connecting = false;
+            this.connected = false;
             this.isPlaying = false;
-            this.setStatus("Disconnected. Reconnecting...");
-            setTimeout(this.connect, 3000);
+            this.setStatus("Disconnected");
+            this.$emit("disconnected");
           }
         });
       } catch (e) {
         console.error("JSMpeg init error:", e);
         this.setStatus("Player Error");
         this.connecting = false;
+        this.connected = false;
       }
     },
 
@@ -184,7 +178,7 @@ export default {
     },
 
     reconnect() {
-      this.setStatus("Manual reconnect...");
+      this.setStatus("Reconnecting...");
       this.connect();
     },
 
@@ -200,14 +194,52 @@ export default {
 </script>
 
 <style scoped>
-.rtsp-container {
-  background: #111;
+.nvr-camera-tile {
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.8);
+  overflow: hidden;
 }
 
-.rtsp-canvas {
-  border: 1px solid #444;
-  max-width: 100%;
-  max-height: 100%;
+.nvr-camera-header {
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+}
+
+.nvr-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nvr-camera-body {
+  flex: 1;
   background: #000;
+}
+
+.nvr-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* status LED */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.status-dot--online {
+  background-color: #4caf50;
+  /* green */
+}
+
+.status-dot--offline {
+  background-color: #f44336;
+  /* red */
 }
 </style>
