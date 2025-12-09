@@ -33,6 +33,8 @@ Route::resource('parking_camera_logs', ParkingCameraLogsController::class);
 
 
 Route::post('camera_log_listner', [CameraLogListenerController::class, 'CameraLogProcessing']);
+Route::get('parking-cameras', [CameraLogListenerController::class, 'CamerasList']);
+
 
 Route::get('parking_record_info', [ParkingCameraLogsController::class, 'parkingRecordInfo']);
 Route::get('parking_dashboard_statistics', [ParkingCameraLogsController::class, 'parkingDashboardStatistics']);

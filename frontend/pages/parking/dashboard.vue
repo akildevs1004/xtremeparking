@@ -192,7 +192,12 @@
 
     <v-row class="pt-0 mt-0">
       <v-col cols="9" class="pt-0 mt-0">
+        <v-container fluid>
+          <!-- <RtspLiveCamera :ws-port="8082" title="Camera 1 Live"></RtspLiveCamera>
+            -->
 
+          <RtspLiveCamerasList></RtspLiveCamerasList>
+        </v-container>
         <v-card elevation="2" class="eventslistscroll table-font12" :loading="mqttLoading">
           <v-card-text class="pa-1">
             <img v-if="mqttNewMessage?.response.record.image_vehicle"
@@ -409,10 +414,12 @@
 import AudioSoundPlay from "../../components/Alarm/AudioSoundPlay.vue";
 import ParkingReports from "../../components/Parking/ParkingReports.vue";
 import mqtt from "mqtt";
+import RtspLiveCamera from "../../components/Parking/RtspLiveCamera.vue";
+import RtspLiveCamerasList from "../../components/Parking/RtspLiveCamerasList.vue";
 
 export default {
   components: {
-    ParkingReports, AudioSoundPlay
+    ParkingReports, AudioSoundPlay, RtspLiveCamera, RtspLiveCamerasList
   },
   data: () => ({
     vehicle_notification_status: "",
