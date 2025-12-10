@@ -121,7 +121,7 @@ $services = @(
   @{ Name='Mosquitto MQTT Broker';          Cwd='C:\';          Cmd="`"$MOSQ_EXE`" -c `"$MOSQ_CONF`" -v";                             Log=Join-Path $LOG_DIR "mosquitto_$TODAY.log";      Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() },
   @{ Name='Camera Watcher';                 Cwd=$NODE;          Cmd='node watchCameraImages.js';                                     Log=Join-Path $LOG_DIR "watcher_$TODAY.log";        Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() },
   @{ Name='Camera Organizer';               Cwd=$NODE;          Cmd='node organize_files_by_date.js';                                Log=Join-Path $LOG_DIR "organizer_$TODAY.log";      Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() },
-  @{ Name='Camera Live Stream';             Cwd=$CAMERA_STREAM; Cmd='node server_stream.js';                                        Log=Join-Path $LOG_DIR "stream_$TODAY.log";         Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() }
+  @{ Name='Camera Live Stream';             Cwd=$CAMERA_STREAM; Cmd='node start_camera_live_stream.js';                                        Log=Join-Path $LOG_DIR "stream_$TODAY.log";         Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() }
 )
 
 # -------- START ALL SERVICES --------
