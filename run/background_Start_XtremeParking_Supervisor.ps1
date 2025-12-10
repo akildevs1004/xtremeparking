@@ -22,10 +22,10 @@ $MOSQ_EXE  = 'C:\Program Files\mosquitto\mosquitto.exe'
 $MOSQ_CONF = 'C:\Program Files\mosquitto\mosquitto.conf'
 $NPX       = Join-Path $env:ProgramFiles 'nodejs\npx.cmd'
 
-$CHECK_SECONDS = 60
-$COOLDOWN_SECONDS = 15
-$MAX_RESTARTS_WINDOW_SEC = 300
-$MAX_RESTARTS_IN_WINDOW  = 10
+# intervals (seconds)
+$SERVICE_CHECK_INTERVAL = 60
+$LOG_CHECK_INTERVAL     = 5
+$COOLDOWN_SECONDS       = 15
 
 # -------- DATE + LOG SETUP --------
 $TODAY   = (Get-Date).ToString('yyyy-MM-dd')
@@ -75,7 +75,7 @@ function Test-PortListening([int]$Port){
   }
 }
 
-# -------- START PROCESS FUNCTION (FIXED) --------
+# -------- START PROCESS FUNCTION (header only on first create) --------
 function Start-ManagedProcess {
   param(
     [string]$Name,
@@ -84,16 +84,20 @@ function Start-ManagedProcess {
     [string]$Log
   )
 
-  if (-not (Test-Path (Split-Path $Log -Parent))) {
-    New-Item -Path (Split-Path $Log -Parent) -ItemType Directory -Force | Out-Null
+  $logDir = Split-Path $Log -Parent
+  if (-not (Test-Path $logDir)) {
+    New-Item -Path $logDir -ItemType Directory -Force | Out-Null
   }
 
-  # Try to write header to log, but do NOT crash if file is in use
-  try {
-    "`n===== START: $Name @ $(Get-Date) =====`n" |
-      Out-File -FilePath $Log -Encoding UTF8 -Append -ErrorAction Stop
-  } catch {
-    Write-ErrorAllLog "Could not write header to log '$Log' for '$Name': $($_.Exception.Message)"
+  # Only write header if file does NOT exist yet (first start of the day)
+  if (-not (Test-Path $Log)) {
+    try {
+      "===== START: $Name @ $(Get-Date) =====`r`n" |
+        Out-File -FilePath $Log -Encoding UTF8 -ErrorAction Stop
+    } catch {
+      # Cosmetic; do not spam errors_all
+      Write-Host "[WARN] Could not initialize log file $Log for '$Name': $($_.Exception.Message)" -ForegroundColor Yellow
+    }
   }
 
   $full = "cd /d `"$Cwd`" && ($Cmd) >> `"$Log`" 2>>&1"
@@ -113,16 +117,209 @@ if (-not (Test-Path (Join-Path $FRONTEND 'dist'))) {
 }
 
 # -------- SERVICES DEFINITIONS --------
+# For services with Ports, ALL listed ports must be listening → UP; otherwise → DOWN & restart.
 $services = @(
-  @{ Name='Parking Laravel Server';         Cwd=$BACKEND;       Cmd='php artisan serve --host=0.0.0.0 --port=8000';                   Log=Join-Path $LOG_DIR "laravel_$TODAY.log";        Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() },
-  @{ Name='Parking Queue Worker';           Cwd=$BACKEND;       Cmd='php artisan queue:work --tries=3 --sleep=1 --backoff=3';         Log=Join-Path $LOG_DIR "queue_$TODAY.log";          Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() },
-  @{ Name='Parking MQTT Listener';          Cwd=$BACKEND;       Cmd='php artisan mqtt:qrbackgroundlistener';                          Log=Join-Path $LOG_DIR "mqtt_$TODAY.log";           Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() },
-  @{ Name='Parking Frontend';               Cwd=$FRONTEND;      Cmd="`"$NPX`" --yes http-server dist -p 3000 --no-clipboard --cors"; Log=Join-Path $LOG_DIR "frontend_$TODAY.log";       Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() },
-  @{ Name='Mosquitto MQTT Broker';          Cwd='C:\';          Cmd="`"$MOSQ_EXE`" -c `"$MOSQ_CONF`" -v";                             Log=Join-Path $LOG_DIR "mosquitto_$TODAY.log";      Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() },
-  @{ Name='Camera Watcher';                 Cwd=$NODE;          Cmd='node watchCameraImages.js';                                     Log=Join-Path $LOG_DIR "watcher_$TODAY.log";        Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() },
-  @{ Name='Camera Organizer';               Cwd=$NODE;          Cmd='node organize_files_by_date.js';                                Log=Join-Path $LOG_DIR "organizer_$TODAY.log";      Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() },
-  @{ Name='Camera Live Stream';             Cwd=$CAMERA_STREAM; Cmd='node start_camera_live_stream.js';                                        Log=Join-Path $LOG_DIR "stream_$TODAY.log";         Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@() }
+  @{ Name='Parking Laravel Server';   Cwd=$BACKEND;       Cmd='php artisan serve --host=0.0.0.0 --port=8000';                   Log=Join-Path $LOG_DIR "laravel_$TODAY.log";   Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@(8000) },
+  @{ Name='Parking Queue Worker';     Cwd=$BACKEND;       Cmd='php artisan queue:work --tries=3 --sleep=1 --backoff=3';         Log=Join-Path $LOG_DIR "queue_$TODAY.log";     Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@()     },
+  @{ Name='Parking MQTT Listener';    Cwd=$BACKEND;       Cmd='php artisan mqtt:qrbackgroundlistener';                          Log=Join-Path $LOG_DIR "mqtt_$TODAY.log";      Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@()     },
+  @{ Name='Parking Frontend';         Cwd=$FRONTEND;      Cmd="`"$NPX`" --yes http-server dist -p 3000 --no-clipboard --cors"; Log=Join-Path $LOG_DIR "frontend_$TODAY.log";  Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@(3000) },
+  @{ Name='Mosquitto MQTT Broker';    Cwd='C:\';          Cmd="`"$MOSQ_EXE`" -c `"$MOSQ_CONF`" -v";                             Log=Join-Path $LOG_DIR "mosquitto_$TODAY.log"; Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@(1883) },
+  @{ Name='Camera Watcher';           Cwd=$NODE;          Cmd='node watchCameraImages.js';                                     Log=Join-Path $LOG_DIR "watcher_$TODAY.log";   Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@()     },
+  @{ Name='Camera Organizer';         Cwd=$NODE;          Cmd='node organize_files_by_date.js';                                Log=Join-Path $LOG_DIR "organizer_$TODAY.log"; Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@()     },
+  # Camera Live Stream – edit ports to match your actual HTTP/WS mapping
+  @{ Name='Camera Live Stream';       Cwd=$CAMERA_STREAM; Cmd='node start_camera_live_stream.js';                              Log=Join-Path $LOG_DIR "stream_$TODAY.log";    Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@(8081,9991,9992,9993,9994) }
 )
+
+# -------- LOG FILES TO DISPLAY INCREMENTALLY --------
+$logFiles = @(
+  @{ Name='Watcher';   Path = Join-Path $LOG_DIR "watcher_$TODAY.log" },
+  @{ Name='ErrorsAll'; Path = $GLOBAL_ERROR_LOG }
+)
+
+$logState = @{}
+foreach ($lf in $logFiles) {
+  $logState[$lf.Path] = @{
+    Length = 0
+    Initialized = $false
+  }
+}
+
+# -------- PORT HELPERS --------
+function Get-ServicePorts {
+  param($svc)
+
+  if ($svc -is [hashtable]) {
+    if ($svc.ContainsKey('Ports') -and $svc['Ports']) {
+      return [int[]]$svc['Ports']
+    } else {
+      return @()
+    }
+  }
+
+  # fallback for other types (not used here, but safe)
+  if ($svc.PSObject.Properties.Name -contains 'Ports' -and $svc.Ports) {
+    return [int[]]$svc.Ports
+  }
+
+  return @()
+}
+
+function Are-ServicePortsAllListening {
+  param($svc)
+
+  $ports = Get-ServicePorts $svc
+  if (-not $ports -or $ports.Count -eq 0) {
+    return $null  # "no ports configured"
+  }
+
+  foreach ($p in $ports) {
+    if (-not (Test-PortListening -Port $p)) {
+      return $false
+    }
+  }
+
+  return $true
+}
+
+# -------- FUNCTIONS: SERVICE CHECK + LOG CHECK --------
+
+function Is-ServiceUp {
+  param($svc)
+
+  $portsStatus = Are-ServicePortsAllListening $svc
+
+  if ($portsStatus -eq $true) {
+    return $true   # all ports listening
+  } elseif ($portsStatus -eq $false) {
+    return $false  # one or more ports not listening
+  }
+
+  # No ports configured – use process handle
+  if ($svc.Proc -and -not $svc.Proc.HasExited) {
+    return $true
+  }
+
+  return $false
+}
+
+function Check-Services {
+  param([ref]$Services)
+
+  foreach ($s in $Services.Value) {
+    $now = Get-Date
+
+    $portsStatus = Are-ServicePortsAllListening $s
+
+    if ($portsStatus -eq $true) {
+      # All ports listening – service OK
+      continue
+    }
+
+    if ($portsStatus -eq $false) {
+      # Ports defined and at least one is NOT listening → restart
+      if ($s.LastStart -and ((New-TimeSpan $s.LastStart $now).TotalSeconds -lt $COOLDOWN_SECONDS)) {
+        continue
+      }
+
+      $s.Proc = Start-ManagedProcess -Name $s.Name -Cwd $s.Cwd -Cmd $s.Cmd -Log $s.Log
+      $s.LastStart = $now
+
+      Write-Host "[RESTARTED - PORTS DOWN] $($s.Name)" -ForegroundColor Yellow
+      Write-ErrorAllLog "Restarted $($s.Name) because one or more ports were not listening."
+      continue
+    }
+
+    # portsStatus -eq $null → no ports configured: use process handle
+    if (-not $s.Proc -or $s.Proc.HasExited) {
+      if ($s.LastStart -and ((New-TimeSpan $s.LastStart $now).TotalSeconds -lt $COOLDOWN_SECONDS)) {
+        continue
+      }
+
+      $s.Proc = Start-ManagedProcess -Name $s.Name -Cwd $s.Cwd -Cmd $s.Cmd -Log $s.Log
+      $s.LastStart = $now
+
+      Write-Host "[RESTARTED - PROC DOWN] $($s.Name)" -ForegroundColor Yellow
+      Write-ErrorAllLog "Restarted $($s.Name) because process was not running."
+    }
+  }
+
+  # Display live status after checking services
+  $status = ($Services.Value | ForEach-Object {
+    if (Is-ServiceUp $_) {
+      "$($_.Name):UP"
+    } else {
+      "$($_.Name):DOWN"
+    }
+  }) -join " | "
+
+  Write-Host ("[{0}] {1}" -f (Get-Date).ToString("HH:mm:ss"), $status)
+}
+
+function Check-LogsIncremental {
+  param(
+    [array]$LogFiles,
+    [hashtable]$State
+  )
+
+  foreach ($lf in $LogFiles) {
+    $path = $lf.Path
+    if (-not (Test-Path $path)) {
+      continue
+    }
+
+    try {
+      $fileInfo = Get-Item $path
+    } catch {
+      continue
+    }
+
+    $currentLength = $fileInfo.Length
+    $st = $State[$path]
+
+    if (-not $st.Initialized) {
+      # First time: skip old content, just mark position
+      $st.Length = $currentLength
+      $st.Initialized = $true
+      $State[$path] = $st
+      continue
+    }
+
+    if ($currentLength -le $st.Length) {
+      $st.Length = $currentLength
+      $State[$path] = $st
+      continue
+    }
+
+    $bytesToRead = $currentLength - $st.Length
+
+    try {
+      $fs = [System.IO.File]::Open($path,
+        [System.IO.FileMode]::Open,
+        [System.IO.FileAccess]::Read,
+        [System.IO.FileShare]::ReadWrite
+      )
+      $fs.Seek($st.Length, [System.IO.SeekOrigin]::Begin) | Out-Null
+
+      $buffer = New-Object byte[] ($bytesToRead)
+      $read   = $fs.Read($buffer, 0, $buffer.Length)
+      $fs.Close()
+
+      if ($read -gt 0) {
+        $text = [System.Text.Encoding]::UTF8.GetString($buffer, 0, $read)
+        if ($text.Trim().Length -gt 0) {
+          Write-Host ""
+          Write-Host ("----- NEW LOG from {0} @ {1} -----" -f $lf.Name, (Get-Date).ToString("HH:mm:ss")) -ForegroundColor Cyan
+          Write-Host $text
+        }
+      }
+    } catch {
+      Write-ErrorAllLog "Failed to read log '$path': $($_.Exception.Message)"
+    }
+
+    $st.Length = $currentLength
+    $State[$path] = $st
+  }
+}
 
 # -------- START ALL SERVICES --------
 foreach ($s in $services) {
@@ -142,54 +339,38 @@ Write-Host "ROOT PATH = $ROOT`n"
 
 $stop = $false
 
+$lastServiceCheck = (Get-Date).AddSeconds(-$SERVICE_CHECK_INTERVAL)
+$lastLogCheck     = (Get-Date).AddSeconds(-$LOG_CHECK_INTERVAL)
+
 try {
   while (-not $stop) {
+    $now = Get-Date
 
-    foreach ($s in $services) {
-      if (-not $s.Proc -or $s.Proc.HasExited) {
-        $now = Get-Date
-
-        if ($s.LastStart -and ((New-TimeSpan $s.LastStart $now).TotalSeconds -lt $COOLDOWN_SECONDS)) { continue }
-
-        $s.Proc = Start-ManagedProcess -Name $s.Name -Cwd $s.Cwd -Cmd $s.Cmd -Log $s.Log
-        $s.LastStart = $now
-
-        Write-Host "[RESTARTED] $($s.Name)" -ForegroundColor Yellow
-        Write-ErrorAllLog "Restarted $($s.Name)"
-      }
+    if ((New-TimeSpan $lastServiceCheck $now).TotalSeconds -ge $SERVICE_CHECK_INTERVAL) {
+      Check-Services -Services ([ref]$services)
+      $lastServiceCheck = Get-Date
     }
 
-    # Display live status
-    $status = ($services | ForEach-Object {
-      if ($_.Proc -and -not $_.Proc.HasExited) {
-        "$($_.Name):UP"
-      } else {
-        "$($_.Name):DOWN"
-      }
-    }) -join " | "
+    if ((New-TimeSpan $lastLogCheck $now).TotalSeconds -ge $LOG_CHECK_INTERVAL) {
+      Check-LogsIncremental -LogFiles $logFiles -State $logState
+      $lastLogCheck = Get-Date
+    }
 
-    Write-Host ("[{0}] {1}" -f (Get-Date).ToString("HH:mm:ss"), $status)
-
-    # Sleep with CTRL+C detection
-    for ($i=0; $i -lt ($CHECK_SECONDS*5); $i++) {
-      if ([Console]::KeyAvailable) {
-        $key = [Console]::ReadKey($true)
-        if ($key.Key -eq 'C' -and ($key.Modifiers -band [ConsoleModifiers]::Control)) {
-
-          Write-Host "`nCTRL+C detected. Running STOP script..." -ForegroundColor Yellow
-          if (Test-Path $StopBat) {
-            Start-Process "cmd.exe" -ArgumentList "/c `"$StopBat`"" -Verb RunAs
-          } else {
-            Write-Host "STOP script not found at $StopBat" -ForegroundColor Red
-            Write-ErrorAllLog "STOP script not found at $StopBat"
-          }
-
-          $stop = $true
-          break
+    if ([Console]::KeyAvailable) {
+      $key = [Console]::ReadKey($true)
+      if ($key.Key -eq 'C' -and ($key.Modifiers -band [ConsoleModifiers]::Control)) {
+        Write-Host "`nCTRL+C detected. Running STOP script..." -ForegroundColor Yellow
+        if (Test-Path $StopBat) {
+          Start-Process "cmd.exe" -ArgumentList "/c `"$StopBat`"" -Verb RunAs
+        } else {
+          Write-Host "STOP script not found at $StopBat" -ForegroundColor Red
+          Write-ErrorAllLog "STOP script not found at $StopBat"
         }
+        $stop = $true
       }
-      Start-Sleep -Milliseconds 200
     }
+
+    Start-Sleep -Milliseconds 200
   }
 }
 finally {

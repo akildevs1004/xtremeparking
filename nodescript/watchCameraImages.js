@@ -38,9 +38,30 @@ const logFile = path.join(
   `${new Date().toISOString().slice(0, 10)}.log`
 );
 function logLine(...args) {
-  const msg = `[${new Date().toISOString()}] ${args.join(" ")}\n`;
-  fs.appendFileSync(logFile, msg);
-  console.log(...args); // still print to console
+  // const msg = `[${new Date().toISOString()}] ${args.join(" ")}\n`;
+  // fs.appendFileSync(logFile, msg);
+  // console.log(...args); // still print to console
+
+  const timestamp = new Date().toISOString();
+  const text = args
+    .map((a) => (typeof a === "object" ? JSON.stringify(a) : a))
+    .join(" ");
+
+  const msg = `[${timestamp}] ${text}\n`;
+
+  try {
+    // safe async append prevents blocking supervisor log tail
+    fs.appendFile(logFile, msg, (err) => {
+      if (err) {
+        console.error("LOG WRITE ERROR:", err);
+      }
+    });
+  } catch (err) {
+    console.error("LOG ERROR:", err);
+  }
+
+  // console output stays clean
+  console.log(text);
 }
 
 // ---- Helpers ----
@@ -159,8 +180,9 @@ chokidar
   })
   .on("add", async (filePath) => {
     const name = path.basename(filePath);
+    const timestamp = new Date().toLocaleString();
 
-    logLine("📥 New File added:", name, BACKGROUND_RX.test(name));
+    logLine(timestamp + ": 📥 New File added:", name, BACKGROUND_RX.test(name));
 
     if (!BACKGROUND_RX.test(name)) return;
 

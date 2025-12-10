@@ -473,9 +473,15 @@ export default {
     if (this.interval) clearInterval(this.interval);
 
 
-    if (this.client) {
-      this.client.end();
-    }
+    // if (this.client) {
+    //   this.client.end();
+    // }
+
+  },
+  created() {
+    // Detect mobile device
+    this.initMqtt();
+
 
   },
   mounted() {
@@ -491,6 +497,8 @@ export default {
     // this.getDashboardData();
 
     this.initMqtt();
+
+
 
 
     // this.mqttNewMessage = {
