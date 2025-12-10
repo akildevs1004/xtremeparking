@@ -77,7 +77,50 @@
                   <v-col style="max-width: 100px; padding-top: 18px; margin: auto">
                     <v-btn desne small color="primary" @click="getDataFromApi(0)">Submit</v-btn>
                   </v-col>
-                  <v-col style="max-width: 50px"></v-col>
+                  <v-col style="max-width: 90px; padding-top: 18px; margin: auto"> <v-menu bottom right>
+                      <template v-slot:activator="{ on, attrs }">
+                        <span v-bind="attrs" v-on="on">
+                          <v-icon dark-2 icon color="violet">mdi-printer-outline</v-icon>
+                          Print
+                        </span>
+                      </template>
+                      <v-list width="100" dense>
+                        <v-list-item @click="downloadOptions(`print`)">
+                          <v-list-item-title style="cursor: pointer">
+                            <v-row>
+                              <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_print.png"
+                                  class="iconsize" /></v-col>
+                              <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+                                Print
+                              </v-col>
+                            </v-row>
+                          </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item @click="downloadOptions('download')">
+                          <v-list-item-title style="cursor: pointer">
+                            <v-row>
+                              <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_pdf.png"
+                                  class="iconsize" /></v-col>
+                              <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+                                PDF
+                              </v-col>
+                            </v-row>
+                          </v-list-item-title>
+                        </v-list-item>
+
+                        <v-list-item @click="downloadOptions('excel')">
+                          <v-list-item-title style="cursor: pointer">
+                            <v-row>
+                              <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_excel.png"
+                                  class="iconsize" /></v-col>
+                              <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+                                EXCEL
+                              </v-col>
+                            </v-row>
+                          </v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu></v-col>
 
                 </v-row>
               </v-col>
@@ -105,6 +148,7 @@
                       }" class="elevation-0 table-header-color">
 
                       <template v-slot:item.sno="{ item, index }">
+
                         {{
                           currentPage
                             ? (currentPage - 1) * perPage +
@@ -332,12 +376,10 @@ export default {
   },
   async mounted() {
 
-    if (typeof window !== "undefined") {
-      this.tableHeight = window.innerHeight - 300;
-      window.addEventListener("resize", () => {
-        this.tableHeight = window.innerHeight - 300;
-      });
-    }
+    this.tableHeight = window.innerHeight - 210;
+    window.addEventListener("resize", () => {
+      this.tableHeight = window.innerHeight - 210;
+    });
 
     // let options = {
     //   params: {
@@ -519,6 +561,36 @@ export default {
     //   this.eventId = item.id;
     //   this.dialogAddCustomerNotes = true;
     // },
+
+    downloadOptions(option) {
+      let filterSensorname = this.tab > 0 ? this.sensorItems[this.tab] : null;
+
+      if (this.eventFilter) {
+        filterSensorname = this.eventFilter;
+      }
+
+      let url = process.env.BACKEND_URL;
+      if (option == "print") url += "/parking_camera_logs_print_pdf";
+      if (option == "excel") url += "/parking_camera_logs_export_excel";
+      if (option == "download")
+        url += "/parking_camera_logs_download_pdf";
+      //if (option == "download") url += "/alarm_events_download_pdf";
+
+      url += "?company_id=" + this.$auth.user.company_id;
+      url += "&date_from=" + this.date_from;
+      url += "&date_to=" + this.date_to;
+      if (this.commonSearch) url += "&common_search=" + this.commonSearch;
+      if (this.filterAlarmStatus)
+        url += "&alarm_status=" + this.filterAlarmStatus;
+      if (filterSensorname != "null" && filterSensorname)
+        url += "&filterSensorname=" + filterSensorname;
+      if (this.filterResponseInMinutes)
+        url += "&filterResponseInMinutes=" + this.filterResponseInMinutes;
+      url += "&tab=" + this.tab;
+      //  url += "&alarm_status=" + this.filterAlarmStatus;
+
+      window.open(url, "_blank");
+    },
     closeDialog() {
       this.dialogAddCustomerNotes = false;
       this.dialogCloseAlarm = false;
@@ -561,44 +633,43 @@ export default {
     //   }
     // },
 
-    downloadOptions(option) {
-      let filterSensorname = this.tab > 0 ? this.sensorItems[this.tab] : null;
+    // downloadOptions(option) {
+    //   let filterSensorname = this.tab > 0 ? this.sensorItems[this.tab] : null;
 
-      if (this.eventFilter) {
-        filterSensorname = this.eventFilter;
-      }
+    //   if (this.eventFilter) {
+    //     filterSensorname = this.eventFilter;
+    //   }
 
-      let url = process.env.BACKEND_URL;
-      if (option == "print") url += "/alarm_events_print_pdf";
-      if (option == "excel") url += "/alarm_events_export_excel";
-      if (option == "download") url += "/alarm_events_download_pdf";
-      //if (option == "download") url += "/alarm_events_download_pdf";
+    //   let url = process.env.BACKEND_URL;
+    //   if (option == "print") url += "/alarm_events_print_pdf";
+    //   if (option == "excel") url += "/alarm_events_export_excel";
+    //   if (option == "download") url += "/alarm_events_download_pdf";
+    //   //if (option == "download") url += "/alarm_events_download_pdf";
 
-      url += "?company_id=" + this.$auth.user.company_id;
-      url += "&date_from=" + this.date_from;
-      url += "&date_to=" + this.date_to;
+    //   url += "?company_id=" + this.$auth.user.company_id;
+    //   url += "&date_from=" + this.date_from;
+    //   url += "&date_to=" + this.date_to;
 
-      url += "&customer_id=" + this.filter_customer_id;
 
-      if (this.commonSearch) url += "&common_search=" + this.commonSearch;
-      if (this.filterPayment)
-        url += "&alarm_status=" + this.filterPayment;
-      if (filterSensorname != "null" && filterSensorname)
-        url += "&filterSensorname=" + filterSensorname;
-      if (this.filterResponseInMinutes)
-        url += "&filterResponseInMinutes=" + this.filterResponseInMinutes;
-      url += "&tab=" + this.tab;
-      //  url += "&alarm_status=" + this.filterPayment;
-      if (this.$auth.user.user_type == "security") {
-        let customersList = this.$auth.user.security.customers_assigned.map(
-          (e) => e.customer_id
-        );
-        customersList.forEach((element) => {
-          url += "&filter_customers_list[]=" + element;
-        });
-      }
-      window.open(url, "_blank");
-    },
+    //   if (this.commonSearch) url += "&common_search=" + this.commonSearch;
+    //   if (this.filterPayment)
+    //     url += "&alarm_status=" + this.filterPayment;
+    //   if (filterSensorname != "null" && filterSensorname)
+    //     url += "&filterSensorname=" + filterSensorname;
+    //   if (this.filterResponseInMinutes)
+    //     url += "&filterResponseInMinutes=" + this.filterResponseInMinutes;
+    //   url += "&tab=" + this.tab;
+    //   //  url += "&alarm_status=" + this.filterPayment;
+    //   if (this.$auth.user.user_type == "security") {
+    //     let customersList = this.$auth.user.security.customers_assigned.map(
+    //       (e) => e.customer_id
+    //     );
+    //     customersList.forEach((element) => {
+    //       url += "&filter_customers_list[]=" + element;
+    //     });
+    //   }
+    //   window.open(url, "_blank");
+    // },
 
 
     async getDataFromApi(custompage = 1) {

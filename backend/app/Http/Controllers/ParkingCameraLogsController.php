@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ParkingReports;
 use App\Models\Company;
 use App\Models\Device;
 use App\Models\ParkingCameraLogs;
@@ -10,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ParkingCameraLogsController extends Controller
 {
@@ -19,6 +21,68 @@ class ParkingCameraLogsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
+    {
+        /*$model = ParkingCameraLogs::with(["ParkingMembers", "ParkingMembersGuest"])->where('company_id', $request->company_id);;
+
+        $model->when($request->filled('member_id'), function ($q) use ($request) {
+            $q->where('membership_id', $request->member_id);
+        });
+
+        $model->when($request->filled('filter_duration'), function ($q) use ($request) {
+
+            if ($request->filter_duration == '1')
+                $q->where('duration_in_minutes', '>', 60);
+
+            else if ($request->filter_duration == '2')
+                $q->where('duration_in_minutes', '<=', 60);
+        });
+        $model->when($request->filled('date_from'), function ($q) use ($request) {
+            $q->whereDate('in_time', '>=', $request->date_from);
+            $q->whereDate('in_time', '<=', $request->date_to);
+        });
+        // $model->when($request->filled('filter_payment'), function ($q) use ($request) {
+        //     if ($request->filter_payment == 'Cash')
+        //         $q->where('payment_mode', "cash");
+
+        //     else if ($request->filter_payment == 'Online')
+        //         $q->where('payment_mode', "online");
+        //     else if ($request->filter_payment == 'Pending')
+        //         $q->where('payment_mode', null);
+        // });
+        $model->when($request->filled('common_search'), function ($q) use ($request) {
+            $q->where(function ($q) use ($request) {
+                $q->where('total_amount', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('log_vehicle_number', 'ILIKE', "%$request->common_search%")
+
+                    ->orWhere('raw_plate_no', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_vehicle_color', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_vehicle_type', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_vehicle_brand', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_country_region', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_plate_color', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_plate_size', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_plate_type', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_province', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_camera_no', 'ILIKE', "%$request->common_search%")
+                    ->orWhere('raw_event_category', 'ILIKE', "%$request->common_search%");
+            });
+        });
+
+        // $model->when($request->filled('branch_id'), function ($q) use ($request) {
+        //     $q->where('branch_id', $request->branch_id);
+        // });
+
+
+
+
+
+        $model->orderBy("updated_at", "DESC");
+        return $model->paginate($request->per_page ?? 10);*/
+
+        return $this->getRecords($request);
+    }
+
+    public function getRecords(Request $request, $perpage = null)
     {
         $model = ParkingCameraLogs::with(["ParkingMembers", "ParkingMembersGuest"])->where('company_id', $request->company_id);;
 
@@ -75,7 +139,12 @@ class ParkingCameraLogsController extends Controller
 
 
         $model->orderBy("updated_at", "DESC");
-        return $model->paginate($request->per_page ?? 10);
+
+        if ($perpage > 0) {
+            return   $model->paginate($request->per_page ?? 10);
+        } else {
+            return $model->get();
+        }
     }
 
     public function parkingRecordInfo(Request $request)
@@ -144,7 +213,35 @@ class ParkingCameraLogsController extends Controller
 
         ];
     }
+    public function ParkingCameraLogsPrintPdf(Request $request)
+    {
 
+        $report =  (new ParkingCameraLogsController)->getRecords($request);
+        $company = Company::whereId($request->company_id)->with('contact:id,company_id,number')->first();
+
+        $fileName = "Parking List.pdf";
+
+
+        return   Pdf::loadview("parking/parking-reports", ["request" => $request, "reports" => $report, "company" => $company])->setpaper("A4", "potrait")->stream($fileName);
+    }
+    public function ParkingCameraLogsDownloadPdf(Request $request)
+    {
+
+        $report =  (new ParkingCameraLogsController)->getRecords($request);
+        $company = Company::whereId($request->company_id)->with('contact:id,company_id,number')->first();
+
+        $fileName = "Parking List.pdf";
+        return   Pdf::loadview("parking/parking-reports", ["request" => $request, "reports" => $report, "company" => $company])->setpaper("A4", "potrait")->download($fileName);
+    }
+    public function ParkingCameraLogsDownloadCSV(Request $request)
+    {
+
+        $reports =  (new ParkingCameraLogsController)->getRecords($request);
+
+        $fileName = "Parking Reports.xlsx";
+
+        return Excel::download((new ParkingReports($reports)), $fileName);
+    }
     /**
      * Show the form for creating a new resource.
      *

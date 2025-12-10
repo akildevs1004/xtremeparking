@@ -28,7 +28,9 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 Route::resource('parking_camera_logs', ParkingCameraLogsController::class);
 
 
-
+Route::get('/parking_camera_logs_print_pdf', [ParkingCameraLogsController::class, 'ParkingCameraLogsPrintPdf']);
+Route::get('/parking_camera_logs_download_pdf', [ParkingCameraLogsController::class, 'ParkingCameraLogsDownloadPdf']);
+Route::get('/parking_camera_logs_export_excel', [ParkingCameraLogsController::class, 'ParkingCameraLogsDownloadCSV']);
 
 
 

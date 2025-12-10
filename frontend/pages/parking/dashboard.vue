@@ -398,7 +398,7 @@
       <v-col cols="12">
         <v-card style="height: 500px; overflow-y: auto; overflow-x: hidden" elevation="2"
           class="eventslistscroll table-font12"><v-card-text>
-            <ParkingReports :showFilters="true" :key="mqttNewMessage?.response.record.id || 1" />
+            <ParkingReports :showFilters="true" :key="loadingKey" />
           </v-card-text></v-card>
       </v-col>
     </v-row>
@@ -423,6 +423,7 @@ export default {
     ParkingReports, AudioSoundPlay, RtspLiveCamera, RtspLiveCamerasList, NewVehiclePopupMqTT
   },
   data: () => ({
+    loadingKey: 1,
     vehicle_notification_status: "",
     dialogParkingFull: false,
     gatePassStatus: false,
@@ -783,6 +784,8 @@ export default {
 
     async getStatistics() {
 
+
+      this.loadingKey++;
 
       try {
         const options = {
