@@ -1,13 +1,15 @@
 # XtremeParking Supervisor with ONE ROOT directory variable
-# Starts + monitors services. Does NOT kill anything.
+# Starts services (if not already running) + monitors status.
+# Does NOT kill or restart anything.
 # CTRL+C calls STOP_XtremeParking_Services.bat to stop services.
 
 $ErrorActionPreference = 'Stop'
-[Console]::Title = 'XtremeParking - Supervisor (Background, Auto-Restart)'
+[Console]::Title = 'XtremeParking - Supervisor (Background, Monitor-Only)'
 [Console]::TreatControlCAsInput = $true
 
 # -------- ROOT PATH --------
-$ROOT = 'D:\xtremeparking' 
+# $ROOT = 'D:\xtremeparking' 
+$ROOT = 'D:\projects\vehicleparkingbills\xtremeparking' 
 
 # -------- ALL DIRECTORIES FROM ROOT --------
 $BACKEND        = Join-Path $ROOT 'backend'
@@ -25,7 +27,28 @@ $NPX       = Join-Path $env:ProgramFiles 'nodejs\npx.cmd'
 # intervals (seconds)
 $SERVICE_CHECK_INTERVAL = 60
 $LOG_CHECK_INTERVAL     = 5
-$COOLDOWN_SECONDS       = 15
+
+# -------- CAMERA CONFIG (ports) --------
+# How many cameras does the live stream handle?
+# Set this to 1, 2, or 3 according to your system.
+$CAMERA_COUNT = 2
+
+function Get-CameraPorts {
+    param([int]$count)
+
+    $ports = @()
+    for ($i = 1; $i -le $count; $i++) {
+        # HTTP port: 7080 + i  => 7081, 7082, 7083...
+        $ports += (7080 + $i)
+
+        # WebSocket port: 9990 + i => 9991, 9992, 9993...
+        $ports += (9990 + $i)
+    }
+
+    return $ports
+}
+
+$CAMERA_PORTS = Get-CameraPorts -count $CAMERA_COUNT
 
 # -------- DATE + LOG SETUP --------
 $TODAY   = (Get-Date).ToString('yyyy-MM-dd')
@@ -117,17 +140,19 @@ if (-not (Test-Path (Join-Path $FRONTEND 'dist'))) {
 }
 
 # -------- SERVICES DEFINITIONS --------
-# For services with Ports, ALL listed ports must be listening → UP; otherwise → DOWN & restart.
+# For services with Ports:
+#   - On startup: if ports already listening → do NOT start.
+#   - Monitoring: only status check, NO restart.
 $services = @(
-  @{ Name='Parking Laravel Server';   Cwd=$BACKEND;       Cmd='php artisan serve --host=0.0.0.0 --port=8000';                   Log=Join-Path $LOG_DIR "laravel_$TODAY.log";   Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@(8000) },
-  @{ Name='Parking Queue Worker';     Cwd=$BACKEND;       Cmd='php artisan queue:work --tries=3 --sleep=1 --backoff=3';         Log=Join-Path $LOG_DIR "queue_$TODAY.log";     Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@()     },
-  @{ Name='Parking MQTT Listener';    Cwd=$BACKEND;       Cmd='php artisan mqtt:qrbackgroundlistener';                          Log=Join-Path $LOG_DIR "mqtt_$TODAY.log";      Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@()     },
-  @{ Name='Parking Frontend';         Cwd=$FRONTEND;      Cmd="`"$NPX`" --yes http-server dist -p 3000 --no-clipboard --cors"; Log=Join-Path $LOG_DIR "frontend_$TODAY.log";  Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@(3000) },
-  @{ Name='Mosquitto MQTT Broker';    Cwd='C:\';          Cmd="`"$MOSQ_EXE`" -c `"$MOSQ_CONF`" -v";                             Log=Join-Path $LOG_DIR "mosquitto_$TODAY.log"; Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@(1883) },
-  @{ Name='Camera Watcher';           Cwd=$NODE;          Cmd='node watchCameraImages.js';                                     Log=Join-Path $LOG_DIR "watcher_$TODAY.log";   Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@()     },
-  @{ Name='Camera Organizer';         Cwd=$NODE;          Cmd='node organize_files_by_date.js';                                Log=Join-Path $LOG_DIR "organizer_$TODAY.log"; Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@()     },
-  # Camera Live Stream – edit ports to match your actual HTTP/WS mapping
-  @{ Name='Camera Live Stream';       Cwd=$CAMERA_STREAM; Cmd='node start_camera_live_stream.js';                              Log=Join-Path $LOG_DIR "stream_$TODAY.log";    Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@(7081,9991,9992,9993,9994) }
+  @{ Name='Parking Laravel Server';   Cwd=$BACKEND;       Cmd='php artisan serve --host=0.0.0.0 --port=8000';                   Log=Join-Path $LOG_DIR "laravel_$TODAY.log";   Proc=$null; Ports=@(8000) },
+  @{ Name='Parking Queue Worker';     Cwd=$BACKEND;       Cmd='php artisan queue:work --tries=3 --sleep=1 --backoff=3';         Log=Join-Path $LOG_DIR "queue_$TODAY.log";     Proc=$null; Ports=@()     },
+  @{ Name='Parking MQTT Listener';    Cwd=$BACKEND;       Cmd='php artisan mqtt:qrbackgroundlistener';                          Log=Join-Path $LOG_DIR "mqtt_$TODAY.log";      Proc=$null; Ports=@()     },
+  @{ Name='Parking Frontend';         Cwd=$FRONTEND;      Cmd="`"$NPX`" --yes http-server dist -p 3000 --no-clipboard --cors"; Log=Join-Path $LOG_DIR "frontend_$TODAY.log";  Proc=$null; Ports=@(3000) },
+  @{ Name='Mosquitto MQTT Broker';    Cwd='C:\';          Cmd="`"$MOSQ_EXE`" -c `"$MOSQ_CONF`" -v";                             Log=Join-Path $LOG_DIR "mosquitto_$TODAY.log"; Proc=$null; Ports=@(1883) },
+  @{ Name='Camera Watcher';           Cwd=$NODE;          Cmd='node watchCameraImages.js';                                     Log=Join-Path $LOG_DIR "watcher_$TODAY.log";   Proc=$null; Ports=@()     },
+  @{ Name='Camera Organizer';         Cwd=$NODE;          Cmd='node organize_files_by_date.js';                                Log=Join-Path $LOG_DIR "organizer_$TODAY.log"; Proc=$null; Ports=@()     },
+  # Camera Live Stream – ports generated from CAMERA_COUNT
+  @{ Name='Camera Live Stream';       Cwd=$CAMERA_STREAM; Cmd='node start_camera_live_stream.js';                              Log=Join-Path $LOG_DIR "stream_$TODAY.log";    Proc=$null; Ports=$CAMERA_PORTS }
 )
 
 # -------- LOG FILES TO DISPLAY INCREMENTALLY --------
@@ -156,7 +181,6 @@ function Get-ServicePorts {
     }
   }
 
-  # fallback for other types (not used here, but safe)
   if ($svc.PSObject.Properties.Name -contains 'Ports' -and $svc.Ports) {
     return [int[]]$svc.Ports
   }
@@ -181,7 +205,7 @@ function Are-ServicePortsAllListening {
   return $true
 }
 
-# -------- FUNCTIONS: SERVICE CHECK + LOG CHECK --------
+# -------- FUNCTIONS: SERVICE STATUS + LOG CHECK --------
 
 function Is-ServiceUp {
   param($svc)
@@ -205,53 +229,17 @@ function Is-ServiceUp {
 function Check-Services {
   param([ref]$Services)
 
+  $statusEntries = @()
+
   foreach ($s in $Services.Value) {
-    $now = Get-Date
-
-    $portsStatus = Are-ServicePortsAllListening $s
-
-    if ($portsStatus -eq $true) {
-      # All ports listening – service OK
-      continue
-    }
- 
-    if ($portsStatus -eq $false) {
-      # Ports defined and at least one is NOT listening → restart
-      if ($s.LastStart -and ((New-TimeSpan $s.LastStart $now).TotalSeconds -lt $COOLDOWN_SECONDS)) {
-        continue
-      }
-
-      $s.Proc = Start-ManagedProcess -Name $s.Name -Cwd $s.Cwd -Cmd $s.Cmd -Log $s.Log
-      $s.LastStart = $now
-
-      Write-Host "[RESTARTED - PORTS DOWN] $($s.Name)" -ForegroundColor Yellow
-      Write-ErrorAllLog "Restarted $($s.Name) because one or more ports were not listening."
-      continue
-    }
-
-    # portsStatus -eq $null → no ports configured: use process handle
-    if (-not $s.Proc -or $s.Proc.HasExited) {
-      if ($s.LastStart -and ((New-TimeSpan $s.LastStart $now).TotalSeconds -lt $COOLDOWN_SECONDS)) {
-        continue
-      }
-
-      $s.Proc = Start-ManagedProcess -Name $s.Name -Cwd $s.Cwd -Cmd $s.Cmd -Log $s.Log
-      $s.LastStart = $now
-
-      Write-Host "[RESTARTED - PROC DOWN] $($s.Name)" -ForegroundColor Yellow
-      Write-ErrorAllLog "Restarted $($s.Name) because process was not running."
+    if (Is-ServiceUp $s) {
+      $statusEntries += "$($s.Name):UP"
+    } else {
+      $statusEntries += "$($s.Name):DOWN"
     }
   }
 
-  # Display live status after checking services
-  $status = ($Services.Value | ForEach-Object {
-    if (Is-ServiceUp $_) {
-      "$($_.Name):UP"
-    } else {
-      "$($_.Name):DOWN"
-    }
-  }) -join " | "
-
+  $status = $statusEntries -join " | "
   Write-Host ("[{0}] {1}" -f (Get-Date).ToString("HH:mm:ss"), $status)
 }
 
@@ -321,16 +309,24 @@ function Check-LogsIncremental {
   }
 }
 
-# -------- START ALL SERVICES --------
+# -------- START ALL SERVICES (NO RESTART LOGIC) --------
 foreach ($s in $services) {
+  $portsStatus = Are-ServicePortsAllListening $s
+
+  if ($portsStatus -eq $true) {
+    # Ports already listening – assume service is already running, do not start another instance
+    Write-Host "[ALREADY RUNNING] $($s.Name) (ports listening)" -ForegroundColor Cyan
+    continue
+  }
+
+  # For services with no ports, or ports not listening → start once
   $s.Proc = Start-ManagedProcess -Name $s.Name -Cwd $s.Cwd -Cmd $s.Cmd -Log $s.Log
-  $s.LastStart = Get-Date
   Write-Host "[STARTED] $($s.Name)" -ForegroundColor Green
 }
 
 # -------- CTRL+C EXIT HANDLER --------
 Register-EngineEvent PowerShell.Exiting -Action {
-  Write-Host "`nSupervisor exiting. No processes killed here." -ForegroundColor Yellow
+  Write-Host "`nSupervisor exiting. No processes killed or restarted." -ForegroundColor Yellow
   Write-ErrorAllLog "Supervisor exit."
 } | Out-Null
 
