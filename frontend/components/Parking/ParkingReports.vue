@@ -141,6 +141,7 @@
               <v-tab-item v-for="(item, index) in sensorItems" :key="item.id">
                 <v-card color="basil" flat>
                   <v-card-text style="padding: 0px">
+                    {{ totalRowsCount }}
                     <v-data-table :height="tableHeight" :name="'table' + index" v-if="showTable" :headers="headers"
                       :items="items" :server-items-length="totalRowsCount" :loading="loading" :options.sync="options"
                       :footer-props="{
@@ -258,6 +259,7 @@
 
 <script>
 import { mqttRequestReply } from '@/utils/mqttRequestReplyClient.js'; // adjust path
+
 
 export default {
 
@@ -740,6 +742,9 @@ export default {
 
         // 1) Try MQTT first (if enabled)
         if (this.isMQTT && typeof mqttRequestReply === "function") {
+
+          console.log("MQTTTTTTTTTTTTTTTTTT");
+
           try {
 
             console.log(params.member_id);
@@ -766,15 +771,18 @@ export default {
           }
         }
         else {
+          console.log("parking_camera_logs");
+
           // Helper: HTTP fallback
           const doHttp = async () => {
-            const options = { params, cancelToken: this.cancelTokenSource.token };
+            const options = { params, cancelToken: this.cancelTokenSource.token, perPage: this.perPage };
             const { data } = await this.$axios.get(`parking_camera_logs`, options);
             return normalize(data);
           };
           result = await doHttp();
         }
 
+        console.log(result);
 
 
         // Ignore stale responses

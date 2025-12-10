@@ -7,7 +7,7 @@ $ErrorActionPreference = 'Stop'
 [Console]::TreatControlCAsInput = $true
 
 # -------- ROOT PATH --------
-$ROOT = 'D:\projects\vehicleparkingbills\xtremeparking'
+$ROOT = 'D:\xtremeparking' 
 
 # -------- ALL DIRECTORIES FROM ROOT --------
 $BACKEND        = Join-Path $ROOT 'backend'
@@ -127,7 +127,7 @@ $services = @(
   @{ Name='Camera Watcher';           Cwd=$NODE;          Cmd='node watchCameraImages.js';                                     Log=Join-Path $LOG_DIR "watcher_$TODAY.log";   Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@()     },
   @{ Name='Camera Organizer';         Cwd=$NODE;          Cmd='node organize_files_by_date.js';                                Log=Join-Path $LOG_DIR "organizer_$TODAY.log"; Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@()     },
   # Camera Live Stream – edit ports to match your actual HTTP/WS mapping
-  @{ Name='Camera Live Stream';       Cwd=$CAMERA_STREAM; Cmd='node start_camera_live_stream.js';                              Log=Join-Path $LOG_DIR "stream_$TODAY.log";    Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@(8081,9991,9992,9993,9994) }
+  @{ Name='Camera Live Stream';       Cwd=$CAMERA_STREAM; Cmd='node start_camera_live_stream.js';                              Log=Join-Path $LOG_DIR "stream_$TODAY.log";    Proc=$null; LastStart=(Get-Date).AddYears(-1); RestartTimes=@(); Ports=@(7081,9991,9992,9993,9994) }
 )
 
 # -------- LOG FILES TO DISPLAY INCREMENTALLY --------
@@ -214,7 +214,7 @@ function Check-Services {
       # All ports listening – service OK
       continue
     }
-
+ 
     if ($portsStatus -eq $false) {
       # Ports defined and at least one is NOT listening → restart
       if ($s.LastStart -and ((New-TimeSpan $s.LastStart $now).TotalSeconds -lt $COOLDOWN_SECONDS)) {

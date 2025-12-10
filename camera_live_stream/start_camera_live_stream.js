@@ -19,7 +19,7 @@ const CAMERA_API_URL =
   "http://127.0.0.1:8000/api/parking-cameras?company_id=8&login_user_id=1875&login_user_type=company";
 
 // Ports
-const BASE_HTTP_PORT = 8081; // FFmpeg pushes MPEG-TS here
+const BASE_HTTP_PORT = 7081; // FFmpeg pushes MPEG-TS here
 const BASE_WS_PORT = 9991; // Browser streams from here
 
 // FFmpeg settings

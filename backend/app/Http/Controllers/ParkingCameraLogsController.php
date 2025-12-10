@@ -140,7 +140,7 @@ class ParkingCameraLogsController extends Controller
 
         $model->orderBy("updated_at", "DESC");
 
-        if ($perpage > 0) {
+        if (request()->has('perPage') || request()->has('page') || $perpage) {
             return   $model->paginate($request->per_page ?? 10);
         } else {
             return $model->get();
