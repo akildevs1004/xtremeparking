@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>RTSP Live Player</title>
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            padding: 10px 15px;
+            background: #1e1e1e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        button {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            background: #2d8cf0;
+            color: #fff;
+            font-size: 13px;
+        }
+
+        button.secondary {
+            background: #444;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .status {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-left: 10px;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        #player {
+            border: 1px solid #444;
+            max-width: 100%;
+            max-height: 100%;
+            background: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="title">RTSP Live View</div>
+
+        <div class="controls">
+            <button id="playBtn" disabled>Play</button>
+            <button id="pauseBtn" disabled class="secondary">Pause</button>
+            <button id="reconnectBtn" class="secondary">Reconnect</button>
+            <button id="fullBtn" class="secondary">Fullscreen</button>
+            <span class="status" id="statusText">Idle</span>
+        </div>
+    </div>
+
+    <div class="content">
+        <canvas id="player" width="1280" height="720"></canvas>
+    </div>
+
+    <!-- Local JSMpeg – make sure jsmpeg.min.js is in same folder -->
+    <script src="jsmpeg.min.js"></script>
+
+    <script>
+        // Use current page IP as WebSocket host so it works on LAN
+        const wsPort = 8082; // Must match WS_PORT in server.js
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const wsHost = window.location.hostname; // e.g., 192.168.2.50
+        const wsUrl = `${wsProtocol}://${wsHost}:${wsPort}`;
+
+        const canvas = document.getElementById("player");
+        const statusEl = document.getElementById("statusText");
+        const playBtn = document.getElementById("playBtn");
+        const pauseBtn = document.getElementById("pauseBtn");
+        const reconnectBtn = document.getElementById("reconnectBtn");
+        const fullBtn = document.getElementById("fullBtn");
+
+        let player = null;
+
+        function setStatus(text) {
+            statusEl.textContent = text;
+        }
+
+        function setButtonsEnabled(playing) {
+            if (!player) {
+                playBtn.disabled = true;
+                pauseBtn.disabled = true;
+                return;
+            }
+            playBtn.disabled = playing;
+            pauseBtn.disabled = !playing;
+        }
+
+        function connect() {
+            setStatus("Connecting to WebSocket...");
+            if (player) {
+                try { player.destroy(); } catch (e) { }
+                player = null;
+            }
+
+            console.log("Connecting to WS:", wsUrl);
+
+            player = new JSMpeg.Player(wsUrl, {
+                canvas: canvas,
+                audio: false,
+                pauseWhenHidden: false,
+                onSourceEstablished: function () {
+                    setStatus("Live stream connected ✅");
+                    setButtonsEnabled(true);
+                },
+                onSourceClosed: function () {
+                    setStatus("Stream disconnected. Auto-retrying in 3 seconds...");
+                    setButtonsEnabled(false);
+                    setTimeout(connect, 3000);
+                }
+            });
+        }
+
+        // Initial connect
+        connect();
+
+        playBtn.addEventListener("click", function () {
+            if (player) {
+                player.play();
+                setButtonsEnabled(true);
+                setStatus("Playing");
+            }
+        });
+
+        pauseBtn.addEventListener("click", function () {
+            if (player) {
+                player.pause();
+                setButtonsEnabled(false);
+                setStatus("Paused");
+            }
+        });
+
+        reconnectBtn.addEventListener("click", function () {
+            setStatus("Manual reconnect...");
+            connect();
+        });
+
+        fullBtn.addEventListener("click", function () {
+            if (canvas.requestFullscreen) canvas.requestFullscreen();
+            else if (canvas.webkitRequestFullscreen) canvas.webkitRequestFullscreen();
+            else if (canvas.msRequestFullscreen) canvas.msRequestFullscreen();
+        });
+    </script>
+
+
+</body>
+
+</html>
