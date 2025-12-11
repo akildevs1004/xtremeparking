@@ -3,7 +3,8 @@
     <!-- ========== VEHICLE IN/OUT LOG ========== -->
     <v-card class="panel-card mb-1 log-panel" flat>
       <v-card-title class="panel-title d-flex align-center">
-        <span>Vehicle In/Out Log</span>
+        Vehicle In/Out <v-spacer /> <span style="color:green">{{ snackbar ? response ? response : '' : ''
+          }}</span>
 
         <v-spacer />
 
@@ -34,7 +35,7 @@
                 </v-btn>
 
                 <span class="code" style="width: 80px;">
-                  {{ log.raw_country_region }}
+                  {{ log.raw_country_region || '---' }}
                 </span>
 
                 <span class="time" style="width: 150px;">
@@ -44,6 +45,11 @@
               </div>
 
               <div class="log-right">
+
+                <v-icon style="padding-top:5px;" color="red" x-small
+                  v-if="log.direction == 'OUT' && log.total_amount > 0 && !log.payment_mode">
+                  mdi-cash
+                </v-icon>
                 <div :class="[
                   'direction-pill',
                   log.direction === 'OUT' ? 'out' : 'in'
@@ -196,6 +202,8 @@
 </template>
 
 <script>
+import { string } from 'pg-format';
+
 export default {
   name: "VehicleRightPanel",
 
@@ -207,6 +215,14 @@ export default {
     mqttNewMessage: {
       type: Object,
       default: null,
+    },
+    response: {
+      type: String,
+      default: '',
+    },
+    snackbar: {
+      type: Boolean,
+      default: false,
     },
   },
 

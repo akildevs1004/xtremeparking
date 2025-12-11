@@ -3,14 +3,14 @@
   <div v-else-if="!isMobileDevice">
 
 
-    <div class="text-center">
+    <!-- <div class="text-center">
 
       <v-snackbar centered color="secondary" elevation="24">
         {{ response }}
 
 
       </v-snackbar>
-    </div>
+    </div> -->
     <v-dialog v-model="dialogParkingFull" width="500px">
       <v-card style="padding:0px!important">
         <v-card-title dense class="popup_background" style="background-color: red!important;padding:0px!important">
@@ -24,7 +24,7 @@
           <v-img src="/parking-full.png" cover></v-img> </v-card-text></v-card>
 
     </v-dialog>
-    <v-dialog v-model="snackbar" max-width="700px">
+    <!-- <v-dialog v-model="snackbar" max-width="700px">
       <v-card>
         <v-card-title dense class="popup_background"
           :style="vehicleStatusEntryExit == 'exit' ? 'background-color: red!important;' : ''">
@@ -50,7 +50,7 @@
 
         </v-card-text></v-card>
 
-    </v-dialog>
+    </v-dialog> -->
     <v-dialog v-model="dialogImagePreview" max-width="600px">
       <v-card>
         <v-card-title dense class="popup_background">
@@ -211,7 +211,7 @@
 
       <v-col cols="3" class="pt-0 mt-0">
         <DashboardVehicleInfo @paymentProcess="paymentProcess" :mqttNewMessage="mqttNewMessage"
-          :gatePassStatus="gatePassStatus" @openGate="openGate()" />
+          :gatePassStatus="gatePassStatus" @openGate="openGate()" :snackbar="snackbar" :response="response" />
 
         <!--
         <v-card class="pa-4" style="background:#111; color:#fff; border-radius:15px;">
@@ -694,6 +694,9 @@ export default {
           }
           else {
             this.vehicleStatusEntryExit = "exit";
+            console.log(this.mqttNewMessage.response);
+            this.snackbar = true;
+            this.response = "Exit vehicle - Check Payment and Open Gate";
 
             if (this.mqttNewMessage.response.record.out_background_file_name) {
               this.mqttNewMessage.response.record.image_vehicle =
@@ -704,6 +707,8 @@ export default {
                 this.mqttNewMessage.response.record.public_image_url + "/" +
                 this.mqttNewMessage.response.record.out_background_file_name.replace("_BACKGROUND", "_PLATE");
             }
+
+
           }
 
           //messsage
