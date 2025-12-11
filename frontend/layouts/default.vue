@@ -872,11 +872,11 @@ export default {
 
     this.setTopmenuHilighterOnPageReload();
 
-    setInterval(() => {
-      try {
-        if (window) window.location.reload();
-      } catch (e) { }
-    }, 1000 * 60 * 60);
+    // setInterval(() => {
+    //   try {
+    //     if (window) window.location.reload();
+    //   } catch (e) { }
+    // }, 1000 * 60 * 60);
     // if (!this.$auth.user) {
     //   this.$router.push("/logout");
     //   return;
@@ -1296,7 +1296,7 @@ export default {
     setupInactivityDetection() {
       // Handle inactivity
       this.handleInactivity = () => {
-        if (window) window.location.reload();
+        // if (window) window.location.reload();
 
         // Perform actions when the user is inactive
         // this.$router.push(`/alarm/dashboard`);

@@ -5,11 +5,11 @@
 
     <div class="text-center">
 
-      <v-snackbar centered color="secondary" elevation="24">
+      <!-- <v-snackbar centered color="secondary" elevation="24">
         {{ response }}
 
 
-      </v-snackbar>
+      </v-snackbar> -->
     </div>
     <v-dialog v-model="dialogParkingFull" width="500px">
       <v-card style="padding:0px!important">
@@ -65,7 +65,7 @@
         </v-card-text></v-card>
 
     </v-dialog>
-    <AudioSoundPlay v-if="activeAudio" :notificationsMenuItemsCount="mqttNewMessage ? 1 : 0" />
+    <!-- <AudioSoundPlay v-if="activeAudio" :notificationsMenuItemsCount="mqttNewMessage ? 1 : 0" /> -->
 
 
     <v-dialog v-model="dialogMQTTVehicleInfo" max-width="80%">
@@ -533,12 +533,12 @@ export default {
 
         this.mqttLoading = true;
         this.message = message.toString();
-        console.log("MQTT Received message:", this.message);
+        //console.log("MQTT Received message:", this.message);
         try {
 
-          this.dialogMQTTVehicleInfo = true;
 
-          this.$emit('newstatusFromComponent', { dialogStatus: true });
+
+          // this.$emit('newstatusFromComponent', { dialogStatus: true });
 
           this.activeAudio = true;
           this.gatePassStatus = false;
@@ -551,8 +551,14 @@ export default {
           //   this.mqttNewMessage.response.record.public_image_url + "/" +
           //   this.mqttNewMessage.response.record.in_background_file_name;
 
-          this.vehicleGustNoEntryImage = null;
 
+          console.log("1111111111", this.dialogMQTTVehicleInfo);
+
+          console.log("222222222", this.response);
+
+
+          this.vehicleGustNoEntryImage = null;
+          this.dialogMQTTVehicleInfo = true;
           if (!this.mqttNewMessage.response.status) //error
           {
             this.snackbar = true;
@@ -596,6 +602,7 @@ export default {
                 this.mqttNewMessage.response.record.out_background_file_name.replace("_BACKGROUND", "_PLATE");
             }
           }
+          console.log("333333333", this.response);
 
           //messsage
 
@@ -613,19 +620,24 @@ export default {
 
               this.gatePassStatus = true;
 
-              setTimeout(() => {
-                this.mqttNewMessage = null;
-              }, 1000 * 5);
+              // setTimeout(() => {
+              //   this.mqttNewMessage = null;
+              // }, 1000 * 5);
             }, 1000 * 3);
-
             setTimeout(() => {
 
+              this.snackbar = false;
+
+
+            }, 1000 * 10);
+            setTimeout(() => {
+              this.mqttNewMessage = null;
               this.snackbar = false;
               this.response = "Closing vehicle information popup.";
 
               this.dialogMQTTVehicleInfo = false;
 
-            }, 1000 * 10);
+            }, 1000 * 20);
           }
           else
             this.gatePassStatus = false;

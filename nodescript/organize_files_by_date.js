@@ -4,15 +4,15 @@
  * - Runs every hour
  * - If WATCH_DIR size > 20GB, deletes oldest YYYYMMDD folders (inside COMPANY_ID) until under limit
  */
-
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config();
+const axios = require("axios");
+require("dotenv").config(); // fallback
 //
 
-const COMPANY_ID = process.env.COMPANY_ID;
-const ROOT_DIR = process.env.WATCH_DIR || "./inbox"; // <-- size check here
-const baseDir = ROOT_DIR + (COMPANY_ID ? `/${COMPANY_ID}` : "");
+let COMPANY_ID = process.env.COMPANY_ID;
+let ROOT_DIR = process.env.WATCH_DIR || "./inbox"; // <-- size check here
+let baseDir = ROOT_DIR + (COMPANY_ID ? `/${COMPANY_ID}` : "");
 
 const MAX_ROOT_SIZE_BYTES = 10 * 1024 * 1024 * 1024; // 10 GB
 
@@ -194,7 +194,60 @@ function organizeFiles() {
     );
   }
 }
+async function loadConfig() {
+  try {
+    console.log(
+      "🔄 Loading config from API http://127.0.0.1:8000/api/get_mqtt_server ..."
+    );
 
-// run immediately, then repeat every 1 hour (3600000 ms)
-organizeFiles();
-setInterval(organizeFiles, 60 * 60 * 1000); // every 1 hour
+    const res = await axios.get("http://127.0.0.1:8000/api/get_mqtt_server", {
+      timeout: 5000,
+    });
+
+    const cfg = res.data || {};
+
+    // Direct mapping from your JSON
+    COMPANY_ID = String(cfg.COMPANY_ID ?? process.env.COMPANY_ID ?? "").trim();
+
+    ROOT_DIR = String(
+      cfg.WATCH_DIR ?? process.env.WATCH_DIR ?? "./inbox"
+    ).trim();
+
+    // optional: host if you need later
+    const HOST = cfg.host || null;
+
+    baseDir = ROOT_DIR + (COMPANY_ID ? `/${COMPANY_ID}` : "");
+
+    console.log("✅ Config loaded from API");
+    console.log("COMPANY_ID:", COMPANY_ID || "(none)");
+    console.log("ROOT_DIR  :", ROOT_DIR);
+    console.log("baseDir   :", baseDir);
+    if (HOST) console.log("HOST      :", HOST);
+  } catch (e) {
+    console.error(
+      "❌ Failed to load config from API, using .env instead:",
+      e.message
+    );
+
+    COMPANY_ID = String(process.env.COMPANY_ID ?? "").trim();
+    ROOT_DIR = String(process.env.WATCH_DIR ?? "./inbox").trim();
+    baseDir = ROOT_DIR + (COMPANY_ID ? `/${COMPANY_ID}` : "");
+
+    console.log("COMPANY_ID (env):", COMPANY_ID || "(none)");
+    console.log("ROOT_DIR  (env) :", ROOT_DIR);
+    console.log("baseDir   (env) :", baseDir);
+  }
+}
+
+/**
+ * Bootstrap: load config, then start organizer + interval
+ */
+async function start() {
+  await loadConfig();
+
+  // Run immediately, then repeat every 1 hour
+  organizeFiles();
+  setInterval(organizeFiles, 60 * 60 * 1000); // every 1 hour
+}
+
+start();

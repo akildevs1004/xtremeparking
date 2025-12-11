@@ -588,7 +588,7 @@ export default {
         trigger: trigger
 
       }).then((response) => {
-        console.log(response);
+        // console.log(response);
         this.snackbar = true;
         this.response = "Gate open command is sent successfully.";
 
@@ -649,7 +649,7 @@ export default {
 
         this.mqttLoading = true;
         this.message = message.toString();
-        console.log("MQTT Received message:", this.message);
+        // console.log("MQTT Received message:", this.message);
         try {
 
           this.activeAudio = true;
@@ -818,7 +818,7 @@ export default {
       }
     },
     async paymentProcess(paymentMethod, id) {
-      console.log("Processing payment for method:", paymentMethod);
+      // console.log("Processing payment for method:", paymentMethod);
 
       if (confirm("Are you sure want to Update Payment?")) {
 
@@ -834,7 +834,7 @@ export default {
 
           const { data } = await this.$axios.post(`/parking_payment_process`, options.params);
 
-          console.log(data);
+          // console.log(data);
 
 
           // Update data

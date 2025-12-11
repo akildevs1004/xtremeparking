@@ -24,6 +24,10 @@ $MOSQ_EXE  = 'C:\Program Files\mosquitto\mosquitto.exe'
 $MOSQ_CONF = 'C:\Program Files\mosquitto\mosquitto.conf'
 $NPX       = Join-Path $env:ProgramFiles 'nodejs\npx.cmd'
 
+# -------- API CONFIG (MONITOR ONLY) --------
+$MQTT_API_URL   = 'http://127.0.0.1:8000/api/get_mqtt_server'
+$CAMERA_API_URL = 'http://127.0.0.1:8000/api/parking-cameras?company_id=8&login_user_type=company'
+
 # intervals (seconds)
 $SERVICE_CHECK_INTERVAL = 60
 $LOG_CHECK_INTERVAL     = 5
@@ -164,7 +168,7 @@ $logFiles = @(
 $logState = @{}
 foreach ($lf in $logFiles) {
   $logState[$lf.Path] = @{
-    Length = 0
+    Length      = 0
     Initialized = $false
   }
 }
@@ -203,6 +207,86 @@ function Are-ServicePortsAllListening {
   }
 
   return $true
+}
+
+# -------- CONFIG MONITOR (API ONLY, NO SIDE EFFECTS) --------
+function Check-Configs {
+  Write-Host ""
+  Write-Host ("===== CONFIG CHECK @ {0} =====" -f (Get-Date).ToString("HH:mm:ss")) -ForegroundColor DarkCyan
+
+  # --- MQTT SERVER CONFIG ---
+  try {
+    $mqtt = Invoke-RestMethod -Uri $MQTT_API_URL -Method Get -TimeoutSec 5
+    Write-Host "[CONFIG] MQTT server API OK" -ForegroundColor Green
+
+    # Use names that don't clash with $Host automatic variable
+    $mqttHost = $null
+    $mqttTcp  = $null
+    $mqttWs   = $null
+
+    if ($mqtt.PSObject.Properties.Name -contains 'mqtt_server') { $mqttHost = $mqtt.mqtt_server }
+    elseif ($mqtt.PSObject.Properties.Name -contains 'server')  { $mqttHost = $mqtt.server }
+    elseif ($mqtt.PSObject.Properties.Name -contains 'host')    { $mqttHost = $mqtt.host }
+
+    if ($mqtt.PSObject.Properties.Name -contains 'mqtt_port')    { $mqttTcp = $mqtt.mqtt_port }
+    elseif ($mqtt.PSObject.Properties.Name -contains 'tcp_port') { $mqttTcp = $mqtt.tcp_port }
+    elseif ($mqtt.PSObject.Properties.Name -contains 'port')     { $mqttTcp = $mqtt.port }
+
+    if ($mqtt.PSObject.Properties.Name -contains 'mqtt_ws_port')      { $mqttWs = $mqtt.mqtt_ws_port }
+    elseif ($mqtt.PSObject.Properties.Name -contains 'ws_port')       { $mqttWs = $mqtt.ws_port }
+    elseif ($mqtt.PSObject.Properties.Name -contains 'websocket_port'){ $mqttWs = $mqtt.websocket_port }
+
+    if ($mqttHost -or $mqttTcp -or $mqttWs) {
+      # Fallback values for display
+      $h = if ($mqttHost) { $mqttHost } else { '-' }
+      $t = if ($mqttTcp)  { $mqttTcp }  else { '-' }
+      $w = if ($mqttWs)   { $mqttWs }   else { '-' }
+
+      Write-Host ("[CONFIG] MQTT Host: {0}  TCP: {1}  WS: {2}" -f $h, $t, $w)
+    } else {
+      # Fallback: dump JSON (monitoring only)
+      Write-Host "[CONFIG] MQTT raw response:"
+      $mqtt | ConvertTo-Json -Depth 5 | Write-Host
+    }
+  } catch {
+    Write-Host  "[CONFIG] MQTT server API ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    Write-ErrorAllLog "MQTT API error: $($_.Exception.Message)"
+  }
+
+  # --- CAMERA CONFIG ---
+  try {
+    $cameras = Invoke-RestMethod -Uri $CAMERA_API_URL -Method Get -TimeoutSec 10
+
+    if ($null -eq $cameras) {
+      Write-Host "[CONFIG] Camera API returned no data." -ForegroundColor Yellow
+      return
+    }
+
+    # Assume list/array of cameras
+    $camList = @()
+    if ($cameras -is [System.Collections.IEnumerable] -and -not ($cameras -is [string])) {
+      $camList = @($cameras)
+    } else {
+      $camList = @($cameras)
+    }
+
+    $count = $camList.Count
+    Write-Host ("[CONFIG] Cameras from API: {0}" -f $count) -ForegroundColor Green
+
+    if ($count -gt 0) {
+      # Show compact table: id, name, rtsp_url (if available)
+      $table = $camList |
+        Select-Object `
+          @{Name='ID';   Expression={ $_.id }}, `
+          @{Name='Name'; Expression={ $_.name }}, `
+          @{Name='RTSP'; Expression={ $_.rtsp_url }} |
+        Format-Table -AutoSize | Out-String
+      Write-Host $table
+    }
+  } catch {
+    Write-Host  "[CONFIG] Camera API ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    Write-ErrorAllLog "Camera API error: $($_.Exception.Message)"
+  }
 }
 
 # -------- FUNCTIONS: SERVICE STATUS + LOG CHECK --------
@@ -338,12 +422,16 @@ $stop = $false
 $lastServiceCheck = (Get-Date).AddSeconds(-$SERVICE_CHECK_INTERVAL)
 $lastLogCheck     = (Get-Date).AddSeconds(-$LOG_CHECK_INTERVAL)
 
+# Initial config print on startup
+Check-Configs
+
 try {
   while (-not $stop) {
     $now = Get-Date
 
     if ((New-TimeSpan $lastServiceCheck $now).TotalSeconds -ge $SERVICE_CHECK_INTERVAL) {
       Check-Services -Services ([ref]$services)
+      Check-Configs   # refresh config info at same interval
       $lastServiceCheck = Get-Date
     }
 
