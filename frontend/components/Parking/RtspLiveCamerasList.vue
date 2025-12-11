@@ -193,7 +193,7 @@ export default {
   overflow-x: auto;
   overflow-y: hidden;
 
-  max-height: 700px;
+  max-height: 720px;
 }
 
 /* top bar */

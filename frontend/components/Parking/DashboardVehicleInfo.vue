@@ -1,7 +1,7 @@
 <template>
   <div class="vehicle-right-panel" :class="{ 'has-info': showInfo && selectedLog }">
     <!-- ========== VEHICLE IN/OUT LOG ========== -->
-    <v-card class="panel-card mb-4 log-panel" flat>
+    <v-card class="panel-card mb-1 log-panel" flat>
       <v-card-title class="panel-title d-flex align-center">
         <span>Vehicle In/Out Log</span>
 
@@ -16,19 +16,21 @@
       <v-divider class="mx-3" />
 
       <!-- VEHICLE LIST -->
-      <v-list dense class="log-list" :class="{ disabled: loading }">
-        <v-list-item v-for="(log, index) in items" :key="log.id || index" @click="!loading && selectLog(log)" :class="[
+      <v-list dense class="log-list" :class="{ disabled: loading }" ref="logListRef">
+        <v-list-item v-for="(log, index) in items" :key="log.id + index" @click="!loading && selectLog(log)" :class="[
           'log-item',
-          { 'log-item--selected': selectedLog && selectedLog.id === log.id }
+          {
+            'log-item--selected': selectedLog && (selectedLog.id + index) === (log.id + index),
+            'glow-pulse': glowItemId === (log.id + index)
+          }
         ]">
           <v-list-item-content>
             <div class="log-row">
               <div class="log-left">
                 <span class="lane">{{ index + 1 }}</span>
 
-                <!-- Vehicle number as text button -->
-                <v-btn text small class="plate-btn" style="width: 100px;" color="cyan lighten-2"
-                  @click.stop="!loading && selectLog(log)">
+                <!-- Vehicle number as pill button -->
+                <v-btn text small class="plate-btn" style="width: 100px;" @click.stop="!loading && selectLog(log)">
                   <v-icon left x-small>mdi-car</v-icon>
                   {{ log.log_vehicle_number }}
                 </v-btn>
@@ -48,10 +50,18 @@
                   'direction-pill',
                   log.direction === 'OUT' ? 'out' : 'in'
                 ]">
-                  <v-icon x-small class="mr-1">
-                    {{ log.direction === "OUT" ? 'mdi-arrow-right-circle' : 'mdi-arrow-left-circle' }}
-                  </v-icon>
+
+                  <span style="width:20px">
+                    <v-icon x-small class="mr-1" v-if="log.direction != 'OUT'">
+                      {{ log.direction === "OUT" ? 'mdi-arrow-right-bold-outline' : 'mdi-arrow-left-bold-outline' }}
+                    </v-icon></span>
+
                   <span>{{ log.direction === "OUT" ? 'Out' : 'In' }}</span>
+                  <span style="width:20px">
+                    <v-icon x-small class="mr-1" v-if="log.direction === 'OUT'">
+                      {{ log.direction === " OUT" ? 'mdi-arrow-left-bold-outline' : 'mdi-arrow-right-bold-outline' }}
+                    </v-icon>
+                  </span>
                 </div>
               </div>
             </div>
@@ -69,14 +79,32 @@
     <!-- ========== VEHICLE INFORMATION ========== -->
     <v-card v-if="selectedLog && showInfo" class="panel-card" flat>
       <v-card-title class="panel-title d-flex align-center">
-        <span>Vehicle Information</span>
+        <span>
+          Vehicle Information
+          <span v-if="selectedLog.membership_id">
+            &nbsp;|&nbsp;
+            {{ $utils.caps(selectedLog.parking_members?.member_type || selectedLog.member_type) }}
+            -
+            <span>
+              Member
+              {{ selectedLog.parking_members?.is_active ? "Active" : "In-Active" }}
+            </span>
+          </span>
+          <span v-else class="guest-badge"> | GUEST</span>
+        </span>
         <v-spacer />
         <span class="info-plate">
-          {{ selectedLog.log_vehicle_number || '---' }}
+          <v-icon small class="mr-1" color="green">mdi-car</v-icon> {{ selectedLog.log_vehicle_number || '---' }}
         </span>
-        <v-btn icon x-small class="ml-1" @click.stop="closeInfo">
+        <v-btn fill color="red" icon="mdi-close"></v-btn>
+        <!-- <v-chip fill color="red" @click.stop="closeInfo" closable>
           <v-icon small>mdi-close</v-icon>
-        </v-btn>
+        </v-chip><v-btn icon x-small class="ml-1" @click.stop="closeInfo">
+          <v-icon small color="red" fill>mdi-close</v-icon>
+
+
+
+        </v-btn> -->
       </v-card-title>
 
       <v-divider class="mx-3" />
@@ -126,11 +154,8 @@
                 <div class="billing-line">
                   <span class="billing-amount">
                     {{ selectedLog.total_amount }} AED
+                    ({{ selectedLog.duration_per_hour_amount }} × {{ selectedLog.duration_in_hours }} h)
                   </span>
-                </div>
-                <div class="grey--text mt-1">
-                  {{ selectedLog.duration_per_hour_amount }} ×
-                  {{ selectedLog.duration_in_hours }} h
                 </div>
               </div>
 
@@ -142,54 +167,52 @@
           </div>
         </div>
 
-        <!-- Guest / Member etc. -->
+        <!-- Fee row + payment buttons -->
         <div class="text-center mt-5">
-          <div v-if="selectedLog.membership_id">
-            {{ $utils.caps(selectedLog.parking_members?.member_type || selectedLog.member_type) }}
-            -
-            <span>
-              Member
-              {{ selectedLog.parking_members?.is_active ? "Active" : "In-Active" }}
-            </span>
-          </div>
-          <div v-else>GUEST</div>
+          <v-row v-if="selectedLog.total_amount > 0" class="py-1111 align-center border-b"
+            style="border-bottom: 1px solid #353538; font-size: 18px;">
 
-          <!-- Fee row + payment buttons -->
-          <div>
-            <v-row class="py-1111 align-center border-b" style="border-bottom: 1px solid #353538; font-size: 18px;">
-              <v-col class="shrink">
-                <v-icon color="blue lighten-2">mdi-cash-100</v-icon>
-              </v-col>
-              <v-col>Fee/Charges</v-col>
 
-              <!-- Amount / FREE label in row -->
-              <v-col class="text-right font-weight-bold">
-                <span v-if="selectedLog.total_amount === 0" class="free-text">
-                  FREE
-                </span>
-                <span v-else-if="selectedLog.total_amount">
-                  {{ selectedLog.total_amount }} AED
-                </span>
-                <span v-else>0 AED</span>
-              </v-col>
 
-              <!-- PAYMENT BUTTONS ONLY WHEN PAID & NOT YET PAID -->
-              <v-col v-if="selectedLog.total_amount > 0 && !selectedLog.payment_mode"
-                class="text-right font-weight-bold">
-                <v-btn @click="paymentProcess('cash', selectedLog.id)" width="110px" height="34px" elevation="3"
-                  color="green darken-2" dark class="mr-2 payment-btn">
-                  <v-icon left small>mdi-cash-100</v-icon>
-                  Cash
-                </v-btn>
+            <v-col><v-icon color="blue lighten-2">mdi-cash-100</v-icon> Charges
+              <!-- </v-col>
 
-                <v-btn @click="paymentProcess('card', selectedLog.id)" width="140px" height="34px" elevation="3"
-                  color="blue darken-2" dark class="payment-btn">
-                  <v-icon left small>mdi-credit-card-outline</v-icon>
-                  Card/Online
-                </v-btn>
-              </v-col>
-            </v-row>
-          </div>
+
+            <v-col class="text-right font-weight-bold"> -->
+              <span v-if="selectedLog.total_amount === 0" class="free-text">
+                FREE
+              </span>
+              <span v-else-if="selectedLog.total_amount">
+                {{ selectedLog.total_amount }} AED
+              </span>
+              <span v-else>0 AED</span>
+            </v-col>
+
+
+            <v-col v-if="selectedLog.total_amount > 0 && !selectedLog.payment_mode" class="text-right font-weight-bold">
+
+              <v-btn style="height: 25px;" @click="paymentProcess('cash', selectedLog.id)" color="green darken-2" dark>
+
+                Cash
+              </v-btn>
+
+              <v-btn style="height: 25px;" @click="paymentProcess('card', selectedLog.id)" color="blue darken-2" dark>
+
+                Card
+              </v-btn>
+              <!-- <v-btn @click="paymentProcess('cash', selectedLog.id)" elevation="2" color="green darken-2" dark
+                class="mr-2 payment-btn">
+                <v-icon left small>mdi-cash-100</v-icon>
+                Cash
+              </v-btn>
+
+              <v-btn @click="paymentProcess('card', selectedLog.id)" elevation="2" color="blue darken-2" dark
+                class="payment-btn">
+                <v-icon left small>mdi-credit-card-outline</v-icon>
+                Card/Online
+              </v-btn> -->
+            </v-col>
+          </v-row>
         </div>
       </v-card-text>
     </v-card>
@@ -221,6 +244,7 @@ export default {
       cancelTokenSource: null,
       loading: false,
       error: null,
+      glowItemId: null, // for glow pulse on new MQTT entry
     };
   },
 
@@ -236,13 +260,13 @@ export default {
     // When new MQTT message arrives:
     // - close info panel
     // - clear selection
-    // - reload list (spinner only in header)
+    // - reload list
+    // - glow highlight on newest entry
     mqttNewMessage: {
       handler() {
         this.showInfo = false;
         this.selectedLog = null;
-        this.loading = true;
-        this.getDataFromApi();
+        this.getDataFromApi(true); // true = from MQTT/new entry
       },
       deep: false,
     },
@@ -291,7 +315,7 @@ export default {
       this.showInfo = false; // hide info, list returns to full height
     },
 
-    async getDataFromApi() {
+    async getDataFromApi(fromMqtt = false) {
       try {
         this.loading = true;
         this.error = null;
@@ -314,7 +338,34 @@ export default {
         };
 
         const { data } = await this.$axios.get("parking_log_live", options);
-        this.items = Array.isArray(data) ? data : data.data || [];
+        const newItems = Array.isArray(data) ? data : data.data || [];
+
+        const previousTopId = this.items[0]?.id || null;
+
+        this.items = newItems;
+
+        // If called due to MQTT, glow highlight the newest entry (top row)
+        if (fromMqtt && this.items.length) {
+          const newTop = this.items[0];
+
+          // Only glow if it's actually a different top record
+          if (!previousTopId || previousTopId !== newTop.id) {
+            this.glowItemId = newTop.id;
+
+            this.$nextTick(() => {
+              const listEl = this.$refs.logListRef && this.$refs.logListRef.$el
+                ? this.$refs.logListRef.$el
+                : this.$refs.logListRef;
+              if (listEl && listEl.scrollTop !== undefined) {
+                listEl.scrollTop = 0;
+              }
+            });
+
+            setTimeout(() => {
+              this.glowItemId = null;
+            }, 2000);
+          }
+        }
       } catch (err) {
         if (!this.$axios.isCancel(err)) {
           console.error("Error loading parking logs", err);
@@ -327,7 +378,6 @@ export default {
   },
 };
 </script>
-
 <style scoped>
 .vehicle-right-panel {
   display: flex;
@@ -338,28 +388,26 @@ export default {
 
 /* Cards */
 .panel-card {
-  background: #181b20;
+  background: #16181d;
   border-radius: 10px;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 /* Vehicle log card height behavior */
 .log-panel {
   display: flex;
   flex-direction: column;
-  transition: height 0.2s ease;
 }
 
 /* Full height (no vehicle info open) */
 .vehicle-right-panel:not(.has-info) .log-panel {
-  height: 700px;
-  /* full height when info closed */
+  height: 720px;
 }
 
 /* Reduced height when info panel is open */
 .vehicle-right-panel.has-info .log-panel {
   height: 420px;
-  /* adjust as you like */
 }
 
 .panel-title {
@@ -374,24 +422,31 @@ export default {
 .log-list {
   overflow-y: auto;
   flex: 1;
+  padding-right: 4px;
 }
 
-/* Disable clicks on list while loading */
-.log-list.disabled {
-  pointer-events: none;
-  opacity: 0.6;
+.log-list::-webkit-scrollbar {
+  width: 6px;
 }
 
 .log-item {
   cursor: pointer;
-  padding-top: 6px;
-  padding-bottom: 6px;
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
+/* Row hover – no animation */
+.log-item:hover {
+  background: rgba(0, 170, 255, 0.08);
+}
+
+/* Row selected – static highlight */
 .log-item--selected {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 200, 255, 0.15);
+  border-left: 3px solid #00e5ff;
 }
 
+/* Layout inside row */
 .log-row {
   display: flex;
   justify-content: space-between;
@@ -406,12 +461,12 @@ export default {
 }
 
 .lane {
-  color: #777b86;
+  color: #80858f;
   width: 18px;
   text-align: right;
 }
 
-/* Vehicle number button */
+/* Vehicle number pill – no animation, only color */
 .plate-btn {
   padding: 0 10px;
   border-radius: 999px;
@@ -419,9 +474,11 @@ export default {
   font-weight: 600;
   font-size: 12px;
   min-width: auto;
+  background: linear-gradient(135deg, #1294ff, #00d4ff);
+  color: #ffffff !important;
 }
 
-/* Make default text color slightly softer (Vuetify will handle actual color) */
+/* Vuetify inner content tweak */
 .plate-btn ::v-deep .v-btn__content {
   letter-spacing: 0.3px;
 }
@@ -432,7 +489,7 @@ export default {
 }
 
 .time {
-  color: #ffcc80;
+  color: #ffe8a3;
   font-size: 11px;
   display: inline-flex;
   align-items: center;
@@ -440,33 +497,31 @@ export default {
 }
 
 .time-icon {
-  opacity: 0.8;
+  color: #ffd36b;
 }
 
-.log-right {
-  display: flex;
-  align-items: center;
-}
-
-/* Direction pill */
+/* Direction pill – static colors only */
 .direction-pill {
-  padding: 2px 10px;
+  padding: 3px 12px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  letter-spacing: 0.3px;
 }
 
 .direction-pill.in {
-  background: rgba(76, 175, 80, 0.15);
-  color: #4caf50;
+  background: rgba(0, 255, 110, 0.12);
+  border: 1px solid rgba(0, 255, 110, 0.35);
+  color: #18ff70;
 }
 
 .direction-pill.out {
-  background: rgba(244, 67, 54, 0.15);
-  color: #f44336;
+  background: rgba(255, 70, 70, 0.12);
+  border: 1px solid rgba(255, 70, 70, 0.35);
+  color: #ff4c4c;
 }
 
 /* Vehicle information card */
@@ -477,9 +532,14 @@ export default {
 
 .info-plate {
   margin-left: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+  color: #00eaff;
+}
+
+.guest-badge {
+  color: #b0b0b0;
+  font-size: 13px;
 }
 
 .info-row {
@@ -490,13 +550,13 @@ export default {
 
 .info-box {
   background: #101218;
-  border-radius: 8px;
-  padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .info-box--accent {
-  border-color: rgba(244, 67, 54, 0.5);
+  border-color: rgba(244, 67, 54, 0.6);
 }
 
 .info-label {
@@ -515,12 +575,7 @@ export default {
 .free-chip {
   font-weight: 600;
   letter-spacing: 0.5px;
-}
-
-.billing-line {
-  display: flex;
-  justify-content: flex-start;
-  align-items: baseline;
+  border-radius: 999px !important;
 }
 
 .billing-amount {
