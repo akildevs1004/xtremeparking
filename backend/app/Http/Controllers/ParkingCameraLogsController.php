@@ -106,7 +106,7 @@ class ParkingCameraLogsController extends Controller
         )
             ->where('company_id', $companyId)
             ->whereDate('in_time', date('Y-m-d'))
-
+            //->limit(20)
             ->whereNotNull('in_time');
 
         // Base OUT logs
@@ -134,7 +134,7 @@ class ParkingCameraLogsController extends Controller
         $logs = DB::query()
             ->fromSub($union, 'logs')
             ->orderBy('log_time', 'desc')
-
+            ->limit(20)
             ->get();
 
         return ['data' => $logs];

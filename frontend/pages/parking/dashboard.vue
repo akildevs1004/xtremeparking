@@ -136,7 +136,7 @@
           class="darkgreen-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
                 <div class="darkgreen-text" style="font-size: 40px">{{ statisstics ? statisstics.total_payments : 0
-                }}</div>
+                  }}</div>
                 <br />
                 <div style="font-size: 16px">Total Amount</div>
               </v-col>
@@ -708,7 +708,12 @@ export default {
                 this.mqttNewMessage.response.record.out_background_file_name.replace("_BACKGROUND", "_PLATE");
             }
 
+            setTimeout(() => {
 
+              this.snackbar = false;
+              this.response = "";
+
+            }, 1000 * 10);
           }
 
           //messsage

@@ -105,7 +105,7 @@
           {{ selectedLog.log_vehicle_number || '---' }}
         </span>
         <v-btn icon small class="ml-1" color="red" @click.stop="closeInfo">
-          <v-icon small>mdi-close</v-icon>
+          <v-icon color="red" small>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
@@ -194,6 +194,9 @@
                 Card
               </v-btn>
             </v-col>
+            <v-col v-else>
+              Paid By {{ selectedLog.payment_mode | capitalize }}
+            </v-col>
           </v-row>
         </div>
       </v-card-text>
@@ -202,7 +205,7 @@
 </template>
 
 <script>
-import { string } from 'pg-format';
+
 
 export default {
   name: "VehicleRightPanel",
@@ -240,11 +243,11 @@ export default {
     };
   },
 
-  created() {
+  async created() {
     if (this.value && this.value.length) {
       this.items = this.value;
     } else {
-      this.getDataFromApi();
+      await this.getDataFromApi();
     }
   },
 
@@ -254,11 +257,11 @@ export default {
     // - clear selection
     // - reload list
     mqttNewMessage: {
-      handler() {
+      async handler() {
         this.showInfo = false;
         this.selectedLog = null;
         this.selectedIndex = null;
-        this.getDataFromApi();
+        await this.getDataFromApi();
       },
       deep: false,
     },
@@ -294,6 +297,19 @@ export default {
   methods: {
     paymentProcess(method, logId) {
       this.$emit("paymentProcess", method, logId);
+
+      this.closeInfo();
+
+      if (this.snackbar) {
+        this.getDataFromApi();
+        this.closeInfo();
+      }
+
+      // setTimeout(() => {
+      //   this.getDataFromApi();
+      //   this.closeInfo();
+      // }, 1000*2);
+
     },
 
     selectLog(log, index) {
