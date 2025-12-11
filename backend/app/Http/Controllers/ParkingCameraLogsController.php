@@ -9,6 +9,7 @@ use App\Models\ParkingCameraLogs;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Maatwebsite\Excel\Facades\Excel;
@@ -81,7 +82,63 @@ class ParkingCameraLogsController extends Controller
 
         return $this->getRecords($request);
     }
+    public function getLiveVehicleLogs(Request $request)
+    {
+        $companyId = $request->company_id;
 
+        // Base IN logs
+        $inLogs = ParkingCameraLogs::select(
+            'id',
+            'log_vehicle_number',
+            'raw_country_region',
+            DB::raw("'IN' as direction"),
+            'company_id',
+            'membership_id',
+            // full info for detail panel
+            'in_time as log_time_in',
+            'out_time as log_time_out',
+            'in_time as log_time', // for list display
+            'duration_in_minutes',
+            'duration_in_hours',
+            'duration_per_hour_amount',
+            'total_amount',
+            'payment_mode',
+        )
+            ->where('company_id', $companyId)
+            ->whereDate('in_time', date('Y-m-d'))
+
+            ->whereNotNull('in_time');
+
+        // Base OUT logs
+        $outLogs = ParkingCameraLogs::select(
+            'id',
+            'log_vehicle_number',
+            'raw_country_region',
+            DB::raw("'OUT' as direction"),
+            'company_id',
+            'membership_id',
+            'in_time as log_time_in',
+            'out_time as log_time_out',
+            'out_time as log_time', // for list display
+            'duration_in_minutes',
+            'duration_in_hours',
+            'duration_per_hour_amount',
+            'total_amount',
+            'payment_mode',
+        )
+            ->where('company_id', $companyId)
+            ->whereNotNull('out_time');
+
+        $union = $inLogs->unionAll($outLogs);
+
+        $logs = DB::query()
+            ->fromSub($union, 'logs')
+            ->orderBy('log_time', 'desc')
+
+            ->get();
+
+        return ['data' => $logs];
+    }
     public function getRecords(Request $request, $perpage = null)
     {
         $model = ParkingCameraLogs::with(["ParkingMembers", "ParkingMembersGuest"])->where('company_id', $request->company_id);;

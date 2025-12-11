@@ -70,7 +70,7 @@
                   <v-col>Vehicle Number</v-col>
                   <v-col class="text-right font-weight-medium">{{ this.parking?.log_vehicle_number ||
                     '---'
-                    }}</v-col>
+                  }}</v-col>
                 </v-row>
 
                 <v-row class="py-1111 align-center border-b" style="border-bottom: 1px solid #353538;  ">
@@ -81,7 +81,7 @@
                   <v-col class="text-right"> {{ this.parking ?
                     $dateFormat.formatDateTime(this.parking?.out_time) :
                     '---'
-                    }} </v-col>
+                  }} </v-col>
                 </v-row>
 
                 <v-row class="py-1111 align-center border-b" style="border-bottom: 1px solid #353538;  ">
@@ -92,7 +92,7 @@
                   <v-col class="text-right"> {{ this.parking ?
                     $dateFormat.formatDateTime(this.parking.in_time) :
                     '---'
-                    }} </v-col>
+                  }} </v-col>
                 </v-row>
 
                 <v-row class="py-1111 align-center border-b" style="border-bottom: 1px solid #353538;  ">

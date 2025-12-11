@@ -197,7 +197,7 @@
             -->
 
         <RtspLiveCamerasList :mqttNewMessage="mqttNewMessage" :mqttLoading="mqttLoading"></RtspLiveCamerasList>
-        <NewVehiclePopupMqTT @updateDashboard="getStatistics()" />
+        <!-- <NewVehiclePopupMqTT @updateDashboard="getStatistics()" /> -->
         <!-- <v-card elevation="2" class="eventslistscroll table-font12" :loading="mqttLoading">
           <v-card-text class="pa-1">
             <img v-if="mqttNewMessage?.response.record.image_vehicle"
@@ -210,16 +210,13 @@
       </v-col>
 
       <v-col cols="3" class="pt-0 mt-0">
+        <DashboardVehicleInfo @paymentProcess="paymentProcess" :mqttNewMessage="mqttNewMessage"
+          :gatePassStatus="gatePassStatus" @openGate="openGate()" />
 
+        <!--
         <v-card class="pa-4" style="background:#111; color:#fff; border-radius:15px;">
           <v-card-text>
-            <!-- Header -->
-            <!-- <div class="text-center mb-4">
-            <h3 class="mb-1">Vehicle Details</h3>
 
-          </div> -->
-
-            <!-- Vehicle Number -->
             <v-card flat class="d-flex1  justify-center align-center mb-4 pa-5"
               style="background:#222; border-radius:10px;text-align: center;">
               <div style="color:#777777;  " v-if="mqttNewMessage">
@@ -237,7 +234,7 @@
 
             </v-card>
 
-            <!-- Entry & Exit -->
+
             <v-row class=" ">
               <v-col>
                 <v-card flat class="pa-3 text-center" style="background:#222;">
@@ -270,7 +267,7 @@
               </v-col>
             </v-row>
 
-            <!-- Duration & Billing Hours -->
+
             <v-row class="mb-2">
               <v-col>
                 <v-card flat class="pa-3 text-center" style="background:#222;">
@@ -293,7 +290,7 @@
               </v-col>
             </v-row>
 
-            <!-- Tenant/Member -->
+
             <v-card flat class="pa-3 text-center mb-4" style="background:#1e2b40; border-radius:10px; color:#55CEE3;">
               <div v-if="this.mqttNewMessage?.response.record.membership_id">
 
@@ -310,7 +307,6 @@
               </div>
             </v-card>
 
-            <!-- Total -->
             <v-card flat class="pa-3 text-center mb-4" style="background:#222;">
 
               <v-row v-if="this.mqttNewMessage?.response.record.total_amount">
@@ -385,7 +381,7 @@
 
           </v-card-text>
         </v-card>
-
+        -->
 
       </v-col>
 
@@ -417,10 +413,11 @@ import mqtt from "mqtt";
 import RtspLiveCamera from "../../components/Parking/RtspLiveCamera.vue";
 import RtspLiveCamerasList from "../../components/Parking/RtspLiveCamerasList.vue";
 import NewVehiclePopupMqTT from "../../components/CarWashing/NewVehiclePopupMqTT.vue";
+import DashboardVehicleInfo from "../../components/Parking/DashboardVehicleInfo.vue";
 
 export default {
   components: {
-    ParkingReports, AudioSoundPlay, RtspLiveCamera, RtspLiveCamerasList, NewVehiclePopupMqTT
+    ParkingReports, AudioSoundPlay, RtspLiveCamera, RtspLiveCamerasList, NewVehiclePopupMqTT, DashboardVehicleInfo
   },
   data: () => ({
     loadingKey: 1,
@@ -502,68 +499,68 @@ export default {
 
 
 
-    // this.mqttNewMessage = {
-    //   "response": {
-    //     "record": {
-    //       "id": 123,
-    //       "company_id": 8,
-    //       "log_timestamp": "20250903163928293",
-    //       "log_vehicle_number": "F53310",
-    //       "in_background_file_name": "20250908200916528_F53310_VEHICLE_DETECTION_XTP100002_FORWARD_EMI_BACKGROUND.jpg",
-    //       "out_background_file_name": "20250908200916528_F53310_VEHICLE_DETECTION_XTP100002_FORWARD_EMI_BACKGROUND.jpg",
-    //       "in_time": "2025-09-03 16:39:28",
-    //       "out_time": "2025-09-03 16:39:28",
-    //       "duration_in_minutes": 200,
-    //       "total_amount": 20,
-    //       "payment_mode": null,
-    //       "membership_id": 1,
-    //       "cancel_status": 0,
-    //       "cancel_reason": null,
-    //       "raw_device_no": "XTP100001",
-    //       "raw_capture_time": "09-08-2025 20:09:16",
-    //       "raw_plate_no": "F53310",
-    //       "raw_vehicle_color": "White",
-    //       "raw_vehicle_type": null,
-    //       "raw_vehicle_brand": null,
-    //       "raw_moving_direction": "Forward",
-    //       "raw_validity": "96%",
-    //       "raw_country_region": "DXB",
-    //       "raw_plate_color": "White",
-    //       "raw_plate_size": "Long",
-    //       "raw_plate_type": "Private",
-    //       "raw_province": "Unknown",
-    //       "raw_camera_no": null,
-    //       "raw_info": "{\"camera_info\":\"Camera info 1\",\"device_no\":\"XTP100001\",\"capture_time\":\"09-08-2025 20:09:16\",\"plate_no\":\"F53310\",\"vehicle_color\":\"White\",\"vehicle_type\":null,\"vehicle_brand\":null,\"moving_direction\":\"Forward\",\"validity\":\"96%\",\"country_region\":\"DXB\",\"plate_color\":\"White\",\"plate_size\":\"Long\",\"plate_type\":\"Private\",\"province\":\"Unknown\",\"category\":\"F\",\"camera_number\":\":CameraNumber 1\"}",
-    //       "raw_event_category": "VEHICLE",
-    //       "raw_event_type": "DETECTION",
-    //       "raw_camera_code": "XTP100002",
-    //       "raw_direction": "FORWARD",
-    //       "raw_lane": "ent",
-    //       "created_at": "2025-09-13T12:46:41.000000Z",
-    //       "updated_at": "2025-09-13T12:46:41.000000Z",
-    //       "device_id_in": 99,
-    //       "device_id_out": 99,
-    //       "duration_in_hours": 2,
-    //       "function": "out",
-    //       "duration_per_hour_amount": 4,
-    //       "manual_gate_opened_at": null,
-    //       "automatic_gate_opened_at": null,
-    //       "acknowledged_from_device_at": null,
-    //       "device_serrial_number": "XTP100001",
-    //       "is_membership": 1,
-    //       "membership_status": "Active",
-    //       "gate_open_automatically": "Tenant  is Active  - Gate Open Automatically",
-    //       "membership_start_date": "2025-09-01",
-    //       "membership_end_date": "2026-09-30",
-    //       "member_type": "Tenant",
-    //       "public_image_url": "http://127.0.0.1:8000/parking_camera_logs/8",
-    //       "parking_image_path": "http://127.0.0.1:8000/parking_camera_logs/8",
-    //       "parking_allowed_status": true
-    //     },
-    //     "message": "success2",
-    //     "status": true
-    //   }
-    // }
+    this.mqttNewMessage = {
+      "response": {
+        "record": {
+          "id": 123,
+          "company_id": 8,
+          "log_timestamp": "20250903163928293",
+          "log_vehicle_number": "F53310",
+          "in_background_file_name": "20250908200916528_F53310_VEHICLE_DETECTION_XTP100002_FORWARD_EMI_BACKGROUND.jpg",
+          "out_background_file_name": "20250908200916528_F53310_VEHICLE_DETECTION_XTP100002_FORWARD_EMI_BACKGROUND.jpg",
+          "in_time": "2025-09-03 16:39:28",
+          "out_time": "2025-09-03 16:39:28",
+          "duration_in_minutes": 200,
+          "total_amount": 20,
+          "payment_mode": null,
+          "membership_id": 1,
+          "cancel_status": 0,
+          "cancel_reason": null,
+          "raw_device_no": "XTP100001",
+          "raw_capture_time": "09-08-2025 20:09:16",
+          "raw_plate_no": "F53310",
+          "raw_vehicle_color": "White",
+          "raw_vehicle_type": null,
+          "raw_vehicle_brand": null,
+          "raw_moving_direction": "Forward",
+          "raw_validity": "96%",
+          "raw_country_region": "DXB",
+          "raw_plate_color": "White",
+          "raw_plate_size": "Long",
+          "raw_plate_type": "Private",
+          "raw_province": "Unknown",
+          "raw_camera_no": null,
+          "raw_info": "{\"camera_info\":\"Camera info 1\",\"device_no\":\"XTP100001\",\"capture_time\":\"09-08-2025 20:09:16\",\"plate_no\":\"F53310\",\"vehicle_color\":\"White\",\"vehicle_type\":null,\"vehicle_brand\":null,\"moving_direction\":\"Forward\",\"validity\":\"96%\",\"country_region\":\"DXB\",\"plate_color\":\"White\",\"plate_size\":\"Long\",\"plate_type\":\"Private\",\"province\":\"Unknown\",\"category\":\"F\",\"camera_number\":\":CameraNumber 1\"}",
+          "raw_event_category": "VEHICLE",
+          "raw_event_type": "DETECTION",
+          "raw_camera_code": "XTP100002",
+          "raw_direction": "FORWARD",
+          "raw_lane": "ent",
+          "created_at": "2025-09-13T12:46:41.000000Z",
+          "updated_at": "2025-09-13T12:46:41.000000Z",
+          "device_id_in": 99,
+          "device_id_out": 99,
+          "duration_in_hours": 2,
+          "function": "out",
+          "duration_per_hour_amount": 4,
+          "manual_gate_opened_at": null,
+          "automatic_gate_opened_at": null,
+          "acknowledged_from_device_at": null,
+          "device_serrial_number": "XTP100001",
+          "is_membership": 1,
+          "membership_status": "Active",
+          "gate_open_automatically": "Tenant  is Active  - Gate Open Automatically",
+          "membership_start_date": "2025-09-01",
+          "membership_end_date": "2026-09-30",
+          "member_type": "Tenant",
+          "public_image_url": "http://127.0.0.1:8000/parking_camera_logs/8",
+          "parking_image_path": "http://127.0.0.1:8000/parking_camera_logs/8",
+          "parking_allowed_status": true
+        },
+        "message": "success2",
+        "status": true
+      }
+    }
 
 
 

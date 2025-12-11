@@ -2,11 +2,11 @@
   <v-container fluid class="pa-0 nvr-root">
     <!-- TOP CONTROL BAR -->
     <div class="nvr-toolbar d-flex align-center px-3">
-      <span class="nvr-toolbar-title mr-4">Live View</span>
+      <span class="nvr-toolbar-title mr-4">Live Camera(s)</span>
 
-      <v-btn small class="mr-1" :color="mode === 'preview' ? 'primary' : undefined" @click="setPreviewMode">
+      <!-- <v-btn small class="mr-1" :color="mode === 'preview' ? 'primary' : undefined" @click="setPreviewMode">
         Preview
-      </v-btn>
+      </v-btn> -->
 
       <!-- AUTO = fit all cameras into one grid, rows/cols chosen automatically -->
       <v-btn v-if="cameraCount > 0" small class="mr-1"
@@ -33,9 +33,9 @@
 
       <v-spacer></v-spacer>
 
-      <v-btn small color="green" @click="setAllCameras">
+      <!-- <v-btn small color="green" @click="setAllCameras">
         <v-icon>mdi-refresh</v-icon> Reset View
-      </v-btn>
+      </v-btn> -->
     </div>
 
     <!-- MAIN CONTENT -->

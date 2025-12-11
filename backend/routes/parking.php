@@ -60,6 +60,11 @@ Route::post('device_acknowledged_from_device',  [ParkingDeviceController::class,
 Route::post('command_call_device_to_arduino', [DeviceController::class, 'commandCallSocketToDevice']);
 
 Route::get('get_mqtt_server', [CameraLogListenerController::class, 'getMQTT']);
+Route::get('parking_log_live', [ParkingCameraLogsController::class, 'getLiveVehicleLogs']);
+
+
+
+
 
 
 
