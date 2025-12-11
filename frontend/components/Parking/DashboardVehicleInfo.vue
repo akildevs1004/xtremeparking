@@ -27,16 +27,17 @@
                 <span class="lane">{{ index + 1 }}</span>
 
                 <!-- Vehicle number as text button -->
-                <v-btn text small class="plate-btn" color="cyan lighten-2" @click.stop="!loading && selectLog(log)">
+                <v-btn text small class="plate-btn" style="width: 100px;" color="cyan lighten-2"
+                  @click.stop="!loading && selectLog(log)">
                   <v-icon left x-small>mdi-car</v-icon>
                   {{ log.log_vehicle_number }}
                 </v-btn>
 
-                <span class="code">
+                <span class="code" style="width: 80px;">
                   {{ log.raw_country_region }}
                 </span>
 
-                <span class="time">
+                <span class="time" style="width: 150px;">
                   <v-icon x-small class="time-icon">mdi-clock-outline</v-icon>
                   {{ log.log_time }}
                 </span>
