@@ -694,9 +694,9 @@ export default {
           }
           else {
             this.vehicleStatusEntryExit = "exit";
-            console.log(this.mqttNewMessage.response);
+            // console.log(this.mqttNewMessage.response);
             this.snackbar = true;
-            this.response = "Exit vehicle - Check Payment and Open Gate";
+            this.response = "Exit vehicle - Payment Pending";
 
             if (this.mqttNewMessage.response.record.out_background_file_name) {
               this.mqttNewMessage.response.record.image_vehicle =
@@ -763,7 +763,7 @@ export default {
 
         }
 
-        this.getStatistics();
+        /////this.getStatistics();
 
         setTimeout(() => {
           this.mqttLoading = false;
@@ -792,7 +792,7 @@ export default {
     async getStatistics() {
 
 
-      this.loadingKey++;
+      //this.loadingKey++;
 
       try {
         const options = {

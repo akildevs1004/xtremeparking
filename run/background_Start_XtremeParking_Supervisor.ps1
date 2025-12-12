@@ -1,7 +1,7 @@
 # XtremeParking Supervisor with ONE ROOT directory variable
 # - Starts services (if not already running) and monitors status
 # - Tracks PIDs for all services it starts
-# - On exit (CTRL+C), stops all managed PIDs so ports 8000, 3000, etc. are freed
+# - On exit (CTRL+C), stops all managed PIDs so ports 8000, 3001, etc. are freed
 
 $ErrorActionPreference = 'Stop'
 [Console]::Title = 'XtremeParking - Supervisor (Background, PID-Managed)'
@@ -144,7 +144,7 @@ $services = @(
     @{ Name='Parking Laravel Server';   Cwd=$BACKEND;       Cmd='php artisan serve --host=0.0.0.0 --port=8000';                   Log=Join-Path $LOG_DIR "laravel_$TODAY.log";   Proc=$null; Ports=@(8000) },
     @{ Name='Parking Queue Worker';     Cwd=$BACKEND;       Cmd='php artisan queue:work --tries=3 --sleep=1 --backoff=3';         Log=Join-Path $LOG_DIR "queue_$TODAY.log";     Proc=$null; Ports=@()     },
     @{ Name='Parking MQTT Listener';    Cwd=$BACKEND;       Cmd='php artisan mqtt:qrbackgroundlistener';                          Log=Join-Path $LOG_DIR "mqtt_$TODAY.log";      Proc=$null; Ports=@()     },
-    @{ Name='Parking Frontend';         Cwd=$FRONTEND;      Cmd="`"$NPX`" --yes http-server dist -p 3000 --no-clipboard --cors";  Log=Join-Path $LOG_DIR "frontend_$TODAY.log";  Proc=$null; Ports=@(3000) },
+    @{ Name='Parking Frontend';         Cwd=$FRONTEND;      Cmd="`"$NPX`" --yes http-server dist -p 3001 --no-clipboard --cors";  Log=Join-Path $LOG_DIR "frontend_$TODAY.log";  Proc=$null; Ports=@(3001) },
     @{ Name='Mosquitto MQTT Broker';    Cwd='C:\';          Cmd="`"$MOSQ_EXE`" -c `"$MOSQ_CONF`" -v";                             Log=Join-Path $LOG_DIR "mosquitto_$TODAY.log"; Proc=$null; Ports=@(1883) },
     @{ Name='Camera Watcher';           Cwd=$NODE;          Cmd='node watchCameraImages.js';                                     Log=Join-Path $LOG_DIR "watcher_$TODAY.log";   Proc=$null; Ports=@()     },
     @{ Name='Camera Organizer';         Cwd=$NODE;          Cmd='node organize_files_by_date.js';                                Log=Join-Path $LOG_DIR "organizer_$TODAY.log"; Proc=$null; Ports=@()     },

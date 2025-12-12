@@ -261,7 +261,7 @@ function mapTokens(tokens) {
 // ============================================================================
 // 1-MINUTE DEDUPLICATION (AVOID DUPLICATE PUSHES)
 // ============================================================================
-const DEDUP_WINDOW_MS = 10_000; // 1 minute
+const DEDUP_WINDOW_MS = 5_000; // 1 minute (60_000 1 minute)
 const recentEvents = new Map(); // key -> lastProcessedTimestamp (ms)
 
 // Build a "logical event" key from parsed fields

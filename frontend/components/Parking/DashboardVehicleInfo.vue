@@ -3,25 +3,34 @@
     <!-- ========== VEHICLE IN/OUT LOG ========== -->
     <v-card class="panel-card mb-1 log-panel" flat>
       <v-card-title class="panel-title d-flex align-center">
-        Vehicle In/Out <v-spacer /> <span style="color:green">{{ snackbar ? response ? response : '' : ''
-          }}</span>
+        Vehicle In/Out
 
         <v-spacer />
 
-        <!-- Small spinner while loading -->
-        <v-progress-circular v-if="loading" indeterminate size="18" width="2" color="cyan" class="mr-2" />
+        <span style="color:green">
+          {{ snackbar ? (response ? response : "") : "" }}
+        </span>
 
-        <v-icon small @click.stop="getDataFromApi()">mdi-reload</v-icon>
+        <v-spacer />
+
+        <!-- Soft refresh spinner (does NOT block list) -->
+        <v-progress-circular v-if="softRefreshing || loading" indeterminate size="14" width="2" class="mr-2" />
+
+        <v-icon small @click.stop="getDataFromApi(false)">mdi-reload</v-icon>
       </v-card-title>
 
       <v-divider class="mx-3" />
 
       <!-- VEHICLE LIST -->
       <v-list dense class="log-list" :class="{ disabled: loading }" ref="logListRef">
-        <v-list-item v-for="(log, index) in items" :key="index" @click="!loading && selectLog(log, index)" :class="[
-          'log-item',
-          { 'log-item--selected': selectedIndex === index }
-        ]">
+        <v-list-item v-for="(log, index) in items" :key="getVueKey(log, index)"
+          @click="!loading && selectLog(log, index)" :class="[
+            'log-item',
+            {
+              'log-item--selected': selectedKey === getRowKey(log),
+              'log-item--new': !!highlightMap[getRowKey(log)]
+            }
+          ]">
           <v-list-item-content>
             <div class="log-row">
               <div class="log-left">
@@ -45,16 +54,12 @@
               </div>
 
               <div class="log-right">
-
                 <v-icon style="padding-top:5px;" color="red" x-small
                   v-if="log.direction == 'OUT' && log.total_amount > 0 && !log.payment_mode">
                   mdi-cash
                 </v-icon>
-                <div :class="[
-                  'direction-pill',
-                  log.direction === 'OUT' ? 'out' : 'in'
-                ]">
-                  <!-- left icon for IN -->
+
+                <div :class="['direction-pill', log.direction === 'OUT' ? 'out' : 'in']">
                   <span style="width: 20px;">
                     <v-icon x-small class="mr-1" v-if="log.direction === 'IN'">
                       mdi-arrow-left-bold-outline
@@ -63,7 +68,6 @@
 
                   <span>{{ log.direction === 'OUT' ? 'Out' : 'In' }}</span>
 
-                  <!-- right icon for OUT -->
                   <span style="width: 20px;">
                     <v-icon x-small class="mr-1" v-if="log.direction === 'OUT'">
                       mdi-arrow-right-bold-outline
@@ -99,11 +103,14 @@
           </span>
           <span v-else class="guest-badge"> | GUEST</span>
         </span>
+
         <v-spacer />
+
         <span class="info-plate">
           <v-icon small class="mr-1" color="green">mdi-car</v-icon>
           {{ selectedLog.log_vehicle_number || '---' }}
         </span>
+
         <v-btn icon small class="ml-1" color="red" @click.stop="closeInfo">
           <v-icon color="red" small>mdi-close</v-icon>
         </v-btn>
@@ -116,15 +123,12 @@
         <div class="info-row">
           <div class="info-box">
             <div class="info-label">Entry</div>
-            <div class="info-value">
-              {{ entryTime }}
-            </div>
+            <div class="info-value">{{ entryTime }}</div>
           </div>
+
           <div class="info-box info-box--accent">
             <div class="info-label">Exit</div>
-            <div class="info-value">
-              {{ exitTime }}
-            </div>
+            <div class="info-value">{{ exitTime }}</div>
           </div>
         </div>
 
@@ -132,9 +136,7 @@
         <div class="info-row mt-3">
           <div class="info-box">
             <div class="info-label">Duration</div>
-            <div class="info-value">
-              {{ durationValue }}
-            </div>
+            <div class="info-value">{{ durationValue }}</div>
           </div>
 
           <div class="info-box">
@@ -162,9 +164,7 @@
               </div>
 
               <!-- NO DATA -->
-              <div v-else>
-                ---
-              </div>
+              <div v-else>---</div>
             </div>
           </div>
         </div>
@@ -176,12 +176,8 @@
             <v-col>
               <v-icon color="blue lighten-2">mdi-cash-100</v-icon>
               Charges
-              <span v-if="selectedLog.total_amount === 0" class="free-text">
-                FREE
-              </span>
-              <span v-else-if="selectedLog.total_amount">
-                {{ selectedLog.total_amount }} AED
-              </span>
+              <span v-if="selectedLog.total_amount === 0" class="free-text">FREE</span>
+              <span v-else-if="selectedLog.total_amount">{{ selectedLog.total_amount }} AED</span>
               <span v-else>0 AED</span>
             </v-col>
 
@@ -194,6 +190,7 @@
                 Card
               </v-btn>
             </v-col>
+
             <v-col v-else>
               Paid By {{ selectedLog.payment_mode | capitalize }}
             </v-col>
@@ -205,41 +202,42 @@
 </template>
 
 <script>
-
-
 export default {
   name: "VehicleRightPanel",
 
   props: {
-    value: {
-      type: Array,
-      default: () => [],
-    },
-    mqttNewMessage: {
-      type: Object,
-      default: null,
-    },
-    response: {
-      type: String,
-      default: '',
-    },
-    snackbar: {
-      type: Boolean,
-      default: false,
-    },
+    value: { type: Array, default: () => [] },
+    mqttNewMessage: { type: Object, default: null },
+    response: { type: String, default: "" },
+    snackbar: { type: Boolean, default: false },
   },
 
   data() {
     return {
       items: [],
+
       selectedLog: null,
-      selectedIndex: null, // index-based selection
+      selectedIndex: null,
+      selectedKey: null, // stable highlight key (NOT Vue key)
+
       showInfo: false,
+
       page: 1,
       perPage: 20,
+
       cancelTokenSource: null,
       loading: false,
       error: null,
+
+      // background refresh state
+      softRefreshing: false,
+      refreshTimer: null,
+
+      // keep optimistic mqtt rows visible until API catches up
+      optimisticMap: {}, // { [rowKey]: logObject }
+
+      // NEW: 10-second highlight map
+      highlightMap: {}, // { [rowKey]: true }
     };
   },
 
@@ -247,21 +245,30 @@ export default {
     if (this.value && this.value.length) {
       this.items = this.value;
     } else {
-      await this.getDataFromApi();
+      await this.getDataFromApi(false);
     }
   },
 
+  beforeDestroy() {
+    if (this.refreshTimer) clearTimeout(this.refreshTimer);
+    if (this.cancelTokenSource) this.cancelTokenSource.cancel("Component destroyed.");
+  },
+
   watch: {
-    // When new MQTT message arrives:
-    // - close info panel
-    // - clear selection
-    // - reload list
+    // Optimistic UI: merge MQTT log instantly, highlight for 10s, then refresh API later (debounced)
     mqttNewMessage: {
-      async handler() {
-        this.showInfo = false;
-        this.selectedLog = null;
-        this.selectedIndex = null;
-        await this.getDataFromApi();
+      handler(msg) {
+        const newLog = this.normalizeMqttLog(msg);
+        if (newLog) {
+          this.upsertToList(newLog);
+
+          // highlight new vehicle row for 10 seconds
+          const key = this.getRowKey(newLog);
+          this.highlightRowTemporarily(key, 10000);
+        }
+
+        // background sync
+        this.scheduleApiRefresh(1500);
       },
       deep: false,
     },
@@ -283,11 +290,7 @@ export default {
     },
 
     durationValue() {
-      if (
-        !this.record ||
-        !this.record.log_time_out ||
-        this.record.duration_in_minutes == null
-      ) {
+      if (!this.record || !this.record.log_time_out || this.record.duration_in_minutes == null) {
         return "--";
       }
       return `${this.record.duration_in_minutes} min`;
@@ -295,41 +298,127 @@ export default {
   },
 
   methods: {
-    paymentProcess(method, logId) {
-      this.$emit("paymentProcess", method, logId);
+    // ======= COMPOSITE KEY for selection + row identity (can have duplicate ids) =======
+    getRowKey(log) {
+      const id = log?.id != null ? String(log.id) : "noid";
+      const dir = (log?.direction || "NA").toUpperCase();
 
-      this.closeInfo();
+      const t = log?.log_time_out || log?.log_time_in || log?.log_time || "";
+      const plate = log?.log_vehicle_number || "";
 
-      if (this.snackbar) {
-        this.getDataFromApi();
-        this.closeInfo();
+      return `id:${id}|dir:${dir}|t:${t}|p:${plate}`;
+    },
+
+    // ======= UNIQUE Vue key (guaranteed unique even if backend returns true duplicates) =======
+    getVueKey(log, index) {
+      return `${this.getRowKey(log)}|i:${index}`;
+    },
+
+    // ======= 10s highlight =======
+    highlightRowTemporarily(rowKey, duration = 10000) {
+      this.$set(this.highlightMap, rowKey, true);
+
+      setTimeout(() => {
+        this.$delete(this.highlightMap, rowKey);
+      }, duration);
+    },
+
+    // ======= MQTT -> API SHAPE (robust) =======
+    normalizeMqttLog(msg) {
+      // Your payload seems like: msg.message.response.record OR msg.response.record
+      const record =
+        msg?.response?.record ||
+        msg?.message?.response?.record ||
+        msg?.data?.response?.record ||
+        msg?.record ||
+        msg?.message ||
+        msg?.data ||
+        msg;
+
+      if (!record) return null;
+
+      return {
+        id: record.id || null,
+        log_vehicle_number: record.log_vehicle_number || record.vehicle_number || "---",
+        raw_country_region: record.raw_country_region || record.country || null,
+        log_time: record.out_time || record.in_time || null,
+        log_time_in: record.in_time || null,
+        log_time_out: record.out_time || null,
+        direction: record.out_time ? "OUT" : "IN",
+        total_amount: Number(record.total_amount || 0),
+        payment_mode: record.payment_mode || null,
+        ...record,
+      };
+    },
+
+    // ======= UPSERT + PREPEND =======
+    upsertToList(newLog) {
+      const key = this.getRowKey(newLog);
+
+      // keep optimistic row until API catches up
+      this.$set(this.optimisticMap, key, newLog);
+
+      const idx = this.items.findIndex(x => this.getRowKey(x) === key);
+
+      if (idx !== -1) {
+        const merged = { ...this.items[idx], ...newLog };
+        this.items.splice(idx, 1);
+        this.items.unshift(merged);
+      } else {
+        this.items.unshift(newLog);
       }
 
-      // setTimeout(() => {
-      //   this.getDataFromApi();
-      //   this.closeInfo();
-      // }, 1000*2);
+      if (this.items.length > this.perPage) {
+        this.items = this.items.slice(0, this.perPage);
+      }
+    },
 
+    // ======= DEBOUNCED BACKGROUND REFRESH =======
+    scheduleApiRefresh(delayMs = 1200) {
+      if (this.refreshTimer) clearTimeout(this.refreshTimer);
+
+      this.refreshTimer = setTimeout(async () => {
+        this.softRefreshing = true;
+        try {
+          await this.getDataFromApi(true); // silent refresh
+        } finally {
+          this.softRefreshing = false;
+        }
+      }, delayMs);
+    },
+
+    // ======= UI ACTIONS =======
+    async paymentProcess(method, logId) {
+      this.$emit("paymentProcess", method, logId);
+      this.showInfo = false;
+
+      if (this.snackbar) {
+        this.softRefreshing = true;
+        try {
+          await this.getDataFromApi(true);
+        } finally {
+          this.softRefreshing = false;
+        }
+      }
     },
 
     selectLog(log, index) {
       if (this.loading) return;
       this.selectedLog = log;
       this.selectedIndex = index;
+      this.selectedKey = this.getRowKey(log);
       this.showInfo = true;
       this.$emit("select", log);
     },
 
     closeInfo() {
       this.showInfo = false;
-      // keep selectedIndex if you want row to stay highlighted,
-      // or reset it here if you want full reset:
-      // this.selectedIndex = null;
     },
 
-    async getDataFromApi() {
+    // ======= API LOAD =======
+    async getDataFromApi(silent = false) {
       try {
-        this.loading = true;
+        if (!silent) this.loading = true;
         this.error = null;
 
         const params = {
@@ -350,14 +439,46 @@ export default {
         };
 
         const { data } = await this.$axios.get("parking_log_live", options);
-        this.items = Array.isArray(data) ? data : data.data || [];
+        const list = Array.isArray(data) ? data : data.data || [];
+
+        this.items = list;
+
+        // // Re-apply optimistic MQTT rows if API is still behind
+        // const apiKeys = new Set(this.items.map(x => this.getRowKey(x)));
+
+        // Object.keys(this.optimisticMap).forEach(k => {
+        //   if (!apiKeys.has(k)) {
+        //     this.items.unshift(this.optimisticMap[k]);
+        //   } else {
+        //     this.$delete(this.optimisticMap, k);
+        //   }
+        // });
+
+        if (this.items.length > this.perPage) {
+          this.items = this.items.slice(0, this.perPage);
+        }
+
+        // Re-hydrate selected item after refresh (if any)
+        if (this.selectedKey) {
+          const foundIndex = this.items.findIndex(x => this.getRowKey(x) === this.selectedKey);
+
+          if (foundIndex !== -1) {
+            this.selectedIndex = foundIndex;
+            this.selectedLog = this.items[foundIndex];
+          } else {
+            this.selectedIndex = null;
+            this.selectedLog = null;
+            this.selectedKey = null;
+            this.showInfo = false;
+          }
+        }
       } catch (err) {
         if (!this.$axios.isCancel(err)) {
           console.error("Error loading parking logs", err);
           this.error = "Failed to load vehicle logs.";
         }
       } finally {
-        this.loading = false;
+        if (!silent) this.loading = false;
       }
     },
   },
@@ -430,6 +551,29 @@ export default {
 .log-item--selected {
   background: rgba(0, 200, 255, 0.15);
   border-left: 3px solid #00e5ff;
+}
+
+/* NEW row highlight (10s) */
+.log-item--new {
+  background: linear-gradient(90deg,
+      rgba(0, 255, 200, 0.25),
+      rgba(0, 150, 255, 0.15));
+  border-left: 3px solid #00ffcc;
+  animation: pulseHighlight 1.2s ease-in-out infinite;
+}
+
+@keyframes pulseHighlight {
+  0% {
+    box-shadow: inset 0 0 0 rgba(0, 255, 200, 0);
+  }
+
+  50% {
+    box-shadow: inset 0 0 12px rgba(0, 255, 200, 0.35);
+  }
+
+  100% {
+    box-shadow: inset 0 0 0 rgba(0, 255, 200, 0);
+  }
 }
 
 /* Layout inside row */
@@ -571,13 +715,5 @@ export default {
 .free-text {
   color: #4caf50;
   font-weight: 700;
-}
-
-/* Payment buttons */
-.payment-btn {
-  border-radius: 999px;
-  text-transform: none;
-  font-size: 13px;
-  font-weight: 600;
 }
 </style>
