@@ -314,10 +314,10 @@ async function handleBackgroundFile(filePath) {
 
   logLine("📥 New file:", name);
 
-  if (!(await waitForStableFile(filePath))) {
-    logLine("⚠️ Not stable, skipped:", name);
-    return;
-  }
+  // if (!(await waitForStableFile(filePath))) {
+  //   logLine("⚠️ Not stable, skipped:", name);
+  //   return;
+  // }
 
   const base = path.basename(name, path.extname(name));
   const tokens = base.split("_").filter(Boolean);
