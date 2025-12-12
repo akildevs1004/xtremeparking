@@ -2,8 +2,9 @@
 # XtremeParking - Restart Supervisor (BAT friendly)
 # FEATURES:
 # 1) Stop existing services, start fresh
-# 2) Live console: Node Watcher lines + ERROR lines from any service (with timestamps)
-# 3) Auto-restart services on crash (port/process detection)
+# 2) Live console: Node Watcher lines + ERROR/CRITICAL from backend/node/camera (timestamped)
+#    (Frontend logs are NOT displayed)
+# 3) Auto-restart services on crash (HTTP health check for frontend + warmup)
 # 4) CRITICAL errors are marked differently (red banner)
 
 $ErrorActionPreference = 'Continue'
@@ -37,8 +38,8 @@ function Get-CameraPorts([int]$count) {
 $CAMERA_PORTS = Get-CameraPorts $CAMERA_COUNT
 
 # ---------------- HEALTH CHECK INTERVALS ----------------
-$SERVICE_CHECK_MS = 2000   # restart quickly if something dies
-$LOG_POLL_MS      = 700    # live console logs
+$SERVICE_CHECK_MS = 2500   # restart if something dies
+$LOG_POLL_MS      = 700    # live console log polling
 
 # ---------------- HELPERS ----------------
 function Assert-Path { param([string]$Path,[string]$Msg) if (-not (Test-Path $Path)) { throw ("{0}: {1}" -f $Msg, $Path) } }
@@ -93,14 +94,58 @@ function Hard-Stop-All {
 $global:StartedProcs = @()
 
 # ---------------- SERVICE DEFINITIONS ----------------
+# Notes:
+# - Frontend uses HTTP health check + warmup to prevent false restarts.
 $services = @(
-    @{ Name="Laravel Backend (8000)"; Dir=$BACKEND; Command="php artisan serve --host=0.0.0.0 --port=8000"; Log="laravel_8000.log"; Ports=@(8000); MatchCmd="artisan serve"; RestartCooldownSec=3; LastRestart=(Get-Date).AddYears(-10) },
-    @{ Name="Queue Worker";          Dir=$BACKEND; Command="php artisan queue:work --tries=3 --sleep=1 --backoff=3"; Log="queue_worker.log"; Ports=@();     MatchCmd="artisan queue:work"; RestartCooldownSec=3; LastRestart=(Get-Date).AddYears(-10) },
-    @{ Name="MQTT Listener";         Dir=$BACKEND; Command="php artisan mqtt:qrbackgroundlistener"; Log="mqtt_listener.log"; Ports=@(); MatchCmd="artisan mqtt:qrbackgroundlistener"; RestartCooldownSec=3; LastRestart=(Get-Date).AddYears(-10) },
-    @{ Name="Frontend (3001)";       Dir=$FRONTEND; Command="`"$NPX`" --yes http-server dist -p 3001 --no-clipboard --cors"; Log="frontend_3001.log"; Ports=@(3001); MatchCmd="http-server dist -p 3001"; RestartCooldownSec=3; LastRestart=(Get-Date).AddYears(-10) },
-    @{ Name="Node Watcher";          Dir=$NODE; Command="node watchCameraImages.js"; Log="node_watcher.log"; Ports=@(); MatchCmd="watchCameraImages.js"; RestartCooldownSec=3; LastRestart=(Get-Date).AddYears(-10) },
-    @{ Name="Node Organizer";        Dir=$NODE; Command="node organize_files_by_date.js"; Log="node_organizer.log"; Ports=@(); MatchCmd="organize_files_by_date.js"; RestartCooldownSec=3; LastRestart=(Get-Date).AddYears(-10) },
-    @{ Name="Camera Live Stream";    Dir=$CAMERA_STREAM; Command="node start_camera_live_stream.js"; Log="camera_live_stream.log"; Ports=$CAMERA_PORTS; MatchCmd="start_camera_live_stream.js"; RestartCooldownSec=5; LastRestart=(Get-Date).AddYears(-10) }
+    @{
+        Name="Laravel Backend (8000)"; Dir=$BACKEND;
+        Command="php artisan serve --host=0.0.0.0 --port=8000";
+        Log="laravel_8000.log"; Ports=@(8000); MatchCmd="artisan serve";
+        WarmupSec=8; RestartCooldownSec=5;
+        LastRestart=(Get-Date).AddYears(-10); LastStart=(Get-Date).AddYears(-10)
+    },
+    @{
+        Name="Queue Worker"; Dir=$BACKEND;
+        Command="php artisan queue:work --tries=3 --sleep=1 --backoff=3";
+        Log="queue_worker.log"; Ports=@(); MatchCmd="artisan queue:work";
+        WarmupSec=6; RestartCooldownSec=5;
+        LastRestart=(Get-Date).AddYears(-10); LastStart=(Get-Date).AddYears(-10)
+    },
+    @{
+        Name="MQTT Listener"; Dir=$BACKEND;
+        Command="php artisan mqtt:qrbackgroundlistener";
+        Log="mqtt_listener.log"; Ports=@(); MatchCmd="artisan mqtt:qrbackgroundlistener";
+        WarmupSec=6; RestartCooldownSec=5;
+        LastRestart=(Get-Date).AddYears(-10); LastStart=(Get-Date).AddYears(-10)
+    },
+    @{
+        Name="Frontend (3001)"; Dir=$FRONTEND;
+        Command="`"$NPX`" --yes http-server dist -p 3001 --no-clipboard --cors";
+        Log="frontend_3001.log"; Ports=@(3001); MatchCmd="http-server dist -p 3001";
+        HealthUrl="http://127.0.0.1:3001/"; WarmupSec=12; RestartCooldownSec=12;
+        LastRestart=(Get-Date).AddYears(-10); LastStart=(Get-Date).AddYears(-10)
+    },
+    @{
+        Name="Node Watcher"; Dir=$NODE;
+        Command="node watchCameraImages.js";
+        Log="node_watcher.log"; Ports=@(); MatchCmd="watchCameraImages.js";
+        WarmupSec=5; RestartCooldownSec=5;
+        LastRestart=(Get-Date).AddYears(-10); LastStart=(Get-Date).AddYears(-10)
+    },
+    @{
+        Name="Node Organizer"; Dir=$NODE;
+        Command="node organize_files_by_date.js";
+        Log="node_organizer.log"; Ports=@(); MatchCmd="organize_files_by_date.js";
+        WarmupSec=5; RestartCooldownSec=5;
+        LastRestart=(Get-Date).AddYears(-10); LastStart=(Get-Date).AddYears(-10)
+    },
+    @{
+        Name="Camera Live Stream"; Dir=$CAMERA_STREAM;
+        Command="node start_camera_live_stream.js";
+        Log="camera_live_stream.log"; Ports=$CAMERA_PORTS; MatchCmd="start_camera_live_stream.js";
+        HealthUrl=$null; WarmupSec=12; RestartCooldownSec=12;
+        LastRestart=(Get-Date).AddYears(-10); LastStart=(Get-Date).AddYears(-10)
+    }
 )
 
 # ---------------- START SERVICE (cmd.exe + combined log) ----------------
@@ -118,6 +163,7 @@ function Start-Svc {
             $global:StartedProcs += $p
             Write-Host ("[{0}]        PID {1}" -f (NowTS), $p.Id) -ForegroundColor DarkGray
         }
+        $Svc.LastStart = Get-Date
     } catch {
         Write-Host ("[{0}] [FAIL] {1} : {2}" -f (NowTS), $Svc.Name, $_.Exception.Message) -ForegroundColor Red
     }
@@ -126,6 +172,25 @@ function Start-Svc {
 function Is-ServiceUp {
     param([hashtable]$Svc)
 
+    # Warm-up grace period
+    $warm = 0
+    if ($Svc.ContainsKey('WarmupSec') -and $Svc.WarmupSec) { $warm = [int]$Svc.WarmupSec }
+    if ($warm -gt 0 -and $Svc.ContainsKey('LastStart')) {
+        $age = (New-TimeSpan -Start $Svc.LastStart -End (Get-Date)).TotalSeconds
+        if ($age -lt $warm) { return $true }
+    }
+
+    # Prefer HTTP health check if provided (Frontend best)
+    if ($Svc.ContainsKey('HealthUrl') -and $Svc.HealthUrl) {
+        try {
+            $r = Invoke-WebRequest -Uri $Svc.HealthUrl -UseBasicParsing -TimeoutSec 2
+            if ($r.StatusCode -ge 200 -and $r.StatusCode -lt 500) { return $true }
+        } catch {
+            # fall through
+        }
+    }
+
+    # Port-based truth
     if ($Svc.Ports -and $Svc.Ports.Count -gt 0) {
         foreach ($p in $Svc.Ports) {
             if (-not (Test-PortListening -Port $p)) { return $false }
@@ -133,14 +198,13 @@ function Is-ServiceUp {
         return $true
     }
 
+    # Process command line contains marker
     if ($Svc.MatchCmd -and $Svc.MatchCmd.Trim().Length -gt 0) {
         try {
             $procs = Get-CimInstance Win32_Process -Filter "Name='cmd.exe' OR Name='node.exe' OR Name='php.exe'" |
                      Where-Object { $_.CommandLine -and $_.CommandLine -like "*$($Svc.MatchCmd)*" }
             return ($procs.Count -gt 0)
-        } catch {
-            return $false
-        }
+        } catch { return $false }
     }
 
     return $false
@@ -151,36 +215,38 @@ function Restart-ServiceSafe {
 
     $now = Get-Date
     $since = ($now - $Svc.LastRestart).TotalSeconds
-    if ($since -lt $Svc.RestartCooldownSec) { return }
+    if ($since -lt [int]$Svc.RestartCooldownSec) { return }
 
     Write-Host ""
     Write-Host ("[{0}] [RESTART] {1} (Reason: {2})" -f (NowTS), $Svc.Name, $Reason) -ForegroundColor Yellow
 
+    # Stop by ports
     if ($Svc.Ports -and $Svc.Ports.Count -gt 0) {
         foreach ($p in $Svc.Ports) { Kill-ListeningPort $p }
     }
 
+    # Stop by marker
     if ($Svc.MatchCmd) { Kill-ByCmdContains -ContainsText $Svc.MatchCmd }
 
+    # Stream special: also kill ffmpeg
     if ($Svc.Name -like "*Camera Live Stream*") {
         Get-Process ffmpeg -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     }
 
     Start-Sleep -Milliseconds 600
     Start-Svc -Svc $Svc
-
     $Svc.LastRestart = Get-Date
 }
 
 # ---------------- LIVE LOG MONITOR ----------------
+# NOTE: Frontend logs intentionally excluded from console output
 $WATCH_LOGS = @(
     @{ Name = 'Node Watcher';   File = 'node_watcher.log' },
     @{ Name = 'Node Organizer'; File = 'node_organizer.log' },
     @{ Name = 'Camera Stream';  File = 'camera_live_stream.log' },
     @{ Name = 'Laravel';        File = 'laravel_8000.log' },
     @{ Name = 'Queue';          File = 'queue_worker.log' },
-    @{ Name = 'MQTT';           File = 'mqtt_listener.log' },
-    @{ Name = 'Frontend';       File = 'frontend_3001.log' }
+    @{ Name = 'MQTT';           File = 'mqtt_listener.log' }
 )
 
 $ERROR_PATTERNS = @(
@@ -251,10 +317,12 @@ function Read-NewLogContent {
 
                 $ts = NowTS
 
+                # Always show Node Watcher live
                 if ($l.Name -eq 'Node Watcher') {
                     Write-Host ("[{0}] [Watcher] {1}" -f $ts, $line) -ForegroundColor Gray
                 }
 
+                # CRITICAL
                 if (Is-CriticalLine $line) {
                     Write-Host ""
                     Write-Host ("[{0}] CRITICAL [{1}]" -f $ts, $l.Name) -ForegroundColor White -BackgroundColor DarkRed
@@ -263,6 +331,7 @@ function Read-NewLogContent {
                     continue
                 }
 
+                # ERROR
                 if (Is-ErrorLine $line) {
                     Write-Host ""
                     Write-Host ("[{0}] !!! ERROR from {1} !!!" -f $ts, $l.Name) -ForegroundColor Red
@@ -283,7 +352,8 @@ Write-Host "==============================================="
 Write-Host " XtremeParking Supervisor (Restart + Auto-Heal)"
 Write-Host (" Logs: {0}" -f $LOG_DIR)
 Write-Host " Live: Node Watcher + ERROR + CRITICAL (timestamped)"
-Write-Host " Auto-restart: ON (port/process checks)"
+Write-Host " Auto-restart: ON (HTTP check for frontend + warmup)"
+Write-Host " Frontend logs: NOT displayed"
 Write-Host " Close window or CTRL+C to stop all services"
 Write-Host "===============================================`n"
 

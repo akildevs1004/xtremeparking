@@ -135,7 +135,7 @@ async function loadConfig() {
 
     logLine("✅ Config loaded from API");
   } catch (err) {
-    logLine("❌ Failed API config load. Using .env fallback.", err.message);
+    //logLine("❌ Failed API config load. Using .env fallback.", err.message);
 
     COMPANY_ID = (process.env.COMPANY_ID ?? "").toString().trim();
 
