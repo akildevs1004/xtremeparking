@@ -337,6 +337,9 @@ export default {
 
       if (!record) return null;
 
+
+      console.log("record.log_vehicle_number ", record.log_vehicle_number);
+
       return {
         id: record.id || null,
         log_vehicle_number: record.log_vehicle_number || record.vehicle_number || "---",

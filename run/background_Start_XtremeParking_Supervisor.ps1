@@ -1,354 +1,167 @@
-# XtremeParking Supervisor with ONE ROOT directory variable
-# - Starts services (if not already running) and monitors status
-# - Tracks PIDs for all services it starts
-# - On exit (CTRL+C), stops all managed PIDs so ports 8000, 3001, etc. are freed
+# background_Start_XtremeParking_Supervisor.ps1
+# XtremeParking - Restart Supervisor (BAT friendly)
+# - Stops existing services (ports + known node scripts + ffmpeg)
+# - Starts backend / frontend / node services (via cmd.exe, combined logs)
+# - Shows LIVE Node Watcher log lines in console
+# - Highlights ERROR lines from ANY service log in console
 
-$ErrorActionPreference = 'Stop'
-[Console]::Title = 'XtremeParking - Supervisor (Background, PID-Managed)'
-[Console]::TreatControlCAsInput = $true
+$ErrorActionPreference = 'Continue'
+[Console]::Title = 'XtremeParking Supervisor (Restart) - Close/CTRL+C stops all'
 
-# -------- ROOT PATH --------
-# $ROOT = 'D:\xtremeparking'
+# ---------------- ROOT ----------------
 $ROOT = 'D:\projects\vehicleparkingbills\xtremeparking'
+$BACKEND       = Join-Path $ROOT 'backend'
+$FRONTEND      = Join-Path $ROOT 'frontend'
+$NODE          = Join-Path $ROOT 'nodescript'
+$CAMERA_STREAM = Join-Path $ROOT 'nodescript'
+$LOG_DIR       = Join-Path $ROOT 'Log\_supervisor_runtime'
 
-# -------- ALL DIRECTORIES FROM ROOT --------
-$BACKEND        = Join-Path $ROOT 'backend'
-$FRONTEND       = Join-Path $ROOT 'frontend'
-$NODE           = Join-Path $ROOT 'nodescript'
-$CAMERA_STREAM  = Join-Path $ROOT 'camera_live_stream'
-$LOG_ROOT       = Join-Path $ROOT 'Log'
+$NPX = Join-Path $env:ProgramFiles 'nodejs\npx.cmd'
 
-# -------- TOOLS --------
-$MOSQ_EXE  = 'C:\Program Files\mosquitto\mosquitto.exe'
-$MOSQ_CONF = 'C:\Program Files\mosquitto\mosquitto.conf'
-$NPX       = Join-Path $env:ProgramFiles 'nodejs\npx.cmd'
+if (-not (Test-Path $LOG_DIR)) { New-Item -Path $LOG_DIR -ItemType Directory -Force | Out-Null }
 
-# -------- API CONFIG (MONITOR ONLY) --------
-$MQTT_API_URL   = 'http://127.0.0.1:8000/api/get_mqtt_server'
-$CAMERA_API_URL = 'http://127.0.0.1:8000/api/parking-cameras?company_id=8&login_user_type=company'
-
-# intervals (seconds)
-$SERVICE_CHECK_INTERVAL = 60
-$LOG_CHECK_INTERVAL     = 5
-
-# -------- CAMERA CONFIG (ports) --------
+# ---------------- PORTS ----------------
 $CAMERA_COUNT = 2
-
-function Get-CameraPorts {
-    param([int]$count)
-
+function Get-CameraPorts([int]$count) {
     $ports = @()
-    for ($i = 1; $i -le $count; $i++) {
-        # HTTP port: 7080 + i  => 7081, 7082, ...
-        $ports += (7080 + $i)
-        # WebSocket port: 9990 + i => 9991, 9992, ...
-        $ports += (9990 + $i)
+    for ($i=1; $i -le $count; $i++) {
+        $ports += (7080 + $i)  # 7081, 7082...
+        $ports += (9990 + $i)  # 9991, 9992...
     }
     return $ports
 }
+$CAMERA_PORTS   = Get-CameraPorts $CAMERA_COUNT
+$CRITICAL_PORTS = @(8000,3001) + $CAMERA_PORTS
 
-$CAMERA_PORTS = Get-CameraPorts -count $CAMERA_COUNT
-
-# -------- DATE + LOG SETUP --------
-$TODAY   = (Get-Date).ToString('yyyy-MM-dd')
-$LOG_DIR = Join-Path $LOG_ROOT $TODAY
-if (!(Test-Path $LOG_DIR)) {
-    New-Item -Path $LOG_DIR -ItemType Directory -Force | Out-Null
+# ---------------- HELPERS ----------------
+function Assert-Path {
+    param([string]$Path,[string]$Msg)
+    if (-not (Test-Path $Path)) { throw ("{0}: {1}" -f $Msg, $Path) }
 }
-
-Write-Host "========================================"
-Write-Host "  XtremeParking Supervisor - $TODAY"
-Write-Host "  ROOT : $ROOT"
-Write-Host "  LOGS : $LOG_DIR"
-Write-Host "========================================`n"
-
-# -------- GLOBAL ERROR LOG --------
-$GLOBAL_ERROR_LOG = Join-Path $LOG_DIR "errors_all_$TODAY.log"
-
-function Write-ErrorAllLog {
-    param([string]$Message)
-    $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-    try {
-        "[$ts] $Message" | Out-File -FilePath $GLOBAL_ERROR_LOG -Encoding UTF8 -Append -ErrorAction Stop
-    } catch {
-        Write-Host "Failed to write to error log: $Message ($($_.Exception.Message))" -ForegroundColor Red
+function Assert-Cmd {
+    param([string]$Cmd)
+    if (-not (Get-Command $Cmd -ErrorAction SilentlyContinue)) {
+        throw ("Command not found in PATH: {0}" -f $Cmd)
     }
 }
 
-# -------- BASIC HELPERS --------
-function Assert-File {
-    param([string]$Path,[string]$Hint)
-    if (-not (Test-Path $Path)) {
-        throw "Missing: $Path ($Hint)"
-    }
-}
-
-function Assert-ExeOnPath {
-    param([string]$ExeName,[string]$Hint)
-    $cmd = Get-Command $ExeName -ErrorAction SilentlyContinue
-    if (-not $cmd) {
-        throw "Missing executable '$ExeName'. $Hint"
-    }
-}
-
-function Test-PortListening {
+function Kill-ListeningPort {
     param([int]$Port)
     try {
-        return [bool](Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction Stop)
-    } catch {
-        return $false
-    }
+        Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty OwningProcess -Unique |
+        ForEach-Object { try { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue } catch {} }
+    } catch {}
 }
 
-# -------- START PROCESS FUNCTION --------
-function Start-ManagedProcess {
+function Kill-NodeByScript {
+    param([string]$Script)
+    try {
+        Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
+            Where-Object { $_.CommandLine -and $_.CommandLine -like "*$Script*" } |
+            ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue } catch {} }
+    } catch {}
+}
+
+function Hard-Stop-All {
+    Write-Host "`n[STOP] Killing existing listeners/services..." -ForegroundColor Yellow
+
+    foreach ($p in $CRITICAL_PORTS) { Kill-ListeningPort $p }
+
+    Kill-NodeByScript 'watchCameraImages.js'
+    Kill-NodeByScript 'organize_files_by_date.js'
+    Kill-NodeByScript 'start_camera_live_stream.js'
+
+    Get-Process ffmpeg -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+}
+
+# Track started wrapper processes (cmd.exe) so we can stop them on exit
+$global:StartedProcs = @()
+
+# ---------------- START SERVICE (ALL via cmd.exe, 1 log file, stdout+stderr combined) ----------------
+function Start-Svc {
     param(
-        [string]$Name,
-        [string]$Cwd,
-        [string]$Cmd,
-        [string]$Log
+        [Parameter(Mandatory=$true)][string]$Name,
+        [Parameter(Mandatory=$true)][string]$Dir,
+        [Parameter(Mandatory=$true)][string]$CommandLine,  # e.g. php artisan serve ...
+        [Parameter(Mandatory=$true)][string]$LogFile
     )
 
-    $logDir = Split-Path $Log -Parent
-    if (-not (Test-Path $logDir)) {
-        New-Item -Path $logDir -ItemType Directory -Force | Out-Null
-    }
+    $logPath = Join-Path $LOG_DIR $LogFile
+    Write-Host "[START] $Name" -ForegroundColor Cyan
+    Write-Host "       LOG $logPath" -ForegroundColor DarkGray
 
-    if (-not (Test-Path $Log)) {
-        try {
-            "===== START: $Name @ $(Get-Date) =====`r`n" |
-                Out-File -FilePath $Log -Encoding UTF8 -ErrorAction Stop
-        } catch {
-            Write-Host "[WARN] Could not initialize log file $Log for '$Name': $($_.Exception.Message)" -ForegroundColor Yellow
-        }
-    }
-
-    $full = "cd /d `"$Cwd`" && ($Cmd) >> `"$Log`" 2>>&1"
-    Start-Process "cmd.exe" -ArgumentList "/c", $full -WindowStyle Hidden -PassThru
-}
-
-# -------- PREFLIGHT --------
-Assert-File $MOSQ_EXE  "Install Mosquitto or fix path."
-Assert-File $MOSQ_CONF "Provide mosquitto.conf."
-Assert-File $NPX       "Node.js npx.cmd not found. Install Node.js."
-
-Assert-ExeOnPath 'php'  'Install PHP and ensure it is in the PATH.'
-Assert-ExeOnPath 'node' 'Install Node.js and ensure it is in the PATH.'
-
-if (-not (Test-Path (Join-Path $FRONTEND 'dist'))) {
-    Write-Host "[WARN] Frontend dist/ not found. http-server will run but serve 404s." -ForegroundColor Yellow
-}
-
-# -------- SERVICES DEFINITIONS --------
-$services = @(
-    @{ Name='Parking Laravel Server';   Cwd=$BACKEND;       Cmd='php artisan serve --host=0.0.0.0 --port=8000';                   Log=Join-Path $LOG_DIR "laravel_$TODAY.log";   Proc=$null; Ports=@(8000) },
-    @{ Name='Parking Queue Worker';     Cwd=$BACKEND;       Cmd='php artisan queue:work --tries=3 --sleep=1 --backoff=3';         Log=Join-Path $LOG_DIR "queue_$TODAY.log";     Proc=$null; Ports=@()     },
-    @{ Name='Parking MQTT Listener';    Cwd=$BACKEND;       Cmd='php artisan mqtt:qrbackgroundlistener';                          Log=Join-Path $LOG_DIR "mqtt_$TODAY.log";      Proc=$null; Ports=@()     },
-    @{ Name='Parking Frontend';         Cwd=$FRONTEND;      Cmd="`"$NPX`" --yes http-server dist -p 3001 --no-clipboard --cors";  Log=Join-Path $LOG_DIR "frontend_$TODAY.log";  Proc=$null; Ports=@(3001) },
-    @{ Name='Mosquitto MQTT Broker';    Cwd='C:\';          Cmd="`"$MOSQ_EXE`" -c `"$MOSQ_CONF`" -v";                             Log=Join-Path $LOG_DIR "mosquitto_$TODAY.log"; Proc=$null; Ports=@(1883) },
-    @{ Name='Camera Watcher';           Cwd=$NODE;          Cmd='node watchCameraImages.js';                                     Log=Join-Path $LOG_DIR "watcher_$TODAY.log";   Proc=$null; Ports=@()     },
-    @{ Name='Camera Organizer';         Cwd=$NODE;          Cmd='node organize_files_by_date.js';                                Log=Join-Path $LOG_DIR "organizer_$TODAY.log"; Proc=$null; Ports=@()     },
-    @{ Name='Camera Live Stream';       Cwd=$CAMERA_STREAM; Cmd='node start_camera_live_stream.js';                              Log=Join-Path $LOG_DIR "stream_$TODAY.log";    Proc=$null; Ports=$CAMERA_PORTS }
-)
-
-$global:services = $services
-
-# -------- LOG FILES TO TAIL --------
-$logFiles = @(
-    @{ Name='Watcher';   Path = Join-Path $LOG_DIR "watcher_$TODAY.log" },
-    @{ Name='ErrorsAll'; Path = $GLOBAL_ERROR_LOG }
-)
-
-$logState = @{}
-foreach ($lf in $logFiles) {
-    $logState[$lf.Path] = @{
-        Length      = 0
-        Initialized = $false
-    }
-}
-
-# -------- PORT HELPERS --------
-function Get-ServicePorts {
-    param($svc)
-
-    if ($svc -is [hashtable]) {
-        if ($svc.ContainsKey('Ports') -and $svc['Ports']) {
-            return [int[]]$svc['Ports']
-        } else {
-            return @()
-        }
-    }
-
-    if ($svc.PSObject.Properties.Name -contains 'Ports' -and $svc.Ports) {
-        return [int[]]$svc.Ports
-    }
-
-    return @()
-}
-
-function Are-ServicePortsAllListening {
-    param($svc)
-
-    $ports = Get-ServicePorts $svc
-    if (-not $ports -or $ports.Count -eq 0) {
-        return $null
-    }
-
-    foreach ($p in $ports) {
-        if (-not (Test-PortListening -Port $p)) {
-            return $false
-        }
-    }
-
-    return $true
-}
-
-# -------- CONFIG MONITOR (API ONLY) --------
-function Check-Configs {
-    Write-Host ""
-    Write-Host ("===== CONFIG CHECK @ {0} =====" -f (Get-Date).ToString("HH:mm:ss")) -ForegroundColor DarkCyan
-
-    # MQTT
     try {
-        $mqtt = Invoke-RestMethod -Uri $MQTT_API_URL -Method Get -TimeoutSec 5
-        Write-Host "[CONFIG] MQTT server API OK" -ForegroundColor Green
-
-        $mqttHost = $null
-        $mqttTcp  = $null
-        $mqttWs   = $null
-
-        if ($mqtt.PSObject.Properties.Name -contains 'mqtt_server') { $mqttHost = $mqtt.mqtt_server }
-        elseif ($mqtt.PSObject.Properties.Name -contains 'server')  { $mqttHost = $mqtt.server }
-        elseif ($mqtt.PSObject.Properties.Name -contains 'host')    { $mqttHost = $mqtt.host }
-
-        if ($mqtt.PSObject.Properties.Name -contains 'mqtt_port')    { $mqttTcp = $mqtt.mqtt_port }
-        elseif ($mqtt.PSObject.Properties.Name -contains 'tcp_port') { $mqttTcp = $mqtt.tcp_port }
-        elseif ($mqtt.PSObject.Properties.Name -contains 'port')     { $mqttTcp = $mqtt.port }
-
-        if ($mqtt.PSObject.Properties.Name -contains 'mqtt_ws_port')       { $mqttWs = $mqtt.mqtt_ws_port }
-        elseif ($mqtt.PSObject.Properties.Name -contains 'ws_port')        { $mqttWs = $mqtt.ws_port }
-        elseif ($mqtt.PSObject.Properties.Name -contains 'websocket_port') { $mqttWs = $mqtt.websocket_port }
-
-        if ($mqttHost -or $mqttTcp -or $mqttWs) {
-            $h = if ($mqttHost) { $mqttHost } else { '-' }
-            $t = if ($mqttTcp)  { $mqttTcp }  else { '-' }
-            $w = if ($mqttWs)   { $mqttWs }   else { '-' }
-
-            Write-Host ("[CONFIG] MQTT Host: {0}  TCP: {1}  WS: {2}" -f $h, $t, $w)
-        } else {
-            Write-Host "[CONFIG] MQTT raw response:"
-            $mqtt | ConvertTo-Json -Depth 5 | Write-Host
+        # Combine output: >> log 2>>&1
+        $full = "cd /d `"$Dir`" && ($CommandLine) >> `"$logPath`" 2>>&1"
+        $p = Start-Process -FilePath "cmd.exe" `
+                           -ArgumentList @("/d","/c",$full) `
+                           -WindowStyle Hidden `
+                           -PassThru
+        if ($p) {
+            $global:StartedProcs += $p
+            Write-Host "       PID $($p.Id)" -ForegroundColor DarkGray
         }
     } catch {
-        Write-Host  "[CONFIG] MQTT server API ERROR: $($_.Exception.Message)" -ForegroundColor Red
-        Write-ErrorAllLog "MQTT API error: $($_.Exception.Message)"
-    }
-
-    # CAMERAS
-    try {
-        $cameras = Invoke-RestMethod -Uri $CAMERA_API_URL -Method Get -TimeoutSec 10
-
-        if ($null -eq $cameras) {
-            Write-Host "[CONFIG] Camera API returned no data." -ForegroundColor Yellow
-            return
-        }
-
-        $camList = @()
-        if ($cameras -is [System.Collections.IEnumerable] -and -not ($cameras -is [string])) {
-            $camList = @($cameras)
-        } else {
-            $camList = @($cameras)
-        }
-
-        $count = $camList.Count
-        Write-Host ("[CONFIG] Cameras from API: {0}" -f $count) -ForegroundColor Green
-
-        if ($count -gt 0) {
-            $table = $camList |
-                Select-Object `
-                    @{Name='ID';   Expression={ $_.id }}, `
-                    @{Name='Name'; Expression={ $_.name }}, `
-                    @{Name='RTSP'; Expression={ $_.rtsp_url }} |
-                Format-Table -AutoSize | Out-String
-            Write-Host $table
-        }
-    } catch {
-        Write-Host  "[CONFIG] Camera API ERROR: $($_.Exception.Message)" -ForegroundColor Red
-        Write-ErrorAllLog "Camera API error: $($_.Exception.Message)"
+        Write-Host "[FAIL] $Name : $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
-# -------- SERVICE STATUS + LOG CHECK --------
-function Is-ServiceUp {
-    param($svc)
+# ---------------- LIVE LOG MONITOR CONFIG ----------------
+$WATCH_LOGS = @(
+    @{ Name = 'Node Watcher';   File = 'node_watcher.log' },
+    @{ Name = 'Node Organizer'; File = 'node_organizer.log' },
+    @{ Name = 'Camera Stream';  File = 'camera_live_stream.log' },
+    @{ Name = 'Laravel';        File = 'laravel_8000.log' },
+    @{ Name = 'Queue';          File = 'queue_worker.log' },
+    @{ Name = 'MQTT';           File = 'mqtt_listener.log' },
+    @{ Name = 'Frontend';       File = 'frontend_3001.log' }
+)
 
-    $portsStatus = Are-ServicePortsAllListening $svc
+$ERROR_PATTERNS = @(
+    '(?i)\berror\b',
+    '(?i)\bexception\b',
+    '(?i)\bfatal\b',
+    '(?i)\bfailed\b',
+    '(?i)\bcannot\b',
+    '(?i)\bdenied\b',
+    '(?i)\bundefined\b',
+    '(?i)\btraceback\b',
+    '(?i)\bsqlstate\b'
+)
 
-    if ($portsStatus -eq $true) {
-        return $true
-    } elseif ($portsStatus -eq $false) {
-        return $false
+$global:LogOffsets = @{}
+
+function Initialize-LogOffsets {
+    foreach ($l in $WATCH_LOGS) {
+        $path = Join-Path $LOG_DIR $l.File
+        if (Test-Path $path) {
+            $global:LogOffsets[$path] = (Get-Item $path).Length
+        } else {
+            $global:LogOffsets[$path] = 0
+        }
     }
+}
 
-    if ($svc.Proc -and -not $svc.Proc.HasExited) {
-        return $true
+function Is-ErrorLine([string]$line) {
+    foreach ($p in $ERROR_PATTERNS) {
+        if ($line -match $p) { return $true }
     }
-
     return $false
 }
 
-function Check-Services {
-    param([ref]$Services)
+function Read-NewLogContent {
+    foreach ($l in $WATCH_LOGS) {
+        $path = Join-Path $LOG_DIR $l.File
+        if (-not (Test-Path $path)) { continue }
 
-    $statusEntries = @()
-
-    foreach ($s in $Services.Value) {
-        if (Is-ServiceUp $s) {
-            $statusEntries += "$($s.Name):UP"
-        } else {
-            $statusEntries += "$($s.Name):DOWN"
-        }
-    }
-
-    $status = $statusEntries -join " | "
-    Write-Host ("[{0}] {1}" -f (Get-Date).ToString("HH:mm:ss"), $status)
-}
-
-function Check-LogsIncremental {
-    param(
-        [array]$LogFiles,
-        [hashtable]$State
-    )
-
-    foreach ($lf in $LogFiles) {
-        $path = $lf.Path
-        if (-not (Test-Path $path)) {
-            continue
+        if (-not $global:LogOffsets.ContainsKey($path)) {
+            $global:LogOffsets[$path] = 0
         }
 
-        try {
-            $fileInfo = Get-Item $path
-        } catch {
-            continue
-        }
-
-        $currentLength = $fileInfo.Length
-        $st = $State[$path]
-
-        if (-not $st.Initialized) {
-            $st.Length = $currentLength
-            $st.Initialized = $true
-            $State[$path] = $st
-            continue
-        }
-
-        if ($currentLength -le $st.Length) {
-            $st.Length = $currentLength
-            $State[$path] = $st
-            continue
-        }
-
-        $bytesToRead = $currentLength - $st.Length
+        $last = [int64]$global:LogOffsets[$path]
+        $current = [int64](Get-Item $path).Length
+        if ($current -le $last) { continue }
 
         try {
             $fs = [System.IO.File]::Open(
@@ -357,101 +170,125 @@ function Check-LogsIncremental {
                 [System.IO.FileAccess]::Read,
                 [System.IO.FileShare]::ReadWrite
             )
-            $fs.Seek($st.Length, [System.IO.SeekOrigin]::Begin) | Out-Null
+            $fs.Seek($last, [System.IO.SeekOrigin]::Begin) | Out-Null
 
-            $buffer = New-Object byte[] ($bytesToRead)
-            $read   = $fs.Read($buffer, 0, $buffer.Length)
+            $buf = New-Object byte[] ($current - $last)
+            $read = $fs.Read($buf, 0, $buf.Length)
             $fs.Close()
 
-            if ($read -gt 0) {
-                $text = [System.Text.Encoding]::UTF8.GetString($buffer, 0, $read)
-                if ($text.Trim().Length -gt 0) {
+            if ($read -le 0) { continue }
+
+            $text = [System.Text.Encoding]::UTF8.GetString($buf, 0, $read)
+            $lines = $text -split "`r?`n"
+
+            foreach ($line in $lines) {
+                if ($line.Trim().Length -eq 0) { continue }
+
+                # Always show Node Watcher lines live
+                if ($l.Name -eq 'Node Watcher') {
+                    Write-Host ("[Watcher] {0}" -f $line) -ForegroundColor Gray
+                }
+
+                # Show errors from any service
+                if (Is-ErrorLine $line) {
                     Write-Host ""
-                    Write-Host ("----- NEW LOG from {0} @ {1} -----" -f $lf.Name, (Get-Date).ToString("HH:mm:ss")) -ForegroundColor Cyan
-                    Write-Host $text
+                    Write-Host ("!!! ERROR from {0} !!!" -f $l.Name) -ForegroundColor Red
+                    Write-Host $line -ForegroundColor Yellow
+                    Write-Host ""
                 }
             }
+
+            $global:LogOffsets[$path] = $current
         } catch {
-            Write-ErrorAllLog "Failed to read log '$path': $($_.Exception.Message)"
+            # Avoid crashing due to temporary file access issues
         }
-
-        $st.Length = $currentLength
-        $State[$path] = $st
     }
 }
 
-# -------- START ALL SERVICES --------
-foreach ($s in $services) {
-    $portsStatus = Are-ServicePortsAllListening $s
+# ---------------- HEADER ----------------
+Write-Host "==============================================="
+Write-Host " XtremeParking Supervisor (Restart)"
+Write-Host " Logs: $LOG_DIR"
+Write-Host " Live: Node Watcher log + ERROR lines from all"
+Write-Host " Close window or CTRL+C to stop all services"
+Write-Host "===============================================`n"
 
-    if ($portsStatus -eq $true) {
-        Write-Host "[ALREADY RUNNING] $($s.Name) (ports listening; PID unknown to supervisor)" -ForegroundColor Cyan
-        continue
-    }
-
-    $proc = Start-ManagedProcess -Name $s.Name -Cwd $s.Cwd -Cmd $s.Cmd -Log $s.Log
-    $s.Proc = $proc
-    if ($proc) {
-        Write-Host "[STARTED] $($s.Name) (PID $($proc.Id))" -ForegroundColor Green
-    } else {
-        Write-Host "[STARTED] $($s.Name) (PID unknown)" -ForegroundColor Green
-    }
-}
-
-$global:services = $services
-
-Write-Host "`nSupervisor running... (CTRL+C to stop and kill managed services)"
-Write-Host "ROOT PATH = $ROOT`n"
-
-$stop = $false
-$lastServiceCheck = (Get-Date).AddSeconds(-$SERVICE_CHECK_INTERVAL)
-$lastLogCheck     = (Get-Date).AddSeconds(-$LOG_CHECK_INTERVAL)
-
-Check-Configs
-
+# ---------------- PREFLIGHT ----------------
 try {
-    while (-not $stop) {
-        $now = Get-Date
+    Assert-Path $BACKEND       "Backend folder missing"
+    Assert-Path $FRONTEND      "Frontend folder missing"
+    Assert-Path $NODE          "nodescript folder missing"
+    Assert-Path $CAMERA_STREAM "camera_live_stream folder missing"
+    Assert-Path $NPX           "npx.cmd not found"
 
-        if ((New-TimeSpan $lastServiceCheck $now).TotalSeconds -ge $SERVICE_CHECK_INTERVAL) {
-            Check-Services -Services ([ref]$services)
-            Check-Configs
-            $lastServiceCheck = Get-Date
-        }
+    Assert-Cmd "php"
+    Assert-Cmd "node"
+    Assert-Cmd "ffmpeg"
+} catch {
+    Write-Host "[FATAL] $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Press any key to exit..."
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    exit 1
+}
 
-        if ((New-TimeSpan $lastLogCheck $now).TotalSeconds -ge $LOG_CHECK_INTERVAL) {
-            Check-LogsIncremental -LogFiles $logFiles -State $logState
-            $lastLogCheck = Get-Date
-        }
+# ---------------- STOP FIRST ----------------
+Hard-Stop-All | Out-Null
+Start-Sleep -Seconds 2
 
-        if ([Console]::KeyAvailable) {
-            $key = [Console]::ReadKey($true)
-            if ($key.Key -eq 'C' -and ($key.Modifiers -band [ConsoleModifiers]::Control)) {
-                Write-Host "`nCTRL+C detected. Supervisor will now stop all managed services..." -ForegroundColor Yellow
-                $stop = $true
-            }
-        }
+# ---------------- START SERVICES ----------------
+Start-Svc -Name "Laravel Backend (8000)" -Dir $BACKEND `
+    -CommandLine "php artisan serve --host=0.0.0.0 --port=8000" `
+    -LogFile "laravel_8000.log"
 
-        Start-Sleep -Milliseconds 200
+Start-Svc -Name "Queue Worker" -Dir $BACKEND `
+    -CommandLine "php artisan queue:work --tries=3 --sleep=1 --backoff=3" `
+    -LogFile "queue_worker.log"
+
+Start-Svc -Name "MQTT Listener" -Dir $BACKEND `
+    -CommandLine "php artisan mqtt:qrbackgroundlistener" `
+    -LogFile "mqtt_listener.log"
+
+Start-Svc -Name "Frontend (3001)" -Dir $FRONTEND `
+    -CommandLine "`"$NPX`" --yes http-server dist -p 3001 --no-clipboard --cors" `
+    -LogFile "frontend_3001.log"
+
+Start-Svc -Name "Node Watcher" -Dir $NODE `
+    -CommandLine "node watchCameraImages.js" `
+    -LogFile "node_watcher.log"
+
+Start-Svc -Name "Node Organizer" -Dir $NODE `
+    -CommandLine "node organize_files_by_date.js" `
+    -LogFile "node_organizer.log"
+
+Start-Svc -Name "Camera Live Stream" -Dir $CAMERA_STREAM `
+    -CommandLine "node start_camera_live_stream.js" `
+    -LogFile "camera_live_stream.log"
+
+Write-Host "`n[RUNNING] All services started." -ForegroundColor Green
+Write-Host "Live log monitoring enabled (Node Watcher + errors)." -ForegroundColor Cyan
+Write-Host "Close this window or press CTRL+C to stop ALL.`n" -ForegroundColor Yellow
+
+# Start monitoring from end of current logs (no old spam)
+Initialize-LogOffsets
+
+# ---------------- KEEP ALIVE + LIVE LOGS ----------------
+try {
+    while ($true) {
+        Read-NewLogContent
+        Start-Sleep -Milliseconds 800
     }
 }
 finally {
-    Write-Host "`nStopping managed services (cleanup in finally)..." -ForegroundColor Yellow
+    Write-Host "`n[EXIT] Stopping all started processes..." -ForegroundColor Yellow
 
-    if ($global:services) {
-        foreach ($svc in $global:services) {
-            if ($svc.Proc -and -not $svc.Proc.HasExited) {
-                try {
-                    Write-Host "Stopping $($svc.Name) (PID $($svc.Proc.Id))..." -ForegroundColor Yellow
-                    Stop-Process -Id $svc.Proc.Id -Force -ErrorAction Stop
-                } catch {
-                    Write-Host "Failed to stop $($svc.Name): $($_.Exception.Message)" -ForegroundColor Red
-                    Write-ErrorAllLog "Failed to stop $($svc.Name) PID $($svc.Proc.Id): $($_.Exception.Message)"
-                }
+    foreach ($p in $global:StartedProcs) {
+        try {
+            if ($p -and -not $p.HasExited) {
+                Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
             }
-        }
+        } catch {}
     }
 
-    Write-ErrorAllLog "Supervisor exit - managed services stopped (finally block)."
-    Write-Host "Supervisor closed."
+    Hard-Stop-All | Out-Null
+    Write-Host "[STOPPED] Everything terminated. Ports should be free." -ForegroundColor Green
 }

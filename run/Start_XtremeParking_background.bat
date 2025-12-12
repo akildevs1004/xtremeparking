@@ -1,10 +1,22 @@
 @echo off
+setlocal
+title XtremeParking - Supervisor Launcher
+
 set "HERE=%~dp0"
-powershell -NoExit -ExecutionPolicy Bypass -File "%HERE%background_Start_XtremeParking_Supervisor.ps1"
+set "PS1=%HERE%background_Start_XtremeParking_Supervisor.ps1"
+
+echo ===============================================
+echo  Starting XtremeParking Supervisor
+echo  Script: %PS1%
+echo ===============================================
+echo.
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%PS1%"
 
 echo.
 echo ===============================================
-echo    All XtremeParking Services Started
+echo  Supervisor stopped or crashed.
+echo  Press any key to close this window.
 echo ===============================================
-echo.
-pause
+pause >nul
+endlocal

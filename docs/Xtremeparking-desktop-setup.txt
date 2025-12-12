@@ -85,7 +85,7 @@ protocol websockets
    
    
    
-13. Camera Live streaming using FFMPEG and jsmpeg.min.js player  /camera_live_stream : 
+13. Camera Live streaming using FFMPEG and jsmpeg.min.js player  /nodescript : 
     
    
    
