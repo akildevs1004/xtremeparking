@@ -1,4 +1,6 @@
 @echo off
+setlocal enabledelayedexpansion
+
 title XtremeParking - Service Starter
 color 0A
 
@@ -7,44 +9,73 @@ echo   Starting XtremeParking Services...
 echo ========================================
 echo.
 
-:: --- Backend Laravel Server ---
-::cd /d E:\xtremeparking\backend
-::start "Laravel Server" cmd /k "php artisan serve --host=0.0.0.0  "
+REM ==================================================
+REM PATH CONFIGURATION
+REM ==================================================
+set "BACKEND=D:\projects\vehicleparkingbills\xtremeparking\backend"
+set "NODESCRIPT=D:\projects\vehicleparkingbills\xtremeparking\nodescript"
+set "MOSQUITTO_EXE=C:\Program Files\mosquitto\mosquitto.exe"
+set "MOSQUITTO_CONF=C:\Program Files\mosquitto\mosquitto.conf"
 
-:: --- Backend Queue Worker ---
-cd /d D:\projects\vehicleparkingbills\xtremeparking\backend
-start "Queue Worker" cmd /k "php artisan queue:work"
+REM ==================================================
+REM LARAVEL SERVER
+REM ==================================================
+cd /d "%BACKEND%"
+start "Laravel Server" cmd /k "php artisan serve --host=0.0.0.0 --port=8000"
+timeout /t 5 /nobreak
 
+REM ==================================================
+REM QUEUE WORKER
+REM ==================================================
+cd /d "%BACKEND%"
+start "Queue Worker" cmd /k "php artisan queue:work --tries=3 --timeout=120"
+timeout /t 5 /nobreak
 
-:: --- Backend Queue Worker ---
-cd /d D:\projects\vehicleparkingbills\xtremeparking\backend
+REM ==================================================
+REM MQTT QR CODE PAYMENT LISTENER
+REM ==================================================
+cd /d "%BACKEND%"
 start "MQTT QRCode Payments" cmd /k "php artisan mqtt:qrbackgroundlistener"
+timeout /t 5 /nobreak
 
+REM ==================================================
+REM ORGANIZE FILES WATCHER
+REM ==================================================
+cd /d "%NODESCRIPT%"
+start "Organize Files Watcher" cmd /k "node organize_files_by_date.js"
+timeout /t 5 /nobreak
 
-
-:: --- Frontend Vue/React Server ---
-::cd /d E:\xtremeparking\frontend
-
-::start "Frontend" cmd /k "npx http-server dist -p 3000"
-::start "Frontend" cmd /k "serve dist"
-
-
-:: --- NodeJS Camera Watcher ---
-cd /d D:\projects\vehicleparkingbills\xtremeparking\nodescript
+REM ==================================================
+REM CAMERA WATCHER
+REM ==================================================
+cd /d "%NODESCRIPT%"
 start "Camera Watcher" cmd /k "node watchCameraImages.js"
+timeout /t 5 /nobreak
 
-:: --- Mosquitto MQTT Broker ---
-echo Starting Mosquitto MQTT Broker...
-start "Mosquitto MQTT" cmd /k ""C:\Program Files\mosquitto\mosquitto.exe" -c "C:\Program Files\mosquitto\mosquitto.conf" -v"
+REM ==================================================
+REM CAMERA WATCHER
+REM ==================================================
+cd /d "%NODESCRIPT%"
+start "Live Camera Stream" cmd /k "node start_camera_live_stream.js"
+timeout /t 5 /nobreak
 
 
-:: --- Organize Files Watcher ---
-::cd /d D:\projects\vehicleparkingbills\xtremeparking\nodescript
-::start "Organize Files Watcher" cmd /k "node organize_files_by_date.js"
- 
 
+REM ==================================================
+REM MOSQUITTO MQTT BROKER (FOREGROUND - BLOCKING)
+REM ==================================================
 echo.
-echo All services launched successfully!
+echo ========================================
+echo   Starting Mosquitto MQTT (Foreground)
+echo   Press CTRL+C to stop everything
+echo ========================================
 echo.
+
+"%MOSQUITTO_EXE%" -c "%MOSQUITTO_CONF%" -v
+
+REM ==================================================
+REM EXECUTION NEVER REACHES HERE UNTIL MOSQUITTO STOPS
+REM ==================================================
+echo Mosquitto stopped.
 pause
-exit
+exit /b
