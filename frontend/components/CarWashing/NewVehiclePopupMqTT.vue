@@ -129,10 +129,10 @@
                         <h3> {{ this.mqttNewMessage ?
                           $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.in_time) :
                           '---'
-                        }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                          }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                             $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.in_time) :
                             ' '
-                          }}</span></h3>
+                            }}</span></h3>
 
                         <div class="grey--text">Entry</div>
                       </v-card>
@@ -143,10 +143,10 @@
                         <h3> {{ this.mqttNewMessage ?
                           $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.out_time) :
                           '---'
-                        }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                          }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                             $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.out_time) :
                             ' '
-                          }}</span></h3>
+                            }}</span></h3>
 
                         <div class="red--text">Exit</div>
                       </v-card>
@@ -503,19 +503,26 @@ export default {
 
 
 
-      const { data } = await this.$axios.get(`/get_mqtt_server`);
+      // const { data } = await this.$axios.get(`/get_mqtt_server`);
 
-      if (data.host.includes("192.168.") || data.host.includes("localhost") || data.host.includes("127.0.0.1")) {
+      // if (data.host.includes("192.168.") || data.host.includes("localhost") || data.host.includes("127.0.0.1")) {
+
+      // }
+      // else {
+      //   options.protocol = 'wss';
+      // }
+
+      const host = this.$auth.$storage.getUniversal('envsettings').MQTT_SOCKET_HOST;
+
+      if (host.includes("192.168.") || host.includes("localhost") || host.includes("127.0.0.1")) {
 
       }
       else {
         options.protocol = 'wss';
       }
-
-
       // this.client = mqtt.connect(host, options);
 
-      this.client = mqtt.connect(data.host, options);
+      this.client = mqtt.connect(host, options);
 
 
       const newEventTopic = "xtremeparking/" + this.$auth.user.company_id + "/cameralogs/new_event";

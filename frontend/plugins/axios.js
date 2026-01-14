@@ -30,7 +30,34 @@ export default ({ app, $axios, store }, inject) => {
   //   } catch (e) {}
   // });
 
-  $axios.onRequest(async (config) => {
+  let backendURL;
+  let appURL;
+  const isClient = process.client;
+
+  if (isClient) {
+    const { protocol, hostname } = window.location;
+
+    // === Production domain mapping ===
+    if (hostname.includes("xtremeguard.org")) {
+      backendURL = "https://parkingbackend.xtremeguard.org/api";
+      appURL = "https://parking.xtremeguard.org";
+    } else {
+      // === Local / LAN fallback ===
+      backendURL = `${protocol}//${hostname}:8000/api`;
+      appURL = `${protocol}//${hostname}:3001`;
+    }
+  } else {
+    // === SSR / Build-time fallback ===
+    backendURL =
+      process.env.NUXT_ENV_BACKEND_URL || "http://192.168.2.67:8000/api";
+
+    appURL = process.env.NUXT_ENV_APP_URL || "http://192.168.2.67:3001";
+  }
+
+  console.log("backendURL", backendURL);
+
+  $axios.onRequest((config) => {
+    config.baseURL = backendURL;
     if (!config) return config;
     let user = store.state.auth.user;
 

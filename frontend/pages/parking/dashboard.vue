@@ -136,7 +136,7 @@
           class="darkgreen-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
                 <div class="darkgreen-text" style="font-size: 40px">{{ statisstics ? statisstics.total_payments : 0
-                  }}</div>
+                }}</div>
                 <br />
                 <div style="font-size: 16px">Total Amount</div>
               </v-col>
@@ -617,18 +617,18 @@ export default {
 
 
 
-      const { data } = await this.$axios.get(`/get_mqtt_server`);
-      if (data.host.includes("192.168.") || data.host.includes("localhost") || data.host.includes("127.0.0.1")) {
+      // const { data } = await this.$axios.get(`/get_mqtt_server`);
+      // if (data.host.includes("192.168.") || data.host.includes("localhost") || data.host.includes("127.0.0.1")) {
 
-      }
-      else {
-        options.protocol = 'wss';
-      }
+      // }
+      // else {
+      //   options.protocol = 'wss';
+      // }
 
 
       // this.client = mqtt.connect(host, options);
 
-      this.client = mqtt.connect(data.host, options);
+      // this.client = mqtt.connect(data.host, options);
 
 
       const newEventTopic = "xtremeparking/" + this.$auth.user.company_id + "/cameralogs/new_event";

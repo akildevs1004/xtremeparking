@@ -544,4 +544,16 @@ class ParkingCameraLogsController extends Controller
         // Return actual image content
         return Response::file($filePath, ['Content-Type' => $mimeType]);
     }
+    public function getServerIp()
+    {
+
+        // return "165.22.222.17";
+        $ips = gethostbynamel(gethostname());
+        foreach ($ips as $ip) {
+            if ($ip !== '127.0.0.1') {
+                return $ip;
+            }
+        }
+        return '127.0.0.1';
+    }
 }
