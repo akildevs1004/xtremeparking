@@ -21,7 +21,7 @@ let API_KEY = "";
 let TOPIC_EVENT = "";
 
 // API that returns configuration
-const CONFIG_ENDPOINT = "http://127.0.0.1:8000/api/get_mqtt_server";
+const CONFIG_ENDPOINT = "http://127.0.0.1:8000/api/envsettings";
 
 // ---- Logging ----
 const logDir = path.resolve(__dirname, "logs");

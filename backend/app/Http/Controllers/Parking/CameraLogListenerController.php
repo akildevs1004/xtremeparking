@@ -25,18 +25,20 @@ class CameraLogListenerController extends Controller
      * Process incoming camera log webhook.
      */
 
-    public function getMQTT()
-    {
-        return response()->json([
-            'host' => env("MQTT_FRONTEND"),
-            'WATCH_DIR' => env("WATCH_DIR"),
-            'COMPANY_ID' => env("COMPANY_ID"),
-            'API_URL' => env("API_URL"),
-            'API_KEY' => env("API_KEY"),
-            'MQTT_SERVER' => env("MQTT_SERVER"),
-            'MQTT_FRONTEND' => env("MQTT_FRONTEND"),
-            'BASE_HTTP_PORT' => env("BASE_HTTP_PORT"),
-            'BASE_WS_PORT' => env("BASE_WS_PORT"),
+
+
+    // public function getMQTT()
+    // {
+    //     return response()->json([
+    //         'host' => env("MQTT_FRONTEND"),
+    //         'WATCH_DIR' => env("WATCH_DIR"),
+    //         'COMPANY_ID' => env("COMPANY_ID"),
+    //         'API_URL' => env("API_URL"),
+    //         'API_KEY' => env("API_KEY"),
+    //         'MQTT_SERVER' => env("MQTT_SERVER"),
+    //         'MQTT_FRONTEND' => env("MQTT_FRONTEND"),
+    //         'BASE_HTTP_PORT' => env("BASE_HTTP_PORT"),
+    //         'BASE_WS_PORT' => env("BASE_WS_PORT"),
 
 
 
@@ -44,8 +46,8 @@ class CameraLogListenerController extends Controller
 
 
 
-        ]);
-    }
+    //     ]);
+    // }
     public function CamerasList()
     {
         return [

@@ -631,6 +631,20 @@ export default {
       // this.client = mqtt.connect(data.host, options);
 
 
+      console.log(" this.$env.get('MQTT_SOCKET_HOST')", this.$env.get('MQTT_SOCKET_HOST'));
+
+      const host = this.$env.get('MQTT_SOCKET_HOST');
+
+      if (host.includes("192.168.") || host.includes("localhost") || host.includes("127.0.0.1")) {
+
+      }
+      else {
+        options.protocol = 'wss';
+      }
+      // this.client = mqtt.connect(host, options);
+      console.log("MQTT Host:", host);
+      this.client = mqtt.connect(host, options);
+
       const newEventTopic = "xtremeparking/" + this.$auth.user.company_id + "/cameralogs/new_event";
 
       this.client.on("connect", () => {

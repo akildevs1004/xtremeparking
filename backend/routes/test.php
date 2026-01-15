@@ -1129,7 +1129,8 @@ Route::get('/generate_attendance_log', function (Request $request) {
 });
 
 Route::get('/test-re', function (Request $request) {
-    // Employee::truncate();
+
+    return "Hello";    // Employee::truncate();
     // DB::statement('DELETE FROM users WHERE id > 2');
 
     // return 'done';

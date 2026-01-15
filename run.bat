@@ -22,7 +22,7 @@ REM LARAVEL SERVER
 REM ==================================================
 cd /d "%BACKEND%"
 start "Laravel Server" cmd /k "php artisan serve --host=0.0.0.0 --port=8000"
-timeout /t 5 /nobreak
+timeout /t 20 /nobreak
 
 REM ==================================================
 REM QUEUE WORKER

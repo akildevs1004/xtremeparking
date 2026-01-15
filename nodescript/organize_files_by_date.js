@@ -145,11 +145,20 @@ function cleanupOldFoldersIfOverLimit() {
 }
 
 function organizeFiles() {
+  // const baseDir = path.join(
+  //   "D:",
+  //   "projects",
+  //   "vehicleparkingbills",
+  //   "parking_camera_logs"
+  // );
+
+  // console.log("baseDir", baseDir);
+
   try {
     if (!fs.existsSync(baseDir)) {
       console.warn(
         new Date().toLocaleString(),
-        "⚠️ baseDir does not exist, skipping:",
+        "⚠️ baseDir does not exist, skipping11:",
         baseDir
       );
       return;
@@ -197,11 +206,11 @@ function organizeFiles() {
 async function loadConfig() {
   try {
     console.log(
-      "🔄 Loading config from API http://127.0.0.1:8000/api/get_mqtt_server ..."
+      "🔄 Loading config from API http://127.0.0.1:8000/api/envsettings ..."
     );
 
-    const res = await axios.get("http://127.0.0.1:8000/api/get_mqtt_server", {
-      timeout: 5000,
+    const res = await axios.get("http://127.0.0.1:8000/api/envsettings", {
+      timeout: 1000 * 10,
     });
 
     const cfg = res.data || {};

@@ -129,10 +129,10 @@
                         <h3> {{ this.mqttNewMessage ?
                           $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.in_time) :
                           '---'
-                          }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                        }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                             $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.in_time) :
                             ' '
-                            }}</span></h3>
+                          }}</span></h3>
 
                         <div class="grey--text">Entry</div>
                       </v-card>
@@ -143,10 +143,10 @@
                         <h3> {{ this.mqttNewMessage ?
                           $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.out_time) :
                           '---'
-                          }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                        }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                             $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.out_time) :
                             ' '
-                            }}</span></h3>
+                          }}</span></h3>
 
                         <div class="red--text">Exit</div>
                       </v-card>
@@ -512,7 +512,8 @@ export default {
       //   options.protocol = 'wss';
       // }
 
-      const host = this.$auth.$storage.getUniversal('envsettings').MQTT_SOCKET_HOST;
+      const host = this.$env.get('MQTT_SOCKET_HOST');
+      ;
 
       if (host.includes("192.168.") || host.includes("localhost") || host.includes("127.0.0.1")) {
 
@@ -521,7 +522,7 @@ export default {
         options.protocol = 'wss';
       }
       // this.client = mqtt.connect(host, options);
-
+      console.log("MQTT Host:", host);
       this.client = mqtt.connect(host, options);
 
 

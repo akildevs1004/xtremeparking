@@ -4,7 +4,7 @@
 // - Start per-camera HTTP MPEG-TS ingest server
 // - Start per-camera WebSocket server for JSMpeg
 // - Spawn FFmpeg per camera (RTSP → MPEG-TS → WebSocket)
-// - BASE_HTTP_PORT / BASE_WS_PORT loaded from /api/get_mqtt_server
+// - BASE_HTTP_PORT / BASE_WS_PORT loaded from /api/get_mqtt_server envsettings
 // - Node stays up; FFmpeg auto-restarts on failure
 // - Camera Health JSON API on HEALTH_PORT (/health)
 // ------------------------------------------------------------------
@@ -21,7 +21,7 @@ const CAMERA_API_URL =
   "http://127.0.0.1:8000/api/parking-cameras?company_id=8&login_user_type=company";
 
 // Config API to fetch ONLY BASE_HTTP_PORT and BASE_WS_PORT
-const CONFIG_API_URL = "http://127.0.0.1:8000/api/get_mqtt_server";
+const CONFIG_API_URL = "http://127.0.0.1:8000/api/envsettings";
 
 // Default ports (will be overridden by CONFIG_API_URL if present)
 let BASE_HTTP_PORT = 7081; // FFmpeg pushes MPEG-TS here
