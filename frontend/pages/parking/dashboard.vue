@@ -606,195 +606,202 @@ export default {
       this.dialogImageUrl = imageUrl;
     },
     async initMqtt() {
-      // Example: ws://test.mosquitto.org:8080
-      const options = {
-        clientId: "xtremeparking_" + Math.random().toString(16).substr(2, 8),
-        clean: true,
-        reconnectPeriod: 1000,
-      };
-      // const host = process.env.MQTT_SOCKET_HOST; // "wss://mqtt.xtremeguard.org:8084"; // If TLS WebSocket is available
+
+      console.log("this.$env", this.$env);
+
+
+      if (this.$env.settings) {
+        // Example: ws://test.mosquitto.org:8080
+        const options = {
+          clientId: "xtremeparking_" + Math.random().toString(16).substr(2, 8),
+          clean: true,
+          reconnectPeriod: 1000,
+        };
+        // const host = this.$env.settings.MQTT_SOCKET_HOST; // "wss://mqtt.xtremeguard.org:8084"; // If TLS WebSocket is available
 
 
 
 
-      // const { data } = await this.$axios.get(`/get_mqtt_server`);
-      // if (data.host.includes("192.168.") || data.host.includes("localhost") || data.host.includes("127.0.0.1")) {
+        // const { data } = await this.$axios.get(`/get_mqtt_server`);
+        // if (data.host.includes("192.168.") || data.host.includes("localhost") || data.host.includes("127.0.0.1")) {
 
-      // }
-      // else {
-      //   options.protocol = 'wss';
-      // }
-
-
-      // this.client = mqtt.connect(host, options);
-
-      // this.client = mqtt.connect(data.host, options);
+        // }
+        // else {
+        //   options.protocol = 'wss';
+        // }
 
 
-      console.log(" this.$env.get('MQTT_SOCKET_HOST')", this.$env.get('MQTT_SOCKET_HOST'));
+        // this.client = mqtt.connect(host, options);
 
-      const host = this.$env.get('MQTT_SOCKET_HOST');
-
-      if (host.includes("192.168.") || host.includes("localhost") || host.includes("127.0.0.1")) {
-
-      }
-      else {
-        options.protocol = 'wss';
-      }
-      // this.client = mqtt.connect(host, options);
-      console.log("MQTT Host:", host);
-      this.client = mqtt.connect(host, options);
-
-      const newEventTopic = "xtremeparking/" + this.$auth.user.company_id + "/cameralogs/new_event";
-
-      this.client.on("connect", () => {
-        this.status = "Connected";
-        this.client.subscribe(newEventTopic, (err) => {
-          if (!err) {
-            console.log("Subscribed to", newEventTopic);
-          }
-        });
-      });
-
-      this.client.on("message", (topic, message) => {
-
-        this.mqttLoading = true;
-        this.message = message.toString();
-        // console.log("MQTT Received message:", this.message);
-        try {
-
-          this.activeAudio = true;
-          this.gatePassStatus = false;
-
-          this.snackbar = false;
-
-          this.mqttNewMessage = JSON.parse(this.message);
-
-          // this.mqttNewMessage.response.record.image_background =
-          //   this.mqttNewMessage.response.record.public_image_url + "/" +
-          //   this.mqttNewMessage.response.record.in_background_file_name;
-
-          this.vehicleGustNoEntryImage = null;
-
-          if (!this.mqttNewMessage.response.status) //error
-          {
-            this.snackbar = true;
-            this.vehicle_notification_status = this.mqttNewMessage.response.message;
-            this.response = this.mqttNewMessage.response.record.message;
-
-            this.vehicleStatusEntryExit = "entry";
-
-            this.vehicleGustNoEntryImage =
-
-              this.mqttNewMessage.response.record.image.replace("_BACKGROUND", "_VEHICLE");
-
-          }
-
-          if (this.mqttNewMessage.response.record.out_time == null) {
-            this.vehicleStatusEntryExit = "entry";
-
-            // Entry
-
-            if (this.mqttNewMessage.response.record.in_background_file_name) {
-              this.mqttNewMessage.response.record.image_vehicle =
-                this.mqttNewMessage.response.record.public_image_url + "/" +
-                this.mqttNewMessage.response.record.in_background_file_name.replace("_BACKGROUND", "_VEHICLE");
-
-              this.mqttNewMessage.response.record.image_number_plate =
-                this.mqttNewMessage.response.record.public_image_url + "/" +
-                this.mqttNewMessage.response.record.in_background_file_name.replace("_BACKGROUND", "_PLATE");
-
-            }
-          }
-          else {
-            this.vehicleStatusEntryExit = "exit";
-            // console.log(this.mqttNewMessage.response);
-            this.snackbar = true;
-            this.response = "Exit vehicle - Payment Pending";
-
-            if (this.mqttNewMessage.response.record.out_background_file_name) {
-              this.mqttNewMessage.response.record.image_vehicle =
-                this.mqttNewMessage.response.record.public_image_url + "/" +
-                this.mqttNewMessage.response.record.out_background_file_name.replace("_BACKGROUND", "_VEHICLE");
-
-              this.mqttNewMessage.response.record.image_number_plate =
-                this.mqttNewMessage.response.record.public_image_url + "/" +
-                this.mqttNewMessage.response.record.out_background_file_name.replace("_BACKGROUND", "_PLATE");
-            }
-
-            setTimeout(() => {
-
-              this.snackbar = false;
-              this.response = "";
-
-            }, 1000 * 10);
-          }
-
-          //messsage
-
-          if (this.mqttNewMessage?.response.record.membership_status == 'Membership Expired') {
-            this.snackbar = true;
-            this.response = "Membership Expired. Please pay the parking fee.";
-          }
-
-          // console.log("gate_open_automatically", this.mqttNewMessage?.response.record.gate_open_automatically);
-          if (this.mqttNewMessage?.response.record.gate_open_automatically) {
-            setTimeout(() => {
-
-              this.snackbar = true;
-              this.response = this.mqttNewMessage?.response.record.gate_open_automatically;
-
-              this.gatePassStatus = true;
-
-              setTimeout(() => {
-                this.mqttNewMessage = null;
-              }, 1000 * 5);
-            }, 1000 * 3);
-
-            setTimeout(() => {
-
-              this.snackbar = false;
-              this.response = "";
-
-            }, 1000 * 10);
-          }
-          else
-            this.gatePassStatus = false;
-          setTimeout(() => {
-            this.activeAudio = false;
-          }, 1000 * 10);
+        // this.client = mqtt.connect(data.host, options);
 
 
+        console.log(" this.$env.settings.MQTT_SOCKET_HOST)", this.$env.settings.MQTT_SOCKET_HOST);
 
-        } catch (ex) {
+        const host = this.$env.settings.MQTT_SOCKET_HOST;
 
-          console.error("MQTT processing error:", ex);
-
-          this.mqttNewMessage = null;
-          this.snackbar = true;
-          this.response = `Error: ${ex.message || "Error occurred while processing MQTT message."}`;
-
+        if (host.includes("192.168.") || host.includes("localhost") || host.includes("127.0.0.1")) {
 
         }
+        else {
+          options.protocol = 'wss';
+        }
+        // this.client = mqtt.connect(host, options);
+        console.log("MQTT Host:", host);
+        this.client = mqtt.connect(host, options);
 
-        /////this.getStatistics();
+        const newEventTopic = "xtremeparking/" + this.$auth.user.company_id + "/cameralogs/new_event";
 
-        setTimeout(() => {
-          this.mqttLoading = false;
-        }, 1000 * 5);
+        this.client.on("connect", () => {
+          this.status = "Connected";
+          this.client.subscribe(newEventTopic, (err) => {
+            if (!err) {
+              console.log("Subscribed to", newEventTopic);
+            }
+          });
+        });
 
-      });
+        this.client.on("message", (topic, message) => {
 
-      this.client.on("error", (err) => {
-        console.error("MQTT Error:", err);
-        this.status = "Error";
-      });
+          this.mqttLoading = true;
+          this.message = message.toString();
+          // console.log("MQTT Received message:", this.message);
+          try {
 
-      this.client.on("close", () => {
-        this.status = "Disconnected";
-      });
+            this.activeAudio = true;
+            this.gatePassStatus = false;
+
+            this.snackbar = false;
+
+            this.mqttNewMessage = JSON.parse(this.message);
+
+            // this.mqttNewMessage.response.record.image_background =
+            //   this.mqttNewMessage.response.record.public_image_url + "/" +
+            //   this.mqttNewMessage.response.record.in_background_file_name;
+
+            this.vehicleGustNoEntryImage = null;
+
+            if (!this.mqttNewMessage.response.status) //error
+            {
+              this.snackbar = true;
+              this.vehicle_notification_status = this.mqttNewMessage.response.message;
+              this.response = this.mqttNewMessage.response.record.message;
+
+              this.vehicleStatusEntryExit = "entry";
+
+              this.vehicleGustNoEntryImage =
+
+                this.mqttNewMessage.response.record.image.replace("_BACKGROUND", "_VEHICLE");
+
+            }
+
+            if (this.mqttNewMessage.response.record.out_time == null) {
+              this.vehicleStatusEntryExit = "entry";
+
+              // Entry
+
+              if (this.mqttNewMessage.response.record.in_background_file_name) {
+                this.mqttNewMessage.response.record.image_vehicle =
+                  this.mqttNewMessage.response.record.public_image_url + "/" +
+                  this.mqttNewMessage.response.record.in_background_file_name.replace("_BACKGROUND", "_VEHICLE");
+
+                this.mqttNewMessage.response.record.image_number_plate =
+                  this.mqttNewMessage.response.record.public_image_url + "/" +
+                  this.mqttNewMessage.response.record.in_background_file_name.replace("_BACKGROUND", "_PLATE");
+
+              }
+            }
+            else {
+              this.vehicleStatusEntryExit = "exit";
+              // console.log(this.mqttNewMessage.response);
+              this.snackbar = true;
+              this.response = "Exit vehicle - Payment Pending";
+
+              if (this.mqttNewMessage.response.record.out_background_file_name) {
+                this.mqttNewMessage.response.record.image_vehicle =
+                  this.mqttNewMessage.response.record.public_image_url + "/" +
+                  this.mqttNewMessage.response.record.out_background_file_name.replace("_BACKGROUND", "_VEHICLE");
+
+                this.mqttNewMessage.response.record.image_number_plate =
+                  this.mqttNewMessage.response.record.public_image_url + "/" +
+                  this.mqttNewMessage.response.record.out_background_file_name.replace("_BACKGROUND", "_PLATE");
+              }
+
+              setTimeout(() => {
+
+                this.snackbar = false;
+                this.response = "";
+
+              }, 1000 * 10);
+            }
+
+            //messsage
+
+            if (this.mqttNewMessage?.response.record.membership_status == 'Membership Expired') {
+              this.snackbar = true;
+              this.response = "Membership Expired. Please pay the parking fee.";
+            }
+
+            // console.log("gate_open_automatically", this.mqttNewMessage?.response.record.gate_open_automatically);
+            if (this.mqttNewMessage?.response.record.gate_open_automatically) {
+              setTimeout(() => {
+
+                this.snackbar = true;
+                this.response = this.mqttNewMessage?.response.record.gate_open_automatically;
+
+                this.gatePassStatus = true;
+
+                setTimeout(() => {
+                  this.mqttNewMessage = null;
+                }, 1000 * 5);
+              }, 1000 * 3);
+
+              setTimeout(() => {
+
+                this.snackbar = false;
+                this.response = "";
+
+              }, 1000 * 10);
+            }
+            else
+              this.gatePassStatus = false;
+            setTimeout(() => {
+              this.activeAudio = false;
+            }, 1000 * 10);
 
 
+
+          } catch (ex) {
+
+            console.error("MQTT processing error:", ex);
+
+            this.mqttNewMessage = null;
+            this.snackbar = true;
+            this.response = `Error: ${ex.message || "Error occurred while processing MQTT message."}`;
+
+
+          }
+
+          /////this.getStatistics();
+
+          setTimeout(() => {
+            this.mqttLoading = false;
+          }, 1000 * 5);
+
+        });
+
+        this.client.on("error", (err) => {
+          console.error("MQTT Error:", err);
+          this.status = "Error";
+        });
+
+        this.client.on("close", () => {
+          this.status = "Disconnected";
+        });
+
+      } else {
+        console.warn("MQTT settings are not received");
+      }
 
     },
     sendMessage() {

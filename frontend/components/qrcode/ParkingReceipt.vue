@@ -5,14 +5,14 @@
       <div>
         <div class="caption grey--text text-center" style="font-size: 14px!important">Parking Receipt # {{
           details.id
-        }}
+          }}
 
           <span v-if="details.in_time"> {{
             $dateFormat.format_date_month_name_year(details.in_time)
-          }}</span>
+            }}</span>
           <div v-else-if="details.out_time"> {{
             $dateFormat.format_date_month_name_year(details.out_time)
-          }}</div>
+            }}</div>
 
         </div>
 
@@ -22,7 +22,7 @@
         <div v-if="details.out_time == null && details.payment_datetime">
           <div style="text-align: right; font-size:12px;"><v-icon size="18" color="blue">mdi-calendar-month</v-icon> {{
             $dateFormat.formatDateTime(details.payment_datetime)
-          }}</div>
+            }}</div>
 
 
           <div class="text-right" style="font-size:14px;">
@@ -31,7 +31,7 @@
 
             <div v-if="formatted == '0m:00s'" style="color:red">Expired at {{
               $dateFormat.formatDateTime(endTs)
-            }}
+              }}
 
 
               <v-btn small dense color="primary" class="mt-2" @click="payExtra(details.id)">
@@ -78,13 +78,13 @@
         </div>
         <div class="row"><span><v-icon color="green">mdi-clock-outline</v-icon> Entry time</span> {{
           $dateFormat.formatTimeAMPM(details.in_time)
-          }} </div>
+        }} </div>
         <div class="row"><span><v-icon color="red">mdi-clock-outline</v-icon> Exit time</span> {{
           $dateFormat.formatTimeAMPM(details.out_time)
-          }} </div>
+        }} </div>
         <div class="row"><span> <v-icon color="yellow">mdi-timer-sand-complete</v-icon> Total duration</span> {{
           $dateFormat.minutesToHHMM2(details.duration_in_minutes)
-          }} </div>
+        }} </div>
         <div class="row"><span> <v-icon color="white ">mdi-calculator</v-icon> Total duration</span>({{
           details.duration_in_hours }}h X {{
             details.duration_per_hour_amount }} rate) </div>
@@ -218,7 +218,7 @@ export default {
   },
   mounted() {
     this.bufferMinutes = this.details.parking_exit_buffertime;
-    this.downloadLink = process.env.BACKEND_URL + `/parking-receipts/${this.details.id}/print`;
+    this.downloadLink = this.$env.settings.BACKEND_URL + `/parking-receipts/${this.details.id}/print`;
     this.init();
   },
   beforeDestroy() {

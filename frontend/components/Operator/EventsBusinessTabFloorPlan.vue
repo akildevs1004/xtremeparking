@@ -1,53 +1,24 @@
 <template>
   <div>
-    <v-row
-      ><v-col>
-        <v-carousel
-          v-model="currentSlideUpdated"
-          v-if="customer?.photos"
-          hide-delimiter-background
-          show-arrows-on-hover
-          @change="keyPlottings++"
-          hide-arrows-on-hover
-          hide-delimiters
-          hide-arrows
-          class="floorplancarousel"
-          :height="
-            browserHeight > 700 ? browserHeight - 210 : browserHeight - 30
-          "
-        >
-          <v-carousel-item
-            v-for="(item, index) in customer.photos"
-            :key="'imageplotting' + item.id"
-            class="floorplanimage"
-          >
+    <v-row><v-col>
+        <v-carousel v-model="currentSlideUpdated" v-if="customer?.photos" hide-delimiter-background show-arrows-on-hover
+          @change="keyPlottings++" hide-arrows-on-hover hide-delimiters hide-arrows class="floorplancarousel" :height="browserHeight > 700 ? browserHeight - 210 : browserHeight - 30
+            ">
+          <v-carousel-item v-for="(item, index) in customer.photos" :key="'imageplotting' + item.id"
+            class="floorplanimage">
             <div style="text-align: center">
-              <v-chip
-                color="#203864"
-                style="color: #fff; margin-bottom: 2px"
-                label
-                >{{ index + 1 }}: {{ item.title }}</v-chip
-              >
-              <div
-                :style="
-                  'margin: auto;position: relative;width:' + IMG_PLOTTING_WIDTH
-                "
-              >
-                <img
-                  :id="
-                    'plotting' +
-                      item.photo_plottings[0]?.customer_building_picture_id ?? 0
-                  "
-                  class="photo-img"
-                  :src="item.picture"
-                  :width="IMG_PLOTTING_WIDTH"
-                  :height="IMG_PLOTTING_HEIGHT"
+              <v-chip color="#203864" style="color: #fff; margin-bottom: 2px" label>{{ index + 1 }}: {{ item.title
+                }}</v-chip>
+              <div :style="'margin: auto;position: relative;width:' + IMG_PLOTTING_WIDTH
+                ">
+                <img :id="'plotting' +
+                  item.photo_plottings[0]?.customer_building_picture_id ?? 0
+                  " class="photo-img" :src="item.picture" :width="IMG_PLOTTING_WIDTH" :height="IMG_PLOTTING_HEIGHT"
                   @load="
                     onImageLoad(
                       item.photo_plottings[0]?.customer_building_picture_id ?? 0
                     )
-                  "
-                />
+                    " />
                 <!-- <img
               :id="
                 'plotting' +
@@ -65,24 +36,16 @@
               "
             /> -->
 
-                <span
-                  v-if="
-                    item.photo_plottings[0] &&
-                    imageLoaded[
-                      item.photo_plottings[0]?.customer_building_picture_id ?? 0
-                    ]
-                  "
-                >
-                  <PlottingIcon
-                    v-if="plottingStatus && item.photo_plottings[0]"
-                    v-for="(plotting, idx) in item.photo_plottings[0].plottings"
-                    :key="'plotting' + idx"
-                    :plotting="plotting"
-                    :picture-id="
-                      item.photo_plottings[0]?.customer_building_picture_id ?? 0
-                    "
-                    :alarm="alarm"
-                  />
+                <span v-if="
+                  item.photo_plottings[0] &&
+                  imageLoaded[
+                  item.photo_plottings[0]?.customer_building_picture_id ?? 0
+                  ]
+                ">
+                  <PlottingIcon v-if="plottingStatus && item.photo_plottings[0]"
+                    v-for="(plotting, idx) in item.photo_plottings[0].plottings" :key="'plotting' + idx"
+                    :plotting="plotting" :picture-id="item.photo_plottings[0]?.customer_building_picture_id ?? 0
+                      " :alarm="alarm" />
                 </span>
               </div>
             </div>
@@ -92,40 +55,24 @@
     </v-row>
     <v-row style="margin-top: 0px" v-if="browserHeight - 210 > 550">
       <v-col>
-        <div
-          style="
+        <div style="
             max-width: 750px;
             width: 100%;
             overflow-x: auto;
             white-space: nowrap;
             margin: auto;
             text-align: center;
-          "
-        >
-          <div
-            style="
+          ">
+          <div style="
               display: inline-block;
               width: 140px;
               text-align: center;
               margin-right: 10px;
-            "
-            v-for="(item, index) in customer.photos"
-            :key="index"
-            @click="changeSlideImage(index)"
-          >
-            <div
-              style="height: 100px; width: 150px; margin: auto"
-              :class="{ 'active-thumbnail': index === currentSlideUpdated }"
-            >
-              <v-img
-                :src="item.picture"
-                :alt="item.title"
-                contain
-                width="100px"
-                max-height="80px"
-                height="80px"
-                style="max-height: 80px; margin: auto"
-              ></v-img>
+            " v-for="(item, index) in customer.photos" :key="index" @click="changeSlideImage(index)">
+            <div style="height: 100px; width: 150px; margin: auto"
+              :class="{ 'active-thumbnail': index === currentSlideUpdated }">
+              <v-img :src="item.picture" :alt="item.title" contain width="100px" max-height="80px" height="80px"
+                style="max-height: 80px; margin: auto"></v-img>
             </div>
             <label style="font-size: 10px">{{ item.title }}</label>
           </div>
@@ -233,7 +180,7 @@ export default {
         element.sensorImage = "/sensor_type_icons/" + "other_sensor.png";
 
         // element.sensorImage =
-        //   process.env.BACKEND_URL2 + "/sensor_type_icons/" + "other_sensor.png";
+        //   this.$env.settings.BACKEND_URL2 + "/sensor_type_icons/" + "other_sensor.png";
         element.sensorTypeName = "Unknown";
 
         if (element2) {
@@ -244,7 +191,7 @@ export default {
           element.sensorImage =
             "/sensor_type_icons/" + (find ? find.image : "other_sensor.png");
           // element.sensorImage =
-          //   process.env.BACKEND_URL2 +
+          //   this.$env.settings.BACKEND_URL2 +
           //   "/sensor_type_icons/" +
           //   (find ? find.image : "other_sensor.png");
           element.sensorTypeName = element2.sensor_type;

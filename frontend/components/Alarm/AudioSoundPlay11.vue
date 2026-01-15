@@ -26,9 +26,9 @@ export default {
   mounted() {
     // Initialize audio object after a delay
     setTimeout(() => {
-      if (process.env.BACKEND_URL2) {
+      if (this.$env.settings.BACKEND_URL2) {
         this.audio = new Audio(
-          process.env.BACKEND_URL2 + "/alarm_sounds/alarm-sound1.mp3"
+          this.$env.settings.BACKEND_URL2 + "/alarm_sounds/alarm-sound1.mp3"
         );
       }
 
@@ -65,9 +65,9 @@ export default {
     playSound() {
       //if (!this.audio) return;
 
-      if (process.env.BACKEND_URL2) {
+      if (this.$env.settings.BACKEND_URL2) {
         this.audio = new Audio(
-          process.env.BACKEND_URL2 + "/alarm_sounds/alarm-sound1.mp3"
+          this.$env.settings.BACKEND_URL2 + "/alarm_sounds/alarm-sound1.mp3"
         );
       }
 

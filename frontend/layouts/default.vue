@@ -1313,8 +1313,8 @@ export default {
       this.resetTimer();
     },
     gotoHomePage() {
-      //location.href = process.env.APP_URL + "/dashboard2";
-      location.href = location.href; // process.env.APP_URL + "/dashboard2";
+      //location.href = this.$env.settings.APP_URL + "/dashboard2";
+      location.href = location.href; // this.$env.settings.APP_URL + "/dashboard2";
     },
     isNewAlarmAdded() {
       let added = this.notificationsMenuItems.filter(
@@ -1530,7 +1530,7 @@ export default {
 
           if (email && password) {
             window.location.href =
-              process.env.EMPLOYEE_APP_URL +
+              this.$env.settings.EMPLOYEE_APP_URL +
               "/loginwithtoken?email=" +
               email +
               "&password=" +

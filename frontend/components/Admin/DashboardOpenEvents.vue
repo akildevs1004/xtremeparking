@@ -11,62 +11,46 @@
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>
           </template>
-          <v-list width="120" dense>
-            <v-list-item @click="viewLogs()">
-              <v-list-item-title style="cursor: pointer">
-                View Logs
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </v-col>
-    </v-row> -->
+<v-list width="120" dense>
+  <v-list-item @click="viewLogs()">
+    <v-list-item-title style="cursor: pointer">
+      View Logs
+    </v-list-item-title>
+  </v-list-item>
+</v-list>
+</v-menu>
+</v-col>
+</v-row> -->
     <table style="width: 100%" class="simpletable mt-0 font-color">
       <tr v-for="event in logs">
         <!-- <td style="width: 30px">#{{ event.id }}</td> -->
         <td style="width: 50px">
-          <img
-            :src="event.customer?.profile_picture || '/no-business_profile.png'"
-            style="
+          <img :src="event.customer?.profile_picture || '/no-business_profile.png'" style="
               width: 100%;
               border-radius: 5px;
               width: 40px;
               margin: auto;
               vertical-align: middle;
-            "
-          />
+            " />
         </td>
         <td class="font-color">{{ event.customer.building_name }}</td>
         <td style="width: 40px">
-          <img
-            :title="event.alarm_type"
-            :src="
-              '/notification_icons/' + event.notificationicon?.image ||
-              '/no-business_profile.png'
-            "
-            style="
+          <img :title="event.alarm_type" :src="'/notification_icons/' + event.notificationicon?.image ||
+            '/no-business_profile.png'
+            " style="
               width: 100%;
 
               width: 20px;
               margin: auto;
               vertical-align: middle;
-            "
-          />
+            " />
         </td>
 
         <td style="width: 60px">
-          <div
-            style="width: 60px; color: #fff; height: 25px; color: #ff0000"
-            v-if="event.alarm_status == 1"
-            label
-          >
+          <div style="width: 60px; color: #fff; height: 25px; color: #ff0000" v-if="event.alarm_status == 1" label>
             OPEN
           </div>
-          <div
-            style="width: 60px; color: #fff; height: 25px; color: #0046ff"
-            v-else-if="event.forwarded == true"
-            label
-          >
+          <div style="width: 60px; color: #fff; height: 25px; color: #0046ff" v-else-if="event.forwarded == true" label>
             FWD
           </div>
 
@@ -97,7 +81,7 @@ export default {
       emptyLogmessage: "",
       number_of_records: 5,
       logs: [],
-      url: process.env.SOCKET_ENDPOINT,
+      url: this.$env.settings.SOCKET_ENDPOINT,
       socket: null,
       totalRowsCount: 0,
 

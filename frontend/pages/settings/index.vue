@@ -267,7 +267,7 @@
                                 <v-text-field label="Company Email" readonly dense outlined hide-details
                                   v-model="user_payload.email"></v-text-field>
                                 <span v-if="errors && errors.email" class="text-danger mt-2">{{ errors.email[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -282,7 +282,7 @@
                                   v-model="contact_payload.number" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.number" class="text-danger mt-2">{{ errors.number[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -290,7 +290,7 @@
                                   v-model="contact_payload.position" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.position" class="text-danger mt-2">{{ errors.position[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -298,14 +298,14 @@
                                   v-model="contact_payload.whatsapp" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.whatsapp" class="text-danger mt-2">{{ errors.whatsapp[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
                               <v-col cols="4">
                                 <v-text-field readonly label="Mobile Number" color="primary" dense outlined
                                   v-model="company_payload.mol_id" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.mol_id" class="text-danger mt-2">{{ errors.mol_id[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -314,7 +314,7 @@
                                     "></v-text-field>
                                 <span v-if="errors && errors.p_o_box_no" class="text-danger mt-2">{{
                                   errors.p_o_box_no[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
                               <v-col cols="4">
                                 <v-text-field readonly label="Latitude" dense outlined v-model="geographic_payload.lat"
@@ -334,7 +334,7 @@
                                     ">
                                 </v-textarea>
                                 <span v-if="errors && errors.location" class="text-danger mt-2">{{ errors.location[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -348,7 +348,7 @@
                                 <v-text-field label="Expiry Date" readonly dense outlined hide-details
                                   v-model="company_payload.expiry"></v-text-field>
                                 <span v-if="errors && errors.expiry" class="text-danger mt-2">{{ errors.expiry[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="4">
@@ -393,7 +393,7 @@
                                   v-model="contact_payload.number" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.number" class="text-danger mt-2">{{ errors.number[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="6">
@@ -401,7 +401,7 @@
                                   v-model="contact_payload.position" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.position" class="text-danger mt-2">{{ errors.position[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="6">
@@ -409,14 +409,14 @@
                                   v-model="contact_payload.whatsapp" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.whatsapp" class="text-danger mt-2">{{ errors.whatsapp[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
                               <v-col cols="6" md="6" sm="6">
                                 <v-text-field label="Mobile Number" color="primary" dense outlined
                                   v-model="company_payload.mol_id" hide-details :disabled="!$pagePermission.can('company_edit', this)
                                     "></v-text-field>
                                 <span v-if="errors && errors.mol_id" class="text-danger mt-2">{{ errors.mol_id[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
 
                               <v-col cols="6" md="6" sm="6">
@@ -425,7 +425,7 @@
                                     "></v-text-field>
                                 <span v-if="errors && errors.p_o_box_no" class="text-danger mt-2">{{
                                   errors.p_o_box_no[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
                               <v-col cols="6">
                                 <v-text-field label="Latitude" dense outlined v-model="geographic_payload.lat"
@@ -445,7 +445,7 @@
                                     ">
                                 </v-textarea>
                                 <span v-if="errors && errors.location" class="text-danger mt-2">{{ errors.location[0]
-                                  }}</span>
+                                }}</span>
                               </v-col>
                               <v-col>
                                 <v-autocomplete class="pb-0" hide-details v-model="geographic_payload.utc_time_zone"
@@ -556,7 +556,7 @@
                           :disabled="!$pagePermission.can('company_edit', this)"></v-text-field>
                         <span v-if="errors && errors.business_makeem_number" class="text-danger mt-2">{{
                           errors.business_makeem_number[0]
-                        }}</span>
+                          }}</span>
                       </v-col>
                     </v-row>
 
@@ -744,7 +744,7 @@ export default {
     contact_payload_update: {},
     business_licence_payload: {},
     timeZones,
-    originalURL: process.env.APP_URL + "register/visitor/walkin/", //`https://mytime2cloud.com/register/visitor/walkin/`,
+    originalURL: this.$env.settings.APP_URL + "register/visitor/walkin/", //`https://mytime2cloud.com/register/visitor/walkin/`,
     fullCompanyLink: null,
     qrCompanyCodeDataURL: null,
     show_password_confirm: false,
@@ -823,8 +823,8 @@ export default {
   async created() {
     try {
       this.getDataFromApi();
-      if (process.env.ENVIRONMENT == "local") {
-        this.originalURL = `http://${process.env.LOCAL_IP}:${process.env.LOCAL_PORT}/register/visitor/walkin/`;
+      if (this.$env.settings.ENVIRONMENT == "local") {
+        this.originalURL = `http://${this.$env.settings.LOCAL_IP}:${this.$env.settings.LOCAL_PORT}/register/visitor/walkin/`;
       }
       this.fullCompanyLink = this.originalURL + this.$auth.user.company_id;
       //this.generateCompanyQRCode(this.fullCompanyLink);

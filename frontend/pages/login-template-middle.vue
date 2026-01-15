@@ -492,7 +492,7 @@ export default {
               this.$auth.user.role_id == 0 &&
               this.$auth.user.user_type == "employee"
             ) {
-              window.location.href = process.env.EMPLOYEE_APP_URL;
+              window.location.href = this.$env.settings.EMPLOYEE_APP_URL;
               return "";
             }
 

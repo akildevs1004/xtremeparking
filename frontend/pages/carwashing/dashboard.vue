@@ -135,7 +135,7 @@
           class="purple-border-bottom custom-card"><v-card-text><v-row style="height: 80px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
                 <div class="purple-text" style="font-size: 40px">{{ statisstics ? statisstics.lessThanOneHour : 0
-                  }}
+                }}
                 </div>
                 <br />
                 <div style="font-size: 16px">Less than 1 Hour</div>
@@ -409,7 +409,7 @@ export default {
         clean: true,
         reconnectPeriod: 1000,
       };
-      // const host = process.env.MQTT_SOCKET_HOST; // "wss://mqtt.xtremeguard.org:8084"; // If TLS WebSocket is available
+      // const host = this.$env.settings.MQTT_SOCKET_HOST; // "wss://mqtt.xtremeguard.org:8084"; // If TLS WebSocket is available
 
 
 

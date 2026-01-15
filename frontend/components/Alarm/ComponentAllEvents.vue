@@ -10,19 +10,11 @@
       <v-card>
         <v-card-title dense class="popup_background_noviolet">
           <span>Alarm Event Track #{{ selectedAlarm?.id }}</span>
-          <v-spacer></v-spacer
-          ><v-icon
-            style="padding-right: 20px"
-            @click="alarmNotesPrint(selectedAlarm?.id, 'download')"
-            outlined
-          >
+          <v-spacer></v-spacer><v-icon style="padding-right: 20px"
+            @click="alarmNotesPrint(selectedAlarm?.id, 'download')" outlined>
             mdi-download-box-outline
           </v-icon>
-          <v-icon
-            style="padding-right: 20px"
-            @click="alarmNotesPrint(selectedAlarm?.id, 'print')"
-            outlined
-          >
+          <v-icon style="padding-right: 20px" @click="alarmNotesPrint(selectedAlarm?.id, 'print')" outlined>
             mdi-printer-outline
           </v-icon>
           <v-icon @click="dialogViewAlarmFormat = false" outlined>
@@ -32,11 +24,7 @@
 
         <v-card-text style="padding: 0px">
           <v-container style="min-height: 100px; padding-left: 0px">
-            <AlarmNotesFormatView
-              v-if="selectedAlarm"
-              :alarm="selectedAlarm"
-              :key="key"
-            />
+            <AlarmNotesFormatView v-if="selectedAlarm" :alarm="selectedAlarm" :key="key" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -46,25 +34,17 @@
         <v-card-title dense class="popup_background_noviolet">
           <span>Operator Logs #{{ selectedAlarm?.id }}</span>
           <v-spacer></v-spacer>
-          <v-icon
-            @click="
-              closeDialog();
-              dialogViewLogs = false;
-            "
-            outlined
-          >
+          <v-icon @click="
+            closeDialog();
+          dialogViewLogs = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text style="padding: 0px">
           <v-container style="min-height: 100px; padding-left: 0px">
-            <SecurityAlarmNotes
-              v-if="customer"
-              :alarmId="eventId"
-              :customer="customer"
-              :key="key"
-            />
+            <SecurityAlarmNotes v-if="customer" :alarmId="eventId" :customer="customer" :key="key" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -74,28 +54,18 @@
         <v-card-title dense class="popup_background_noviolet">
           <span>Alarm - Forward Details #{{ eventId }}</span>
           <v-spacer></v-spacer>
-          <v-icon
-            @click="
-              closeDialog();
-              dialogForwardEventDetails = false;
-            "
-            outlined
-          >
+          <v-icon @click="
+            closeDialog();
+          dialogForwardEventDetails = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text>
           <v-container style="min-height: 100px">
-            <AlarmForwardEvent
-              name="AlramCloseNotes"
-              :key="key"
-              :customer_id="customer_id"
-              :customer="customer"
-              @closeDialog="closeDialog"
-              :alarm_id="eventId"
-              :popupEventText="popupEventText"
-            />
+            <AlarmForwardEvent name="AlramCloseNotes" :key="key" :customer_id="customer_id" :customer="customer"
+              @closeDialog="closeDialog" :alarm_id="eventId" :popupEventText="popupEventText" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -105,27 +75,18 @@
         <v-card-title dense class="popup_background_noviolet">
           <span style="color: black111">Alarm Event Close/Turn off </span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="
-              closeDialog();
-              dialogCloseAlarm = false;
-            "
-            outlined
-          >
+          <v-icon style="color: black3333" @click="
+            closeDialog();
+          dialogCloseAlarm = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text>
           <v-container style="min-height: 100px">
-            <AlramCloseNotes
-              name="AlramCloseNotes"
-              :key="key"
-              :customer_id="customer_id"
-              @closeDialog="closeDialog"
-              :alarmId="eventId"
-            />
+            <AlramCloseNotes name="AlramCloseNotes" :key="key" :customer_id="customer_id" @closeDialog="closeDialog"
+              :alarmId="eventId" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -135,27 +96,18 @@
         <v-card-title dense class="popup_background_noviolet">
           <span style="color: black111">Alarm Notes </span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="
-              closeDialog();
-              dialogAddCustomerNotes = false;
-            "
-            outlined
-          >
+          <v-icon style="color: black3333" @click="
+            closeDialog();
+          dialogAddCustomerNotes = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text>
           <v-container style="min-height: 100px">
-            <EditAlarmCustomerEventNotes
-              name="EditAlarmCustomerEventNotes"
-              :key="key"
-              :customer_id="customer_id"
-              @closeDialog="closeDialog"
-              :alarmId="eventId"
-            />
+            <EditAlarmCustomerEventNotes name="EditAlarmCustomerEventNotes" :key="key" :customer_id="customer_id"
+              @closeDialog="closeDialog" :alarmId="eventId" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -165,28 +117,18 @@
         <v-card-title dense class="popup_background_noviolet">
           <span style="color: black111">Alarm Notes List</span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="
-              closeDialog();
-              dialogNotesList = false;
-            "
-            outlined
-          >
+          <v-icon style="color: black3333" @click="
+            closeDialog();
+          dialogNotesList = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text>
           <v-container style="min-height: 100px">
-            <AlarmEventNotesListView
-              name="AlarmEventNotesListView"
-              :key="key"
-              :customer_id="customer_id"
-              @closeDialog="closeDialog"
-              :alarm_id="eventId"
-              showOptions="false"
-            />
+            <AlarmEventNotesListView name="AlarmEventNotesListView" :key="key" :customer_id="customer_id"
+              @closeDialog="closeDialog" :alarm_id="eventId" showOptions="false" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -202,15 +144,9 @@
         </v-card-title>
 
         <v-card-text class="background">
-          <TechnicianCustomerTabsView
-            v-if="selectedAlarm?.device?.customer"
-            :key="key"
-            :_id="viewCustomerId"
-            :selectedCustomer="selectedAlarm?.device?.customer"
-            :isPopup="true"
-            :isEditable="false"
-            :selectedAlarm="selectedAlarm"
-          />
+          <TechnicianCustomerTabsView v-if="selectedAlarm?.device?.customer" :key="key" :_id="viewCustomerId"
+            :selectedCustomer="selectedAlarm?.device?.customer" :isPopup="true" :isEditable="false"
+            :selectedAlarm="selectedAlarm" />
 
           <!-- <AlarmEventCustomerContactsTabView
             @closeCustomerDialog="closeCustomerDialog()"
@@ -225,49 +161,23 @@
       </v-card>
     </v-dialog>
     <v-row class="p-0" style="padding-top: 0px">
-      <v-col
-        cols="12"
-        class="text-right"
-        style="padding-top: 0px; z-index: 9; padding-right: 0px"
-      >
+      <v-col cols="12" class="text-right" style="padding-top: 0px; z-index: 9; padding-right: 0px">
         <v-card class="mt-3" elevation="0">
           <v-card-text>
             <v-row>
-              <v-col
-                class="text-left mt-1"
-                :cols="sensorItems.length > 1 ? 4 : 4"
-              >
+              <v-col class="text-left mt-1" :cols="sensorItems.length > 1 ? 4 : 4">
                 <h3 style="font-weight: normal">Alarm Events History</h3>
               </v-col>
 
-              <v-col
-                :cols="sensorItems.length > 1 ? 8 : 8"
-                style="width: 600px; padding: 0px"
-              >
+              <v-col :cols="sensorItems.length > 1 ? 8 : 8" style="width: 600px; padding: 0px">
                 <v-row v-if="showFilters == 'true'">
                   <v-col style="margin: auto">
-                    <v-icon
-                      loading="true"
-                      @click="getDataFromApi(0)"
-                      class="mt-2 mr-2"
-                      >mdi-reload</v-icon
-                    >
+                    <v-icon loading="true" @click="getDataFromApi(0)" class="mt-2 mr-2">mdi-reload</v-icon>
 
-                    <v-text-field
-                      style="padding-top: 7px; float: right; width: 300px"
-                      height="20"
-                      class="employee-schedule-search-box"
-                      v-model="commonSearch"
-                      label="Search"
-                      placeholder="ID,Name,location etc..."
-                      dense
-                      outlined
-                      type="text"
-                      append-icon="mdi-magnify"
-                      clearable
-                      hide-details
-                    ></v-text-field
-                  ></v-col>
+                    <v-text-field style="padding-top: 7px; float: right; width: 300px" height="20"
+                      class="employee-schedule-search-box" v-model="commonSearch" label="Search"
+                      placeholder="ID,Name,location etc..." dense outlined type="text" append-icon="mdi-magnify"
+                      clearable hide-details></v-text-field></v-col>
                   <!-- <v-col cols="3"
                     ><v-select
                       class="employee-schedule-search-box"
@@ -293,70 +203,31 @@
                       item-value="id"
                     ></v-select>
                   </v-col> -->
-                  <v-col
-                    style="max-width: 200px; padding-right: 0px; margin: auto"
-                  >
-                    <v-select
-                      label="Event Type"
-                      class="employee-schedule-search-box"
-                      style="
+                  <v-col style="max-width: 200px; padding-right: 0px; margin: auto">
+                    <v-select label="Event Type" class="employee-schedule-search-box" style="
                         padding-top: 7px;
                         z-index: 999;
                         min-width: 100%;
                         width: 200px;
-                      "
-                      height="25px"
-                      outlined
-                      v-model="filterAlarmType"
-                      dense
-                      :items="AlarmTypeNotificationIcons"
-                      item-text="notification_type"
-                      clearable
-                      item-value="notification_type"
-                      hide-details
-                    ></v-select>
+                      " height="25px" outlined v-model="filterAlarmType" dense :items="AlarmTypeNotificationIcons"
+                      item-text="notification_type" clearable item-value="notification_type" hide-details></v-select>
                   </v-col>
-                  <v-col
-                    style="max-width: 200px; padding-right: 0px; margin: auto"
-                  >
-                    <v-select
-                      class="employee-schedule-search-box"
-                      style="
+                  <v-col style="max-width: 200px; padding-right: 0px; margin: auto">
+                    <v-select class="employee-schedule-search-box" style="
                         padding-top: 7px;
                         z-index: 999;
                         min-width: 100%;
                         width: 200px;
-                      "
-                      height="25px"
-                      outlined
-                      v-model="filterAlarmStatus"
-                      dense
-                      :items="allEventsList"
-                      item-text="name"
-                      item-value="id"
-                      clearable
-                      hide-details
-                    ></v-select>
+                      " height="25px" outlined v-model="filterAlarmStatus" dense :items="allEventsList"
+                      item-text="name" item-value="id" clearable hide-details></v-select>
                   </v-col>
                   <v-col style="max-width: 200px; margin: auto">
-                    <CustomFilter
-                      style="float: left; padding-top: 5px; z-index: 999"
-                      @filter-attr="filterAttr"
-                      :default_date_from="date_from"
-                      :default_date_to="date_to"
-                      :defaultFilterType="1"
-                      :height="'30px'"
-                  /></v-col>
-                  <v-col
-                    style="max-width: 100px; padding-top: 18px; margin: auto"
-                  >
-                    <v-btn
-                      desne
-                      small
-                      color="primary"
-                      @click="getDataFromApi(0)"
-                      >Submit</v-btn
-                    >
+                    <CustomFilter style="float: left; padding-top: 5px; z-index: 999" @filter-attr="filterAttr"
+                      :default_date_from="date_from" :default_date_to="date_to" :defaultFilterType="1"
+                      :height="'30px'" />
+                  </v-col>
+                  <v-col style="max-width: 100px; padding-top: 18px; margin: auto">
+                    <v-btn desne small color="primary" @click="getDataFromApi(0)">Submit</v-btn>
                   </v-col>
                   <v-col style="max-width: 50px"></v-col>
                   <!-- <v-col cols="2" style="margin-top: 10px; margin-left: -16px">
@@ -369,65 +240,41 @@
                           Print
                         </span>
                       </template>
-                      <v-list width="100" dense>
-                        <v-list-item @click="downloadOptions(`print`)">
-                          <v-list-item-title style="cursor: pointer">
-                            <v-row>
-                              <v-col cols="5"
-                                ><img
-                                  style="padding-top: 5px"
-                                  src="/icons/icon_print.png"
-                                  class="iconsize"
-                              /></v-col>
-                              <v-col
-                                cols="7"
-                                style="padding-left: 0px; padding-top: 19px"
-                              >
-                                Print
-                              </v-col>
-                            </v-row>
-                          </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item @click="downloadOptions('download')">
-                          <v-list-item-title style="cursor: pointer">
-                            <v-row>
-                              <v-col cols="5"
-                                ><img
-                                  style="padding-top: 5px"
-                                  src="/icons/icon_pdf.png"
-                                  class="iconsize"
-                              /></v-col>
-                              <v-col
-                                cols="7"
-                                style="padding-left: 0px; padding-top: 19px"
-                              >
-                                PDF
-                              </v-col>
-                            </v-row>
-                          </v-list-item-title>
-                        </v-list-item>
+<v-list width="100" dense>
+  <v-list-item @click="downloadOptions(`print`)">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_print.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          Print
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
+  <v-list-item @click="downloadOptions('download')">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_pdf.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          PDF
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
 
-                        <v-list-item @click="downloadOptions('excel')">
-                          <v-list-item-title style="cursor: pointer">
-                            <v-row>
-                              <v-col cols="5"
-                                ><img
-                                  style="padding-top: 5px"
-                                  src="/icons/icon_excel.png"
-                                  class="iconsize"
-                              /></v-col>
-                              <v-col
-                                cols="7"
-                                style="padding-left: 0px; padding-top: 19px"
-                              >
-                                EXCEL
-                              </v-col>
-                            </v-row>
-                          </v-list-item-title>
-                        </v-list-item>
-                      </v-list>
-                    </v-menu>
-                  </v-col> -->
+  <v-list-item @click="downloadOptions('excel')">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_excel.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          EXCEL
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
+</v-list>
+</v-menu>
+</v-col> -->
                 </v-row>
               </v-col>
             </v-row>
@@ -436,20 +283,9 @@
 
         <v-row v-if="sensorItems?.length > 0" style="margin-top: 0px">
           <v-col cols="12" style="margin-top: 0px">
-            <v-tabs
-              v-if="sensorItems.length > 1"
-              v-model="tab"
-              background-color="transparent"
-              color="red"
-              right
-              bold
-            >
-              <v-tab
-                @click="showTabContent()"
-                v-for="(item, index) in sensorItems"
-                :key="item.id"
-                style="font-weight: bold"
-              >
+            <v-tabs v-if="sensorItems.length > 1" v-model="tab" background-color="transparent" color="red" right bold>
+              <v-tab @click="showTabContent()" v-for="(item, index) in sensorItems" :key="item.id"
+                style="font-weight: bold">
                 {{ item }}
               </v-tab>
             </v-tabs>
@@ -458,20 +294,11 @@
               <v-tab-item v-for="(item, index) in sensorItems" :key="item.id">
                 <v-card color="basil" flat>
                   <v-card-text style="padding: 0px">
-                    <v-data-table
-                      :height="tableHeight"
-                      :name="'table' + index"
-                      v-if="showTable"
-                      :headers="headers"
-                      :items="items"
-                      :server-items-length="totalRowsCount"
-                      :loading="loading"
-                      :options.sync="options"
+                    <v-data-table :height="tableHeight" :name="'table' + index" v-if="showTable" :headers="headers"
+                      :items="items" :server-items-length="totalRowsCount" :loading="loading" :options.sync="options"
                       :footer-props="{
                         itemsPerPageOptions: [10, 50, 100, 500, 1000],
-                      }"
-                      class="elevation-0 table-header-color"
-                    >
+                      }" class="elevation-0 table-header-color">
                       <template v-slot:item.sno="{ item, index }">
                         {{ item.id }}
                       </template>
@@ -500,21 +327,16 @@
                       <template v-slot:item.city="{ item }"> </template>
 
                       <template v-slot:item.sensor="{ item }">
-                        <img
-                          :title="item.alarm_type"
-                          :src="
-                            '/notification_icons/' +
-                              item.notificationicon?.image ||
-                            '/no-business_profile.png'
-                          "
-                          style="
+                        <img :title="item.alarm_type" :src="'/notification_icons/' +
+                          item.notificationicon?.image ||
+                          '/no-business_profile.png'
+                          " style="
                             width: 100%;
 
                             width: 22px;
                             margin: auto;
                             vertical-align: middle;
-                          "
-                        />
+                          " />
                         <!-- <div>
                           {{ item.alarm_type }}
                         </div>
@@ -576,8 +398,8 @@
                           {{
                             item.alarm_end_datetime
                               ? $dateFormat.formatDateMonthYear(
-                                  item.alarm_end_datetime
-                                )
+                                item.alarm_end_datetime
+                              )
                               : "---"
                           }}
                         </div>
@@ -599,71 +421,45 @@
 
                       <template v-slot:item.alarm_category="{ item }">
                         <!-- <div>{{ item.category?.name || "---" }}</div> -->
-                        <v-chip
-                          style="
+                        <v-chip style="
                             width: 60px;
                             color: #fff;
                             height: 18px;
                             text-align: center;
-                          "
-                          class="alarmevents"
-                          v-if="item.category?.name == 'Low'"
-                          color="#a2b117"
-                          label
-                          >{{ item.category?.name || "---" }}</v-chip
-                        >
-                        <v-chip
-                          style="
+                          " class="alarmevents" v-if="item.category?.name == 'Low'" color="#a2b117" label>{{
+                            item.category?.name || "---" }}</v-chip>
+                        <v-chip style="
                             width: 60px;
                             color: #fff;
                             height: 18px;
                             text-align: center;
-                          "
-                          class="alarmevents"
-                          v-else-if="item.category?.name == 'Medium'"
-                          color="#1e71c3"
-                          label
-                          >Med</v-chip
-                        >
+                          " class="alarmevents" v-else-if="item.category?.name == 'Medium'" color="#1e71c3"
+                          label>Med</v-chip>
 
-                        <v-chip
-                          style="
+                        <v-chip style="
                             width: 60px;
                             color: #fff;
                             height: 18px;
                             text-align: center;
-                          "
-                          class="alarmevents"
-                          v-else
-                          color="#a70000"
-                          label
-                          >{{ item.category?.name || "---" }}</v-chip
-                        >
+                          " class="alarmevents" v-else color="#a70000" label>{{ item.category?.name || "---"
+                          }}</v-chip>
                       </template>
 
                       <template v-slot:item.status="{ item }">
-                        <div
-                          style="
+                        <div style="
                             width: 60px;
                             color: #fff;
                             height: 25px;
                             color: #ff0000;
-                          "
-                          v-if="item.alarm_status == 1"
-                          label
-                        >
+                          " v-if="item.alarm_status == 1" label>
                           Open
                         </div>
-                        <div
-                          style="
+                        <div style="
                             width: 60px;
                             color: #fff;
                             height: 25px;
                             color: #0046ff;
-                          "
-                          v-else-if="item.forwarded == true"
-                          label
-                        >
+                          " v-else-if="item.forwarded == true" label>
                           FWD
                         </div>
 
@@ -704,13 +500,10 @@
                                 Customer
                               </v-list-item-title>
                             </v-list-item>
-                            <v-list-item
-                              v-if="
-                                $auth.user.user_type == 'operator' ||
-                                $auth.user.user_type == 'company'
-                              "
-                              @click="eventForward(item)"
-                            >
+                            <v-list-item v-if="
+                              $auth.user.user_type == 'operator' ||
+                              $auth.user.user_type == 'company'
+                            " @click="eventForward(item)">
                               <v-list-item-title style="cursor: pointer">
                                 <v-icon color="secondary" small>
                                   mdi mdi-share-all
@@ -983,7 +776,7 @@ export default {
     alarmNotesPrint(alarmId, option) {
       //let option = "print";
 
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/alarm_notes_print_pdf";
       if (option == "excel") url += "/alarm_notes_download_pdf";
       if (option == "download") url += "/alarm_notes_download_pdf";
@@ -1121,7 +914,7 @@ export default {
             this.getDataFromApi();
             this.loading = false;
           });
-        } catch (e) {}
+        } catch (e) { }
       }
     },
 
@@ -1132,7 +925,7 @@ export default {
         filterSensorname = this.eventFilter;
       }
 
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/alarm_events_print_pdf";
       if (option == "excel") url += "/alarm_events_export_excel";
       if (option == "download") url += "/alarm_events_download_pdf";

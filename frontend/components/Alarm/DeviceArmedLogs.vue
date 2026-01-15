@@ -10,27 +10,16 @@
         <v-card-title dark class="popup_background_noviolet">
           <span style="color: black3333" dense>Intruder Events</span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="dialogEventsList = false"
-            outlined
-          >
+          <v-icon style="color: black3333" @click="dialogEventsList = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
         <v-card-text style="padding: 20px; padding-left: 0px">
           <v-card class="elevation-2">
             <v-card-text class="mt-5">
-              <AlamAllEvents
-                name="DeviceArmedLogs"
-                style="padding: 0px; padding-top: 0px"
-                :key="key"
-                :popup="true"
-                :compAlarmFilter="1"
-                :date_from="date_from"
-                :date_to="date_to"
-              /> </v-card-text
-          ></v-card>
+              <AlamAllEvents name="DeviceArmedLogs" style="padding: 0px; padding-top: 0px" :key="key" :popup="true"
+                :compAlarmFilter="1" :date_from="date_from" :date_to="date_to" />
+            </v-card-text></v-card>
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -44,31 +33,14 @@
               <v-col class="mt-2" style="max-width: 100px">
                 <v-icon @click="getDataFromApi()">mdi-refresh</v-icon>
               </v-col>
-              <v-col style="max-width: 250px"
-                ><v-text-field
-                  style="padding-top: 7px; width: 200px"
-                  height="20"
-                  class="employee-schedule-search-box"
-                  @input="getDataFromApi()"
-                  v-model="commonSearch"
-                  label="Device Name"
-                  dense
-                  outlined
-                  type="text"
-                  append-icon="mdi-magnify"
-                  clearable
-                  hide-details
-                ></v-text-field
-              ></v-col>
+              <v-col style="max-width: 250px"><v-text-field style="padding-top: 7px; width: 200px" height="20"
+                  class="employee-schedule-search-box" @input="getDataFromApi()" v-model="commonSearch"
+                  label="Device Name" dense outlined type="text" append-icon="mdi-magnify" clearable
+                  hide-details></v-text-field></v-col>
               <v-col style="max-width: 200px">
-                <CustomFilter
-                  style="float: right; padding-top: 5px; z-index: 9999"
-                  @filter-attr="filterAttr"
-                  :default_date_from="date_from"
-                  :default_date_to="date_to"
-                  :defaultFilterType="1"
-                  :height="'40px'"
-              /></v-col>
+                <CustomFilter style="float: right; padding-top: 5px; z-index: 9999" @filter-attr="filterAttr"
+                  :default_date_from="date_from" :default_date_to="date_to" :defaultFilterType="1" :height="'40px'" />
+              </v-col>
               <!-- <v-col cols="2" style="width: 100px; margin-top: 10px">
                 <v-menu bottom right>
                   <template v-slot:activator="{ on, attrs }">
@@ -79,65 +51,41 @@
                       Print
                     </span>
                   </template>
-                  <v-list width="100" dense>
-                    <v-list-item @click="downloadOptions(`print`)">
-                      <v-list-item-title style="cursor: pointer">
-                        <v-row>
-                          <v-col cols="5"
-                            ><img
-                              style="padding-top: 5px"
-                              src="/icons/icon_print.png"
-                              class="iconsize"
-                          /></v-col>
-                          <v-col
-                            cols="7"
-                            style="padding-left: 0px; padding-top: 19px"
-                          >
-                            Print
-                          </v-col>
-                        </v-row>
-                      </v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="downloadOptions('download')">
-                      <v-list-item-title style="cursor: pointer">
-                        <v-row>
-                          <v-col cols="5"
-                            ><img
-                              style="padding-top: 5px"
-                              src="/icons/icon_pdf.png"
-                              class="iconsize"
-                          /></v-col>
-                          <v-col
-                            cols="7"
-                            style="padding-left: 0px; padding-top: 19px"
-                          >
-                            PDF
-                          </v-col>
-                        </v-row>
-                      </v-list-item-title>
-                    </v-list-item>
+<v-list width="100" dense>
+  <v-list-item @click="downloadOptions(`print`)">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_print.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          Print
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
+  <v-list-item @click="downloadOptions('download')">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_pdf.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          PDF
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
 
-                    <v-list-item @click="downloadOptions('excel')">
-                      <v-list-item-title style="cursor: pointer">
-                        <v-row>
-                          <v-col cols="5"
-                            ><img
-                              style="padding-top: 5px"
-                              src="/icons/icon_excel.png"
-                              class="iconsize"
-                          /></v-col>
-                          <v-col
-                            cols="7"
-                            style="padding-left: 0px; padding-top: 19px"
-                          >
-                            EXCEL
-                          </v-col>
-                        </v-row>
-                      </v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </v-col> -->
+  <v-list-item @click="downloadOptions('excel')">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_excel.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          EXCEL
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
+</v-list>
+</v-menu>
+</v-col> -->
             </v-row>
           </v-col>
         </v-row>
@@ -145,22 +93,15 @@
     </v-row>
     <v-row>
       <v-col>
-        <v-data-table
-          :headers="headers"
-          :items="items"
-          :server-items-length="totalRowsCount"
-          :loading="loading"
-          :options.sync="options"
-          :footer-props="{
+        <v-data-table :headers="headers" :items="items" :server-items-length="totalRowsCount" :loading="loading"
+          :options.sync="options" :footer-props="{
             itemsPerPageOptions: [10, 50, 100, 500, 1000],
-          }"
-          class="elevation-0"
-        >
+          }" class="elevation-0">
           <template v-slot:item.sno="{ item, index }">
             {{
               currentPage
                 ? (currentPage - 1) * perPage +
-                  (cumulativeIndex + items.indexOf(item))
+                (cumulativeIndex + items.indexOf(item))
                 : "-"
             }}
           </template>
@@ -311,7 +252,7 @@ export default {
         filterSensorname = this.eventFilter;
       }
 
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/device_armed_logs_print_pdf";
       if (option == "excel") url += "/device_armed_logs_export_excel";
       if (option == "download") url += "/device_armed_logs_download_pdf";
@@ -358,7 +299,7 @@ export default {
           this.totalRowsCount = data.total;
           this.loading = false;
         });
-      } catch (e) {}
+      } catch (e) { }
     },
   },
 };

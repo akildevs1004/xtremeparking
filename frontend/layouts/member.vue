@@ -102,7 +102,7 @@
 
       <v-spacer></v-spacer> <span style="color: #FFF"> {{ $utils.caps($auth.user?.member?.first_name) }} {{
         $utils.caps($auth.user?.member?.last_name)
-      }}( {{ $utils.caps($auth.user?.member?.member_type) }}) </span>
+        }}( {{ $utils.caps($auth.user?.member?.member_type) }}) </span>
       <!-- <v-menu style="z-index: 9999 !important; width: 300px" bottom origin="center center" offset-y
         transition="scale-transition">
         <template v-slot:activator="{ on, attrs }" style="z-index: 9999 !important">
@@ -866,8 +866,8 @@ export default {
       this.resetTimer();
     },
     gotoHomePage() {
-      //location.href = process.env.APP_URL + "/dashboard2";
-      location.href = location.href; // process.env.APP_URL + "/dashboard2";
+      //location.href = this.$env.settings.APP_URL + "/dashboard2";
+      location.href = location.href; // this.$env.settings.APP_URL + "/dashboard2";
     },
     loadHeaderNotificationMenu() {
 
@@ -1123,7 +1123,7 @@ export default {
 
           if (email && password) {
             window.location.href =
-              process.env.EMPLOYEE_APP_URL +
+              this.$env.settings.EMPLOYEE_APP_URL +
               "/loginwithtoken?email=" +
               email +
               "&password=" +

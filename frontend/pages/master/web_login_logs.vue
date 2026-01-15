@@ -4,122 +4,70 @@
       <v-toolbar class="rounded-md" dense flat>
         <v-toolbar-title><span> Web user Logins</span></v-toolbar-title>
         <span>
-          <v-btn
-            dense
-            class="ma-0 px-0"
-            x-small
-            :ripple="false"
-            text
-            title="Reload"
-          >
+          <v-btn dense class="ma-0 px-0" x-small :ripple="false" text title="Reload">
             <v-icon class="ml-2" @click="getRecords()" dark>mdi-reload</v-icon>
           </v-btn>
         </span>
         <v-row>
           <v-col cols="4">
             <div style="width: 250px">
-              <v-autocomplete
-                @change="getRecords()"
-                class="pt-10 px-2"
-                v-model="filters['company_id']"
-                :items="[{ id: ``, name: `All Companies` }, ...companiesList]"
-                dense
-                placeholder="All Companies"
-                outlined
-                item-value="id"
-                item-text="name"
-              >
+              <v-autocomplete @change="getRecords()" class="pt-10 px-2" v-model="filters['company_id']"
+                :items="[{ id: ``, name: `All Companies` }, ...companiesList]" dense placeholder="All Companies"
+                outlined item-value="id" item-text="name">
               </v-autocomplete>
             </div>
           </v-col>
           <v-col cols="4">
             <div style="width: 250px">
-              <v-select
-                @change="getRecords()"
-                class="pt-10 px-2"
-                v-model="filters['user_type']"
-                :items="UserTypesList"
-                dense
-                placeholder="All User Types"
-                outlined
-                item-value="id"
-                item-text="name"
-              >
+              <v-select @change="getRecords()" class="pt-10 px-2" v-model="filters['user_type']" :items="UserTypesList"
+                dense placeholder="All User Types" outlined item-value="id" item-text="name">
               </v-select>
             </div>
           </v-col>
           <v-col cols="4" style="padding-top: 56px; padding-left: 38px">
-            <Calender
-              @filter-attr="filterAttr"
-              :defaultFilterType="1"
-              :height="'40px'"
-              :default_date_from="from_date"
-              :default_date_to="to_date"
-            />
+            <Calender @filter-attr="filterAttr" :defaultFilterType="1" :height="'40px'" :default_date_from="from_date"
+              :default_date_to="to_date" />
           </v-col>
         </v-row>
       </v-toolbar>
-      <v-data-table
-        class="pt-5"
-        dense
-        :headers="headers"
-        :items="logs"
-        :loading="loading"
-        :options.sync="options"
+      <v-data-table class="pt-5" dense :headers="headers" :items="logs" :loading="loading" :options.sync="options"
         :footer-props="{
           itemsPerPageOptions: [10, 20, 50, 100],
-        }"
-        :server-items-length="totalRowsCount"
-      >
+        }" :server-items-length="totalRowsCount">
         <template v-slot:item.sno="{ item, index }">
           {{
             currentPage
               ? (currentPage - 1) * perPage +
-                (cumulativeIndex + logs.indexOf(item))
+              (cumulativeIndex + logs.indexOf(item))
               : ""
           }}
         </template>
         <template v-slot:item.employee.pic="{ item, index }">
           <v-row no-gutters style="vertical-align: middle">
-            <v-col
-              style="
+            <v-col style="
                 padding-left: 0px;
                 width: 50px;
                 max-width: 50px;
                 vertical-align: middle;
-              "
-            >
-              <v-img
-                v-if="item.model_type == 'employee'"
-                style="border-radius: 50%; height: auto; width: 100%"
-                :src="
-                  item.user.employee
-                    ? item.user.employee.profile_picture
-                    : '/no-profile-image.jpg'
-                "
-              >
+              ">
+              <v-img v-if="item.model_type == 'employee'" style="border-radius: 50%; height: auto; width: 100%" :src="item.user.employee
+                  ? item.user.employee.profile_picture
+                  : '/no-profile-image.jpg'
+                ">
               </v-img>
-              <v-img
-                v-else-if="item.model_type == 'company'"
-                style="
+              <v-img v-else-if="item.model_type == 'company'" style="
                   height: auto;
 
                   width: 100%;
                   margin: 0 auto;
-                "
-                :src="item.company ? item.company.logo : '/no-image.PNG'"
-              >
+                " :src="item.company ? item.company.logo : '/no-image.PNG'">
               </v-img>
-              <v-img
-                v-else
-                style="
+              <v-img v-else style="
                   height: auto;
 
                   width: 100%;
                   margin: 0 auto;
-                "
-                src="/no-image.PNG"
-              >
+                " src="/no-image.PNG">
               </v-img>
             </v-col>
           </v-row>
@@ -138,8 +86,8 @@
           {{
             item.user.security
               ? item.user.security.first_name +
-                " " +
-                item.user.security.last_name
+              " " +
+              item.user.security.last_name
               : ""
           }}{{ item.user.customer ? item.user.customer.building_name : "" }}
           {{ item.model_type == "company" ? "Admin" : "" }}
@@ -153,14 +101,11 @@
           {{ item.employee && item.employee.employee_id }}
         </template>
         <template v-slot:item.LogTime="{ item }" style="color: green">
-          <v-icon color="green" fill>mdi-clock-outline</v-icon
-          >{{ item.date_time }}
+          <v-icon color="green" fill>mdi-clock-outline</v-icon>{{ item.date_time }}
         </template>
 
         <template v-slot:item.online="{ item }">
-          <v-icon v-if="item.device.location" color="green" fill
-            >mdi-map-marker-radius</v-icon
-          >
+          <v-icon v-if="item.device.location" color="green" fill>mdi-map-marker-radius</v-icon>
           <v-icon v-else color="red" fill>mdi-map-marker-radius</v-icon>
         </template>
         <template v-slot:item.device.device_name="{ item }">
@@ -187,7 +132,7 @@ export default {
       emptyLogmessage: "",
       number_of_records: 5,
       logs: [],
-      url: process.env.SOCKET_ENDPOINT,
+      url: this.$env.settings.SOCKET_ENDPOINT,
       socket: null,
       totalRowsCount: 0,
       filters: [],

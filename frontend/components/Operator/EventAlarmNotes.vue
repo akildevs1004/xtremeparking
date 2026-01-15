@@ -8,142 +8,54 @@
     <v-dialog v-model="dialogNotes" max-width="700px" :key="key">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
-          <span dense style="color: black3333"
-            >Alarm Notes - ID: {{ selectedItem?.alarm_id || "---" }}</span
-          >
+          <span dense style="color: black3333">Alarm Notes - ID: {{ selectedItem?.alarm_id || "---" }}</span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="dialogNotes = false"
-            outlined
-          >
+          <v-icon style="color: black3333" @click="dialogNotes = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
         <v-card-text>
           <v-row v-if="selectedItem" class="mt-2">
             <v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Date"
-                dense
-                outlined
-                flat
-                :value="selectedItem.created_datetime"
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Security Login Name"
-                dense
-                outlined
-                flat
-                :value="
-                  selectedItem.security
-                    ? selectedItem.security.first_name +
-                      ' ' +
-                      selectedItem.security?.last_name
-                    : '---'
-                "
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Closed PIN Customer Name"
-                dense
-                outlined
-                flat
-                :value="
-                  selectedItem.contact
-                    ? selectedItem.contact.first_name +
-                      ' ' +
-                      selectedItem.contact?.last_name
-                    : '---'
-                "
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Closed PIN Customer Type"
-                dense
-                outlined
-                flat
-                :value="selectedItem.contact?.address_type || '---'"
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Phone"
-                dense
-                outlined
-                flat
-                :value="selectedItem.contact?.phone1 || '---'"
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Call Status"
-                dense
-                outlined
-                flat
-                :value="selectedItem.call_status"
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Response"
-                dense
-                outlined
-                flat
-                :value="selectedItem.response"
-                hide-details
-              >
+              <v-text-field readonly class="" label="Date" dense outlined flat :value="selectedItem.created_datetime"
+                hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Security Login Name" dense outlined flat :value="selectedItem.security
+                  ? selectedItem.security.first_name +
+                  ' ' +
+                  selectedItem.security?.last_name
+                  : '---'
+                " hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Closed PIN Customer Name" dense outlined flat :value="selectedItem.contact
+                  ? selectedItem.contact.first_name +
+                  ' ' +
+                  selectedItem.contact?.last_name
+                  : '---'
+                " hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Closed PIN Customer Type" dense outlined flat
+                :value="selectedItem.contact?.address_type || '---'" hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Phone" dense outlined flat
+                :value="selectedItem.contact?.phone1 || '---'" hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Call Status" dense outlined flat :value="selectedItem.call_status"
+                hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Response" dense outlined flat :value="selectedItem.response"
+                hide-details>
               </v-text-field>
             </v-col>
             <v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Event/Alarm Status"
-                dense
-                outlined
-                flat
-                :value="selectedItem.event_status"
-                hide-details
-              >
+              <v-text-field readonly class="" label="Event/Alarm Status" dense outlined flat
+                :value="selectedItem.event_status" hide-details>
               </v-text-field>
             </v-col>
 
             <v-col cols="12">
-              <v-textarea
-                outlined
-                class="mt-2"
-                name="input-7-4"
-                label="Action Notes"
-                value=""
-                rows="2"
-                hide-details
-                v-model="selectedItem.notes"
-              ></v-textarea>
+              <v-textarea outlined class="mt-2" name="input-7-4" label="Action Notes" value="" rows="2" hide-details
+                v-model="selectedItem.notes"></v-textarea>
             </v-col>
           </v-row>
         </v-card-text>
@@ -193,22 +105,15 @@
         </v-row> -->
         <v-row>
           <v-col>
-            <v-data-table
-              :headers="headers"
-              :items="items"
-              :server-items-length="totalRowsCount"
-              :loading="loading"
-              :options.sync="options"
-              :footer-props="{
+            <v-data-table :headers="headers" :items="items" :server-items-length="totalRowsCount" :loading="loading"
+              :options.sync="options" :footer-props="{
                 itemsPerPageOptions: [100, 500, 1000],
-              }"
-              class="elevation-0"
-            >
+              }" class="elevation-0">
               <template v-slot:item.sno="{ item, index }">
                 {{
                   currentPage
                     ? (currentPage - 1) * perPage +
-                      (cumulativeIndex + items.indexOf(item))
+                    (cumulativeIndex + items.indexOf(item))
                     : "-"
                 }}
               </template>
@@ -239,8 +144,8 @@
               <template v-slot:item.response="{ item, index }">
                 {{
                   item.response != "null" &&
-                  item.response != "" &&
-                  item.response != null
+                    item.response != "" &&
+                    item.response != null
                     ? item.response
                     : "---"
                 }}
@@ -248,18 +153,14 @@
               <template v-slot:item.call_status="{ item, index }">
                 {{
                   item.call_status != "null" &&
-                  item.call_status != "" &&
-                  item.call_status != null
+                    item.call_status != "" &&
+                    item.call_status != null
                     ? item.call_status
                     : "---"
                 }}
               </template>
               <template v-slot:item.notes="{ item, index }">
-                <span
-                  class="d-inline-block text-truncate"
-                  style="max-width: 100px"
-                  >{{ item.notes }}</span
-                >
+                <span class="d-inline-block text-truncate" style="max-width: 100px">{{ item.notes }}</span>
               </template>
 
               <template v-slot:item.event_status="{ item, index }">
@@ -346,7 +247,7 @@ export default {
     commonSearch: "",
   }),
   computed: {},
-  mounted() {},
+  mounted() { },
   created() {
     let today = new Date();
     let monthObj = this.$dateFormat.monthStartEnd(today);
@@ -382,7 +283,7 @@ export default {
       this.getDataFromApi();
     },
     downloadOptions(option) {
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/security_alarm_notes_print_pdf";
       if (option == "excel") url += "/security_alarm_notes_export_excel";
       if (option == "download") url += "/security_alarm_notes_download_pdf";

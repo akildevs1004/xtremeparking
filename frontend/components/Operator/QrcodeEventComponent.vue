@@ -3,30 +3,19 @@
     <v-row style="margin-left: 5px; margin-top: 0px" :key="2">
       <v-col style="max-width: 300px; padding-top: 0px">
         <v-card elevation="2">
-          <v-card-text
-            :style="
-              ' background-color:#ecf0f4;overflow:scroll1;min-height:200px;height:' +
-              browserHeight +
-              'px'
-            "
-          >
-            <div
-              v-if="
-                data.length > 0 &&
-                selectedAlarm &&
-                selectedAlarm.device?.customer
-              "
-            >
-              <EventContactNotes
-                :key="selectedAlarm.id"
-                :colorcodes="colorcodes"
-                :customer="selectedAlarm?.device?.customer"
-                :alarm="selectedAlarm"
-                @emitreloadEventNotes3="reloadEventNotes4()"
-                @emitShowCustomerInfoTabs="changeStatusBusinessInfoTabs"
-                :browserHeight="browserHeight"
-                :qrcode="true"
-              />
+          <v-card-text :style="' background-color:#ecf0f4;overflow:scroll1;min-height:200px;height:' +
+            browserHeight +
+            'px'
+            ">
+            <div v-if="
+              data.length > 0 &&
+              selectedAlarm &&
+              selectedAlarm.device?.customer
+            ">
+              <EventContactNotes :key="selectedAlarm.id" :colorcodes="colorcodes"
+                :customer="selectedAlarm?.device?.customer" :alarm="selectedAlarm"
+                @emitreloadEventNotes3="reloadEventNotes4()" @emitShowCustomerInfoTabs="changeStatusBusinessInfoTabs"
+                :browserHeight="browserHeight" :qrcode="true" />
             </div>
           </v-card-text>
         </v-card>
@@ -34,36 +23,25 @@
 
       <v-col style="padding-top: 0px; padding-left: 0px">
         <v-card elevation="2">
-          <v-card-text
-            :style="' padding:0px;height:' + parseInt(browserHeight) + 'px'"
-          >
-            <div
-              style="
+          <v-card-text :style="' padding:0px;height:' + parseInt(browserHeight) + 'px'">
+            <div style="
                 width: 100%;
                 margin: auto;
                 height: 600px;
                 padding-top: 20%;
                 font-weight: bold;
                 text-align: center;
-              "
-              v-if="data.length == 0"
-            >
+              " v-if="data.length == 0">
               <div>Event Details are Not available.</div>
             </div>
 
-            <EventsListBusinessInfoTabs
-              v-if="
-                data &&
-                data.length > 0 &&
-                selectedAlarm.device.customer &&
-                selectedAlarm
-              "
-              :customer="selectedAlarm?.device.customer"
-              :device="selectedAlarm?.device"
-              :alarm="selectedAlarm"
-              :key="keySelectedItem"
-              :browserHeight="browserHeight"
-            />
+            <EventsListBusinessInfoTabs v-if="
+              data &&
+              data.length > 0 &&
+              selectedAlarm.device.customer &&
+              selectedAlarm
+            " :customer="selectedAlarm?.device.customer" :device="selectedAlarm?.device" :alarm="selectedAlarm"
+              :key="keySelectedItem" :browserHeight="browserHeight" />
           </v-card-text>
         </v-card>
       </v-col>
@@ -208,7 +186,7 @@ export default {
 
       this.getBuildingTypes();
       this.getAlarmTypes();
-    } catch (e) {}
+    } catch (e) { }
   },
 
   async created() {
@@ -233,7 +211,7 @@ export default {
 
       //   console.log(" this.selectedAlarm ", this.selectedAlarm);
       // });
-    } catch (e) {}
+    } catch (e) { }
   },
   watch: {},
   methods: {
@@ -359,12 +337,12 @@ export default {
       }
       this.popupEventText =
         "#" +
-          alarm.id +
-          " -    " +
-          alarm.alarm_type +
-          " ,  " +
-          "   Time " +
-          alarm?.alarm_start_datetime ||
+        alarm.id +
+        " -    " +
+        alarm.alarm_type +
+        " ,  " +
+        "   Time " +
+        alarm?.alarm_start_datetime ||
         "" + " -  Priority " + alarm.category.name;
 
       this.key += 1;
@@ -489,7 +467,7 @@ export default {
 
             ///////this.keySelectedItem++;
           });
-      } catch (e) {}
+      } catch (e) { }
     },
 
     // async getGoogleicons() {
@@ -629,7 +607,7 @@ export default {
           let marker = this.mapMarkersList[customer.id];
           if (infowindow) infowindow.open(this.map, marker);
         }
-      } catch (e) {}
+      } catch (e) { }
     },
     initMap() {
       if (!this.map && document.getElementById("map")) {
@@ -713,7 +691,7 @@ export default {
 
               // Determine icon based on alarm or other conditions
               let iconURL =
-                process.env.BACKEND_APP_URL +
+                this.$env.settings.BACKEND_APP_URL +
                 "/google_map_icons/google_online.png";
               const colorObject = this.getAlarmColorObject(item);
               if (colorObject) iconURL = colorObject.image;

@@ -11,36 +11,21 @@
       </h3>
 
       <!-- <div v-if="ticket.responses.length == 0">0 New Messages</div> -->
-      <v-expansion-panels
-        v-model="panel"
-        multiple
-        focusable
-        v-if="ticket?.responses"
-      >
-        <v-expansion-panel
-          style="margin-bottom: 10px"
-          v-for="(item, i) in ticket.responses"
-          :key="i"
-        >
-          <v-expansion-panel-header
-            style="min-height: 25px; background-color: #8f8f8f; color: #fff"
-          >
+      <v-expansion-panels v-model="panel" multiple focusable v-if="ticket?.responses">
+        <v-expansion-panel style="margin-bottom: 10px" v-for="(item, i) in ticket.responses" :key="i">
+          <v-expansion-panel-header style="min-height: 25px; background-color: #8f8f8f; color: #fff">
             <v-row :class="item.is_read ? '' : 'bold'">
               <v-col>
-                <div
-                  v-if="
-                    item.customer_id &&
-                    item.customer_id == $auth.user.customer?.id
-                  "
-                >
+                <div v-if="
+                  item.customer_id &&
+                  item.customer_id == $auth.user.customer?.id
+                ">
                   You (Customer)
                 </div>
-                <div
-                  v-else-if="
-                    item.security_id &&
-                    item.security_id == $auth.user.security?.id
-                  "
-                >
+                <div v-else-if="
+                  item.security_id &&
+                  item.security_id == $auth.user.security?.id
+                ">
                   You(Operator)
                 </div>
                 <div v-else-if="item.security">
@@ -58,47 +43,28 @@
               </v-col>
 
               <v-col style="max-width: 50px">
-                <v-icon v-if="item?.attachments?.length" color="#FFF"
-                  >mdi-arrow-down-bold-circle</v-icon
-                ></v-col
-              >
+                <v-icon v-if="item?.attachments?.length" color="#FFF">mdi-arrow-down-bold-circle</v-icon></v-col>
               <v-col style="text-align: right; max-width: 180px">
-                <v-icon size="20" color="#FFF"
-                  >mdi-clock-time-four-outline</v-icon
-                >
-                {{ item.created_datetime }}</v-col
-              >
+                <v-icon size="20" color="#FFF">mdi-clock-time-four-outline</v-icon>
+                {{ item.created_datetime }}</v-col>
             </v-row>
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <div style="text-align: left" v-html="item.description"></div>
 
-            <v-row
-              ><v-col
-                ><v-row style="margin-top: 15px">
+            <v-row><v-col><v-row style="margin-top: 15px">
                   <v-col cols="12">
                     Attachments({{ item?.attachments?.length ?? 0 }})
 
-                    <a
-                      class="pr-5"
-                      v-if="item?.attachments"
-                      v-for="attachment in item.attachments"
-                      title="Download Profile Picture"
-                      :href="
-                        getDonwloadLink(
-                          attachment.ticket_response_id,
-                          attachment.attachment
-                        )
-                      "
-                      >{{ attachment.title }}
-                      <v-icon color="violet"
-                        >mdi-arrow-down-bold-circle</v-icon
-                      ></a
-                    >
+                    <a class="pr-5" v-if="item?.attachments" v-for="attachment in item.attachments"
+                      title="Download Profile Picture" :href="getDonwloadLink(
+                        attachment.ticket_response_id,
+                        attachment.attachment
+                      )
+                        ">{{ attachment.title }}
+                      <v-icon color="violet">mdi-arrow-down-bold-circle</v-icon></a>
                   </v-col>
-                </v-row></v-col
-              ></v-row
-            >
+                </v-row></v-col></v-row>
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -125,7 +91,7 @@ export default {
   methods: {
     getDonwloadLink(ticket_reponse_id, file_name) {
       return (
-        process.env.BACKEND_URL +
+        this.$env.settings.BACKEND_URL +
         "/download_ticket_response_atachment/" +
         ticket_reponse_id +
         "/" +

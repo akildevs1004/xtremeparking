@@ -13,47 +13,35 @@
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>
           </template>
-          <v-list width="120" dense>
-            <v-list-item @click="viewLogs()">
-              <v-list-item-title style="cursor: pointer">
-                View Logs
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu> -->
+<v-list width="120" dense>
+  <v-list-item @click="viewLogs()">
+    <v-list-item-title style="cursor: pointer">
+      View Logs
+    </v-list-item-title>
+  </v-list-item>
+</v-list>
+</v-menu> -->
       </v-col>
     </v-row>
 
-    <v-data-table
-      dense
-      :headers="headers"
-      :items="logs"
-      :loading="loading"
-      hide-default-header
-      :footer-props="{
-        itemsPerPage: 8,
-        itemsPerPageOptions: [8, 10, 50, 100, 500, 1000],
-      }"
-    >
+    <v-data-table dense :headers="headers" :items="logs" :loading="loading" hide-default-header :footer-props="{
+      itemsPerPage: 8,
+      itemsPerPageOptions: [8, 10, 50, 100, 500, 1000],
+    }">
       <template v-slot:item.employee.pic="{ item, index }">
         <v-row no-gutters>
-          <v-col
-            style="
+          <v-col style="
               padding: 5px;
               padding-left: 0px;
               width: 30px;
               max-width: 30px;
-            "
-          >
-            <v-img
-              style="
+            ">
+            <v-img style="
                 border-radius: 50%;
                 height: auto;
                 width: 30px;
                 max-width: 30px;
-              "
-              :src="item.picture ? item.picture : '/no-profile-image.jpg'"
-            >
+              " :src="item.picture ? item.picture : '/no-profile-image.jpg'">
             </v-img>
           </v-col>
         </v-row>
@@ -65,14 +53,8 @@
       <template v-slot:item.employee.first_name="{ item }">
         {{ item.first_name + " " + item.last_name }}
 
-        <div
-          calss="secondary-value"
-          style="font-size: 10px"
-          v-if="parseInt(item.idle_time) <= 5"
-        >
-          <span
-            ><v-icon style="color: green" size="15">mdi mdi-web</v-icon></span
-          >
+        <div calss="secondary-value" style="font-size: 10px" v-if="parseInt(item.idle_time) <= 5">
+          <span><v-icon style="color: green" size="15">mdi mdi-web</v-icon></span>
           Online
           <!-- {{
             item.last_active_datetime
@@ -82,27 +64,11 @@
         </div>
       </template>
       <template v-slot:item.LogTime="{ item }" style="color: green">
-        <v-icon
-          :title="item.last_active_datetime || '---'"
-          v-if="item.idle_time <= 5"
-          color="green"
-          fill
-          >mdi-monitor-eye</v-icon
-        >
-        <v-icon
-          :title="item.last_active_datetime || '---'"
-          v-else-if="item.idle_time <= 10"
-          color="yellow"
-          fill
-          >mdi-monitor-eye</v-icon
-        >
-        <v-icon
-          :title="item.last_active_datetime || '---'"
-          v-else
-          color="red"
-          fill
-          >mdi-monitor-eye</v-icon
-        >
+        <v-icon :title="item.last_active_datetime || '---'" v-if="item.idle_time <= 5" color="green"
+          fill>mdi-monitor-eye</v-icon>
+        <v-icon :title="item.last_active_datetime || '---'" v-else-if="item.idle_time <= 10" color="yellow"
+          fill>mdi-monitor-eye</v-icon>
+        <v-icon :title="item.last_active_datetime || '---'" v-else color="red" fill>mdi-monitor-eye</v-icon>
       </template>
     </v-data-table>
   </div>
@@ -118,7 +84,7 @@ export default {
       emptyLogmessage: "",
       number_of_records: 5,
       logs: [],
-      url: process.env.SOCKET_ENDPOINT,
+      url: this.$env.settings.SOCKET_ENDPOINT,
       socket: null,
       totalRowsCount: 0,
 

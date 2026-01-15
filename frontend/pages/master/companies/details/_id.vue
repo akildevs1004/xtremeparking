@@ -7,12 +7,7 @@
         </v-col>
       </v-row>
       <div class="text-center ma-2">
-        <v-snackbar
-          v-model="snackbar"
-          top="top"
-          color="secondary"
-          elevation="24"
-        >
+        <v-snackbar v-model="snackbar" top="top" color="secondary" elevation="24">
           {{ snackbar_response }}
         </v-snackbar>
       </div>
@@ -21,10 +16,7 @@
           <v-col cols="6" style="border-right: 1px dashed #808080">
             <v-list-item>
               <v-list-item-avatar tile style="width: 200px; height: auto">
-                <v-img
-                  style="width: 100%"
-                  :src="company_payload.logo || '/no-image.PNG'"
-                ></v-img>
+                <v-img style="width: 100%" :src="company_payload.logo || '/no-image.PNG'"></v-img>
               </v-list-item-avatar>
               <v-list-item-content>
                 <div class="text-overline mb-1">
@@ -110,15 +102,8 @@
               </v-col>
 
               <v-col cols="4" class="text-right" style="margin: -8px">
-                <v-icon
-                  v-if="can(`master`)"
-                  @click="editItem(`/master/companies/${$route.params.id}`)"
-                  small
-                  class="grey"
-                  style="border-radius: 50%; padding: 5px"
-                  color="secondary"
-                  >mdi-pencil</v-icon
-                >
+                <v-icon v-if="can(`master`)" @click="editItem(`/master/companies/${$route.params.id}`)" small
+                  class="grey" style="border-radius: 50%; padding: 5px" color="secondary">mdi-pencil</v-icon>
               </v-col>
 
               <v-col cols="4">
@@ -201,9 +186,7 @@
               <v-col cols="8">
                 {{ company_payload.api_access_token || "---" }}
 
-                <v-icon color="primary" @click="regenerateToken()"
-                  >mdi mdi-refresh-circle</v-icon
-                >
+                <v-icon color="primary" @click="regenerateToken()">mdi mdi-refresh-circle</v-icon>
               </v-col>
 
               <v-col cols="4">
@@ -212,11 +195,8 @@
                 </v-list-item-title>
               </v-col>
               <v-col cols="8">
-                <a
-                  href="https://documenter.getpostman.com/view/32601784/2s9YysDhbd"
-                  target="_blank"
-                  >POSTMAN Document</a
-                >
+                <a href="https://documenter.getpostman.com/view/32601784/2s9YysDhbd" target="_blank">POSTMAN
+                  Document</a>
               </v-col>
               <v-col cols="4">
                 <v-list-item-title class="text-h7 mb-1">
@@ -224,9 +204,7 @@
                 </v-list-item-title>
               </v-col>
               <v-col cols="8">
-                <a :href="getDonwloadLink()"
-                  >Download Sample Example - POSTMAN Json File</a
-                >
+                <a :href="getDonwloadLink()">Download Sample Example - POSTMAN Json File</a>
               </v-col>
             </v-row>
           </v-col>
@@ -272,29 +250,16 @@
 
                 <v-card-title>
                   <v-spacer></v-spacer>
-                  <v-icon
-                    v-if="can(`master`)"
-                    @click="editItem(`/branch/edit/${item.id}`)"
-                    color="secondary"
-                    small
-                    >mdi-pencil</v-icon
-                  >
+                  <v-icon v-if="can(`master`)" @click="editItem(`/branch/edit/${item.id}`)" color="secondary"
+                    small>mdi-pencil</v-icon>
 
-                  <v-icon
-                    v-if="can(`master`)"
-                    @click="deleteItem(item)"
-                    color="red"
-                    small
-                    >mdi-delete</v-icon
-                  >
+                  <v-icon v-if="can(`master`)" @click="deleteItem(item)" color="red" small>mdi-delete</v-icon>
                 </v-card-title>
 
                 <v-card-text class="text-center" @click="goDetails(item.id)">
                   <div>
-                    <v-img
-                      style="height: 125px; width: 50%; margin: 0 auto"
-                      :src="item.logo ? item.logo : '/no-image.PNG'"
-                    >
+                    <v-img style="height: 125px; width: 50%; margin: 0 auto"
+                      :src="item.logo ? item.logo : '/no-image.PNG'">
                     </v-img>
                   </div>
 
@@ -319,13 +284,7 @@
 
             <v-col cols="6">
               <div class="text-right">
-                <v-btn
-                  v-if="can(`master`)"
-                  small
-                  color="primary"
-                  class="mb-2"
-                  @click="createDevice"
-                  >+ Add Device
+                <v-btn v-if="can(`master`)" small color="primary" class="mb-2" @click="createDevice">+ Add Device
                 </v-btn>
               </div>
             </v-col>
@@ -339,29 +298,14 @@
                 }}</v-toolbar>
                 <v-card-title>
                   <span>
-                    <v-chip
-                      small
-                      :class="
-                        item.status.name == 'active' ? 'success' : 'error'
-                      "
-                      >{{ item.status.name }}</v-chip
-                    >
+                    <v-chip small :class="item.status.name == 'active' ? 'success' : 'error'
+                      ">{{ item.status.name }}</v-chip>
                   </span>
                   <v-spacer></v-spacer>
-                  <v-icon
-                    v-if="can(`master`)"
-                    @click="editItem(`/master/device/${item.id}`)"
-                    color="secondary"
-                    small
-                    >mdi-pencil</v-icon
-                  >
+                  <v-icon v-if="can(`master`)" @click="editItem(`/master/device/${item.id}`)" color="secondary"
+                    small>mdi-pencil</v-icon>
 
-                  <v-icon
-                    v-if="can(`master`)"
-                    @click="deleteDeviceItem(item)"
-                    color="red"
-                    small
-                    >mdi-delete
+                  <v-icon v-if="can(`master`)" @click="deleteDeviceItem(item)" color="red" small>mdi-delete
                   </v-icon>
                 </v-card-title>
 
@@ -446,7 +390,7 @@ export default {
       return this.$pagePermission.can(per, this);
     },
     getDonwloadLink() {
-      return process.env.BACKEND_URL + "/download_postman_json";
+      return this.$env.settings.BACKEND_URL + "/download_postman_json";
     },
     regenerateToken() {
       this.loading_bar = true;

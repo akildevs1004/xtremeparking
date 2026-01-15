@@ -157,7 +157,7 @@
           {{ caps(item.location) }}<br />
           <span class="secondary-value">{{
             item.zone ? item.zone + ", " : ""
-            }}</span>
+          }}</span>
           <span class="secondary-value">{{ item.area }}</span>
         </template>
 
@@ -691,7 +691,7 @@ export default {
         .post(`/download-profilepic-sdk`, options.params)
         .then(({ data }) => {
           this.downloadProfileLink =
-            process.env.BACKEND_URL + "/download-profilepic-disk?image=" + data;
+            this.$env.settings.BACKEND_URL + "/download-profilepic-disk?image=" + data;
 
           //this.$refs.goTo.click;
 

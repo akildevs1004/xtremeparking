@@ -4,167 +4,106 @@
     <v-card class="mb-5 mt-2 rounded-md" elevation="0">
       <v-toolbar class="rounded-md" dense flat>
         <v-toolbar-title><span> Web Logs/Activites</span></v-toolbar-title>
-        <v-col
-          ><span>
-            <v-btn
-              dense
-              class="ma-0 px-0"
-              x-small
-              :ripple="false"
-              text
-              title="Reload"
-            >
-              <v-icon class="ml-2" @click="getDatafromApi()" dark
-                >mdi-reload</v-icon
-              >
+        <v-col><span>
+            <v-btn dense class="ma-0 px-0" x-small :ripple="false" text title="Reload">
+              <v-icon class="ml-2" @click="getDatafromApi()" dark>mdi-reload</v-icon>
             </v-btn>
           </span>
         </v-col>
         <v-col style="max-width: 200px">
-          <v-text-field
-            class="employee-schedule-search-box"
-            style="
+          <v-text-field class="employee-schedule-search-box" style="
               padding-top: 35px;
               z-index: 999;
               min-width: 100%;
               width: 150px;
-            "
-            @keyup="getDatafromApi()"
-            height="25px"
-            outlined
-            v-model="filterText"
-            dense
-            label="Filter"
-          ></v-text-field>
+            " @keyup="getDatafromApi()" height="25px" outlined v-model="filterText" dense
+            label="Filter"></v-text-field>
         </v-col>
         <v-col style="max-width: 200px">
-          <CustomFilter
-            style="float: left; padding-top: 5px; z-index: 999"
-            @filter-attr="filterAttr"
-            :default_date_from="date_from"
-            :default_date_to="date_to"
-            :defaultFilterType="1"
-            :height="'30px'"
-        /></v-col>
+          <CustomFilter style="float: left; padding-top: 5px; z-index: 999" @filter-attr="filterAttr"
+            :default_date_from="date_from" :default_date_to="date_to" :defaultFilterType="1" :height="'30px'" />
+        </v-col>
       </v-toolbar>
-      <v-data-table
-        class="pt-5"
-        dense
-        :headers="headers"
-        :items="logs"
-        :loading="loading"
-        :options.sync="options"
+      <v-data-table class="pt-5" dense :headers="headers" :items="logs" :loading="loading" :options.sync="options"
         :footer-props="{
           itemsPerPageOptions: [10, 50, 100],
-        }"
-        :server-items-length="totalRowsCount"
-        :height="tableHeight"
-      >
+        }" :server-items-length="totalRowsCount" :height="tableHeight">
         <template v-slot:item.sno="{ item, index }">
           {{
             currentPage
               ? (currentPage - 1) * perPage +
-                (cumulativeIndex + logs.indexOf(item))
+              (cumulativeIndex + logs.indexOf(item))
               : "-"
           }}
         </template>
 
         <template v-slot:item.employee.pic="{ item, index }">
           <v-row no-gutters>
-            <v-col
-              style="
+            <v-col style="
                 padding: 5px;
                 padding-left: 0px;
                 width: 50px;
                 max-width: 50px;
-              "
-            >
-              <v-img
-                v-if="item.user.user_type == 'company' && item.user.role_id > 1"
-                style="
+              ">
+              <v-img v-if="item.user.user_type == 'company' && item.user.role_id > 1" style="
                   border-radius: 50%;
                   height: 45px;
                   min-height: 45px;
                   width: 45px;
                   max-width: 45px;
-                "
-                :src="
-                  item.user.profile_picture
+                " :src="item.user.profile_picture
                     ? item.user.profile_picture
                     : '/no-profile-image.jpg'
-                "
-              >
-              </v-img
-              ><v-img
-                v-else-if="item.user.user_type == 'security'"
-                style="
+                  ">
+              </v-img><v-img v-else-if="item.user.user_type == 'security'" style="
                   border-radius: 50%;
                   height: 45px;
                   min-height: 45px;
                   width: 45px;
                   max-width: 45px;
-                "
-                :src="
-                  item.user.security
+                " :src="item.user.security
                     ? item.user.security.picture
                     : '/no-profile-image.jpg'
-                "
-              >
-              </v-img
-              ><v-img
-                v-else-if="item.user.user_type == 'technician'"
-                style="
+                  ">
+              </v-img><v-img v-else-if="item.user.user_type == 'technician'" style="
                   border-radius: 50%;
                   height: 45px;
                   min-height: 45px;
                   width: 45px;
                   max-width: 45px;
-                "
-                :src="
-                  item.user.technician
+                " :src="item.user.technician
                     ? item.user.technician.profile_picture
                     : '/no-profile-image.jpg'
-                "
-              >
-              </v-img
-              ><v-img
-                v-else-if="
-                  item.user.user_type == 'company' && item.user.role_id == 1
-                "
-                style="
+                  ">
+              </v-img><v-img v-else-if="
+                item.user.user_type == 'company' && item.user.role_id == 1
+              " style="
                   border-radius: 50%;
                   height: 45px;
                   min-height: 45px;
                   width: 45px;
                   max-width: 45px;
-                "
-                :src="
-                  item.company.logo
+                " :src="item.company.logo
                     ? item.company.logo
                     : '/no-profile-image.jpg'
-                "
-              >
+                  ">
               </v-img>
             </v-col>
             <v-col style="padding: 10px">
-              <div
-                v-if="item.user.user_type == 'company' && item.user.role_id > 1"
-              >
+              <div v-if="item.user.user_type == 'company' && item.user.role_id > 1">
                 {{ item.user.first_name }} {{ item.user.last_name }}
               </div>
-              <div
-                v-if="
-                  item.user.user_type == 'company' && item.user.role_id == 1
-                "
-              >
+              <div v-if="
+                item.user.user_type == 'company' && item.user.role_id == 1
+              ">
                 {{ item.user.user_type == "company" ? "Admin" : "" }}
               </div>
 
               {{
                 item.user.security
                   ? item.user.security.first_name +
-                    " " +
-                    item.user.security.last_name
+                  " " +
+                  item.user.security.last_name
                   : ""
               }}{{ item.user.customer ? item.user.customer.building_name : "" }}
 
@@ -174,9 +113,7 @@
         </template>
 
         <template v-slot:item.user.role="{ item }">
-          <div
-            v-if="item.user.user_type == 'company' && item.user.role_id == 1"
-          >
+          <div v-if="item.user.user_type == 'company' && item.user.role_id == 1">
             Company
           </div>
           <div v-else>
@@ -192,19 +129,17 @@
           <div v-if="item.user.user_type == 'company' && item.user.role_id > 1">
             {{ item.user.first_name }} {{ item.user.last_name }}
           </div>
-          <div
-            v-else-if="
-              item.user.user_type == 'company' && item.user.role_id == 1
-            "
-          >
+          <div v-else-if="
+            item.user.user_type == 'company' && item.user.role_id == 1
+          ">
             {{ item.user.user_type == "company" ? "Company" : "" }}
           </div>
           <div v-else-if="item.user.security">
             {{
               item.user.security
                 ? item.user.security.first_name +
-                  " " +
-                  item.user.security.last_name
+                " " +
+                item.user.security.last_name
                 : ""
             }}
           </div>
@@ -223,8 +158,7 @@
           {{ item.customer?.building_name || "---" }}
         </template>
         <template v-slot:item.LogTime="{ item }" style="color: green">
-          <v-icon color="green" fill>mdi-clock-outline</v-icon
-          >{{ item.date_time }}
+          <v-icon color="green" fill>mdi-clock-outline</v-icon>{{ item.date_time }}
         </template>
         <!--  <template v-slot:item.UserID="{ item }"> #{{ item.UserID }} </template>
         <template v-slot:item.employee.employee_id="{ item }">
@@ -273,7 +207,7 @@ export default {
       emptyLogmessage: "",
       number_of_records: 5,
       logs: [],
-      url: process.env.SOCKET_ENDPOINT,
+      url: this.$env.settings.SOCKET_ENDPOINT,
       socket: null,
       totalRowsCount: 0,
 

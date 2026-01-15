@@ -12,20 +12,14 @@
           <v-row class="pt-0">
             <v-col>
               <h3>Subject: {{ payload_ticket.subject }}</h3>
-              <span
-                >Created:
+              <span>Created:
                 {{
                   $dateFormat.formatDateMonthYear(
                     payload_ticket.created_datetime
                   )
-                }}</span
-              >
+                }}</span>
             </v-col>
-            <v-col
-              cols="12"
-              dense
-              style="height: 150px; border: 1px solid #ddd; overflow-y: scroll"
-            >
+            <v-col cols="12" dense style="height: 150px; border: 1px solid #ddd; overflow-y: scroll">
               <div v-html="payload_ticket.description"></div>
             </v-col>
           </v-row>
@@ -34,23 +28,14 @@
 
       <v-row style="margin-top: 15px">
         <v-col cols="6" style="padding-bottom: 0px">
-          <h4>Attachments({{ editItem?.attachments?.length ?? 0 }})</h4></v-col
-        >
+          <h4>Attachments({{ editItem?.attachments?.length ?? 0 }})</h4>
+        </v-col>
         <v-col cols="12">
-          <div
-            v-if="editItem?.attachments"
-            v-for="(attachment, index) in editItem.attachments"
-          >
+          <div v-if="editItem?.attachments" v-for="(attachment, index) in editItem.attachments">
             {{ ++index }}:
-            <a
-              style="text-decoration: none"
-              title="Download Profile Picture"
-              :href="
-                getDonwloadLink(attachment.ticket_id, attachment.attachment)
-              "
-              >{{ attachment.title }}
-              <v-icon color="violet">mdi-arrow-down-bold-circle</v-icon></a
-            >
+            <a style="text-decoration: none" title="Download Profile Picture" :href="getDonwloadLink(attachment.ticket_id, attachment.attachment)
+              ">{{ attachment.title }}
+              <v-icon color="violet">mdi-arrow-down-bold-circle</v-icon></a>
           </div>
         </v-col>
       </v-row>
@@ -58,12 +43,8 @@
     <v-divider class="mt-5"></v-divider>
     <v-row>
       <v-col cols="12" class="text-right">
-        <TicketResponses
-          :expandPanels="true"
-          v-if="editItem"
-          :ticket="editItem"
-          @updateTicketReadStatus="updateTickets"
-        />
+        <TicketResponses :expandPanels="true" v-if="editItem" :ticket="editItem"
+          @updateTicketReadStatus="updateTickets" />
       </v-col>
     </v-row>
   </div>
@@ -98,7 +79,7 @@ export default {
     },
     getDonwloadLink(ticket_id, file_name) {
       return (
-        process.env.BACKEND_URL +
+        this.$env.settings.BACKEND_URL +
         "/download_ticket_atachment/" +
         ticket_id +
         "/" +

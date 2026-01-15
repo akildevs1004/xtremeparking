@@ -6,138 +6,66 @@
       </v-snackbar>
       <!-- Accounts Display -->
       <div style="display: flex; gap: 12px" v-if="can('whatsapp_view')">
-        <v-card
-          outlined
-          v-for="(account, index) in accounts"
-          :key="index"
-          style="display: flex"
-          max-width="250"
-        >
+        <v-card outlined v-for="(account, index) in accounts" :key="index" style="display: flex" max-width="250">
           <v-card-text class="pa-2">
             <div style="width: 100%; display: flex; align-items: center">
-              <div
-                style="width: 100%"
-                class="text-h6 text--primary text-center mb-1"
-              >
-                <v-text-field
-                  :placeholder="account.label || 'Enter Title'"
-                  dense
-                  v-model="account.label"
-                  hide-details
-                ></v-text-field>
+              <div style="width: 100%" class="text-h6 text--primary text-center mb-1">
+                <v-text-field :placeholder="account.label || 'Enter Title'" dense v-model="account.label"
+                  hide-details></v-text-field>
               </div>
 
               <div>
-                <v-icon
-                  title="Disconnect and Delete"
-                  small
-                  color="red"
-                  @click="deleteItem(index)"
-                  >mdi-close</v-icon
-                >
+                <v-icon title="Disconnect and Delete" small color="red" @click="deleteItem(index)">mdi-close</v-icon>
               </div>
             </div>
 
             <div v-if="!whatsappSocketClosed">
               <div v-if="account.qrCodeDisplay">
-                <v-img
-                  max-width="250"
-                  max-height="250"
-                  :src="account.qrCodePath"
-                ></v-img>
+                <v-img max-width="250" max-height="250" :src="account.qrCodePath"></v-img>
               </div>
               <div v-else style="max-width: 250px; padding: 15px">
                 <v-img :src="account.placeHolderImage"></v-img>
               </div>
 
               <div class="text-center">
-                <v-btn
-                  :loading="account.loading"
-                  v-if="account.statusMessage"
-                  block
-                  small
-                  color="#139c4a"
-                  class="white--text"
-                  style="cursor: text"
-                >
+                <v-btn :loading="account.loading" v-if="account.statusMessage" block small color="#139c4a"
+                  class="white--text" style="cursor: text">
                   {{ account.statusMessage }}
                 </v-btn>
 
                 <br />
-                <v-btn
-                  :loading="account.loading"
-                  v-if="account.statusMessage == 'Online'"
-                  block
-                  small
-                  color="red"
-                  class="white--text"
-                  @click="deleteItem(index)"
-                >
+                <v-btn :loading="account.loading" v-if="account.statusMessage == 'Online'" block small color="red"
+                  class="white--text" @click="deleteItem(index)">
                   Click to Disconnect
                 </v-btn>
                 <br />
-                <v-btn
-                  :loading="account.loading"
-                  v-if="account.statusMessage == 'Online'"
-                  block
-                  small
-                  color="green"
-                  class="white--text"
-                  @click="testMessage(index)"
-                >
+                <v-btn :loading="account.loading" v-if="account.statusMessage == 'Online'" block small color="green"
+                  class="white--text" @click="testMessage(index)">
                   Test Message({{ $auth.user.company?.contact?.whatsapp }})
                 </v-btn>
 
-                <v-btn
-                  :loading="account.loading"
-                  v-else-if="account.connectButton"
-                  block
-                  small
-                  color="primary"
-                  class="white--text"
-                  @click="connect(account.clientId, index)"
-                >
+                <v-btn :loading="account.loading" v-else-if="account.connectButton" block small color="primary"
+                  class="white--text" @click="connect(account.clientId, index)">
                   Scan QR code and Reconnect
                 </v-btn>
-                <v-btn
-                  :loading="account.loading"
-                  v-else-if="
-                    account.client_id != '' &&
-                    account.statusMessage != 'Connecting to WhatsApp...'
-                  "
-                  block
-                  small
-                  color="green"
-                  @click="connect(account.clientId, index)"
-                >
+                <v-btn :loading="account.loading" v-else-if="
+                  account.client_id != '' &&
+                  account.statusMessage != 'Connecting to WhatsApp...'
+                " block small color="green" @click="connect(account.clientId, index)">
                   Click to Connect Wahtsapp
                 </v-btn>
 
                 <br />
-                <v-btn
-                  :loading="account.loading"
-                  v-if="
-                    !account.statusMessage && account.statusMessage == 'Online'
-                  "
-                  block
-                  small
-                  color="red"
-                  class="white--text"
-                  @click="deleteItem(index, account.client_id)"
-                >
+                <v-btn :loading="account.loading" v-if="
+                  !account.statusMessage && account.statusMessage == 'Online'
+                " block small color="red" class="white--text" @click="deleteItem(index, account.client_id)">
                   Delete
                 </v-btn>
 
                 <div v-if="account.qrCodePath" style="color: blue">
                   <div v-if="!qrCodeScanned">
-                    <v-btn
-                      block
-                      v-if="!qrCodeScanned"
-                      @click="qrCodeScanned = true"
-                      small
-                      color="green"
-                      class="white--text"
-                    >
+                    <v-btn block v-if="!qrCodeScanned" @click="qrCodeScanned = true" small color="green"
+                      class="white--text">
                       Click here after QR Scanned
                     </v-btn>
 
@@ -146,22 +74,14 @@
                   <div v-else>Step3: Verifieng QR Code.....<br /></div>
 
                   <br />
-                  <v-btn
-                    block
-                    small
-                    color="red"
-                    class="white--text"
-                    @click="connect(account.clientId, index)"
-                  >
+                  <v-btn block small color="red" class="white--text" @click="connect(account.clientId, index)">
                     Re-Generate QR Code
                   </v-btn>
                 </div>
 
-                <div
-                  v-else-if="
-                    account.statusMessage == 'Connecting to WhatsApp...'
-                  "
-                >
+                <div v-else-if="
+                  account.statusMessage == 'Connecting to WhatsApp...'
+                ">
                   Status: Connecting to Whatsapp Server.....
                 </div>
 
@@ -171,13 +91,7 @@
             <div v-else>
               <!-- {{ account }} -->
               <br />
-              <v-btn
-                block
-                small
-                color="red"
-                class="white--text"
-                @click="connect(account.clientId, index)"
-              >
+              <v-btn block small color="red" class="white--text" @click="connect(account.clientId, index)">
                 Disconnected. Connect Again
               </v-btn>
             </div>
@@ -284,7 +198,7 @@ export default {
           accounts: this.accounts,
         };
 
-        if (process.env.NODE_ENV !== "production") {
+        if (this.$env.settings.NODE_ENV !== "production") {
           //console.log("🚀 ~ Sending payload:", payload);
         }
 
@@ -308,7 +222,7 @@ export default {
           accounts: this.accounts,
         };
 
-        if (process.env.NODE_ENV !== "production") {
+        if (this.$env.settings.NODE_ENV !== "production") {
           //console.log("🚀 ~ Sending payload:", payload);
         }
 

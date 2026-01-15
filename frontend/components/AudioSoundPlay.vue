@@ -19,7 +19,7 @@ export default {
     return {
       audio: null,
       isPlaying: false,
-      audioFile: process.env.BACKEND_URL2 + "/alarm_sounds/alarm-sound1.mp3", // Replace with your audio file path
+      audioFile: this.$env.settings.BACKEND_URL2 + "/alarm_sounds/alarm-sound1.mp3", // Replace with your audio file path
     };
   },
   watch: {
@@ -29,9 +29,9 @@ export default {
     // Initialize audio object after a delay
     //setTimeout(() => {
     try {
-      if (process.env.BACKEND_URL2) {
+      if (this.$env.settings.BACKEND_URL2) {
         this.audioFile =
-          process.env.BACKEND_URL2 + "/alarm_sounds/alarm-sound1.mp3";
+          this.$env.settings.BACKEND_URL2 + "/alarm_sounds/alarm-sound1.mp3";
       }
 
       console.log(
@@ -60,7 +60,7 @@ export default {
 
   created() {
     this.audioFile =
-      process.env.BACKEND_URL2 + "/alarm_sounds/alarm-sound1.mp3";
+      this.$env.settings.BACKEND_URL2 + "/alarm_sounds/alarm-sound1.mp3";
   },
   methods: {
     // playAudioOnUserInteraction() {

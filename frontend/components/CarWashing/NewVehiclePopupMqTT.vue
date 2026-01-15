@@ -498,7 +498,7 @@ export default {
         reconnectPeriod: 1000,
 
       };
-      // const host = process.env.MQTT_SOCKET_HOST; // "wss://mqtt.xtremeguard.org:8084"; // If TLS WebSocket is available
+      // const host = this.$env.settings.MQTT_SOCKET_HOST; // "wss://mqtt.xtremeguard.org:8084"; // If TLS WebSocket is available
 
 
 
@@ -512,7 +512,7 @@ export default {
       //   options.protocol = 'wss';
       // }
 
-      const host = this.$env.get('MQTT_SOCKET_HOST');
+      const host = this.$env.settings.MQTT_SOCKET_HOST; //this.$env.settings.MQTT_SOCKET_HOST
       ;
 
       if (host.includes("192.168.") || host.includes("localhost") || host.includes("127.0.0.1")) {

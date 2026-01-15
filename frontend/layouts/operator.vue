@@ -91,8 +91,8 @@
               <v-btn class="header-menu-button" small text :elevation="0" :color="menuProperties[items.menu] &&
                 menuProperties[items.menu].selected
                 " :style="$vuetify.theme.dark && menuProperties[items.menu]?.selected
-                    ? 'background-color: #007d61; color: white;'
-                    : ''
+                  ? 'background-color: #007d61; color: white;'
+                  : ''
                   " fill @click="setSubLeftMenuItems(items.menu, items.to, true, false)">
                 <b class="header-menu-item">
                   {{ items.title }}
@@ -141,8 +141,8 @@
         <template v-slot:activator="{ on, attrs }" style="z-index: 9999 !important">
           <v-btn icon dark v-bind="attrs" v-on="on">
             <v-badge :color="'  ' + pendingNotificationsCount > 0 ? 'red' : 'green'" :content="pendingNotificationsCount == ''
-                ? '0'
-                : pendingNotificationsCount
+              ? '0'
+              : pendingNotificationsCount
               " style="top: 10px; left: -19px; z-index: 9999 !important">
               <v-icon style="top: -10px; left: 10px" class="violet--text">mdi mdi-bell-ring</v-icon>
             </v-badge>
@@ -150,9 +150,9 @@
         </template>
         <v-list style="z-index: 9999">
           <v-list-item style="height: 30px; padding-left: 5px" :class="notificationsMenuItems.length > 0 &&
-              index != notificationsMenuItems.length - 1
-              ? 'border-bottom'
-              : ''
+            index != notificationsMenuItems.length - 1
+            ? 'border-bottom'
+            : ''
             " v-for="(item, index) in notificationsMenuItems" :key="index">
             <v-list-item-content @click="dialogAlarmPopupNotificationStatus = true">
               <v-list-item-title class="align-left text-left">
@@ -295,10 +295,10 @@
     </v-app-bar>
 
     <v-main class="main_bg" :style="items.length == 0
-        ? 'padding-left:  0px;'
-        : miniVariant && items.length > 0
-          ? 'padding-left: 60px;'
-          : 'padding-left: 140px;'
+      ? 'padding-left:  0px;'
+      : miniVariant && items.length > 0
+        ? 'padding-left: 60px;'
+        : 'padding-left: 140px;'
       ">
       <v-container style="max-width: 100%; padding: 15px">
         <nuxt />
@@ -932,8 +932,8 @@ export default {
       this.resetTimer();
     },
     gotoHomePage() {
-      //location.href = process.env.APP_URL + "/dashboard2";
-      location.href = location.href; // process.env.APP_URL + "/dashboard2";
+      //location.href = this.$env.settings.APP_URL + "/dashboard2";
+      location.href = location.href; // this.$env.settings.APP_URL + "/dashboard2";
     },
     loadHeaderNotificationMenu() {
       if (this.isBackendRequestOpen) {
@@ -1277,7 +1277,7 @@ export default {
 
           if (email && password) {
             window.location.href =
-              process.env.EMPLOYEE_APP_URL +
+              this.$env.settings.EMPLOYEE_APP_URL +
               "/loginwithtoken?email=" +
               email +
               "&password=" +

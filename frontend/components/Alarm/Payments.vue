@@ -10,27 +10,18 @@
         <v-card-title dense class="popup_background_noviolet">
           <span style="color: black111">Payment Information </span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="
-              closeDialog();
-              dialogEditAutomation = false;
-            "
-            outlined
-          >
+          <v-icon style="color: black3333" @click="
+            closeDialog();
+          dialogEditAutomation = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text>
           <v-container style="min-height: 100px">
-            <AlarmEditPayments
-              :key="key"
-              :customer_id="customer_id"
-              @closeDialog="closeDialog"
-              :editId="editId"
-              :editItem="editItemobject"
-            />
+            <AlarmEditPayments :key="key" :customer_id="customer_id" @closeDialog="closeDialog" :editId="editId"
+              :editItem="editItemobject" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -38,15 +29,12 @@
     <v-row>
       <v-col cols="12" class="text-right">
         <v-row>
-          <v-col
-            cols="4"
-            style="
+          <v-col cols="4" style="
               font-size: 14px;
               font-weight: bold;
               padding-top: 25px;
               text-align: left;
-            "
-          >
+            ">
             <span style="color: green">
               Start Date :
               {{
@@ -56,43 +44,23 @@
               }}
             </span>
             <br />
-            <span style="color: #f52f2f"
-              >End Date:
+            <span style="color: #f52f2f">End Date:
               {{
                 $dateFormat.format_date_month_name_year(
                   filter_end_date ? filter_end_date : customer?.end_date
                 )
               }}
-            </span></v-col
-          >
+            </span></v-col>
           <v-col cols="8" class="text-right" style="width: 550px">
             <v-row>
               <v-col></v-col>
-              <v-col style="max-width: 250px"
-                ><v-text-field
-                  style="padding-top: 7px; width: 200px; padding-right: 10px"
-                  height="20"
-                  class="employee-schedule-search-box"
-                  @input="getDataFromApi()"
-                  v-model="commonSearch"
-                  label="Search"
-                  dense
-                  outlined
-                  type="text"
-                  append-icon="mdi-magnify"
-                  clearable
-                  hide-details
-                ></v-text-field
-              ></v-col>
+              <v-col style="max-width: 250px"><v-text-field style="padding-top: 7px; width: 200px; padding-right: 10px"
+                  height="20" class="employee-schedule-search-box" @input="getDataFromApi()" v-model="commonSearch"
+                  label="Search" dense outlined type="text" append-icon="mdi-magnify" clearable
+                  hide-details></v-text-field></v-col>
               <v-col style="max-width: 200px">
-                <CustomFilter
-                  style="float: right; padding-top: 5px; z-index: 9999"
-                  @filter-attr="filterAttr"
-                  :default_date_from="date_from"
-                  :default_date_to="date_to"
-                  :defaultFilterType="1"
-                  :height="'40px'"
-                />
+                <CustomFilter style="float: right; padding-top: 5px; z-index: 9999" @filter-attr="filterAttr"
+                  :default_date_from="date_from" :default_date_to="date_to" :defaultFilterType="1" :height="'40px'" />
               </v-col>
               <!-- <v-col
                 v-if="isEditable"
@@ -126,22 +94,15 @@
     </v-row>
     <v-row>
       <v-col>
-        <v-data-table
-          :headers="headers"
-          :items="items"
-          :server-items-length="totalRowsCount"
-          :loading="loading"
-          :options.sync="options"
-          :footer-props="{
+        <v-data-table :headers="headers" :items="items" :server-items-length="totalRowsCount" :loading="loading"
+          :options.sync="options" :footer-props="{
             itemsPerPageOptions: [10, 50, 100, 500, 1000],
-          }"
-          class="elevation-0"
-        >
+          }" class="elevation-0">
           <template v-slot:item.sno="{ item, index }">
             {{
               currentPage
                 ? (currentPage - 1) * perPage +
-                  (cumulativeIndex + items.indexOf(item))
+                (cumulativeIndex + items.indexOf(item))
                 : "-"
             }}
           </template>
@@ -165,8 +126,8 @@
             {{
               item.tax_amount !== null && item.tax_amount !== undefined
                 ? parseFloat(
-                    parseFloat(item.tax_amount) + parseFloat(item.amount)
-                  ).toFixed(2)
+                  parseFloat(item.tax_amount) + parseFloat(item.amount)
+                ).toFixed(2)
                 : parseFloat(item.amount).toFixed(2)
             }}
           </template>
@@ -202,16 +163,9 @@
                 <v-list-item @click="invoicePrint(item.id, 'print')">
                   <v-list-item-title style="cursor: pointer">
                     <v-row>
-                      <v-col cols="3"
-                        ><img
-                          style="padding-top: 5px"
-                          src="/icons/icon_print.png"
-                          class="iconsize"
-                      /></v-col>
-                      <v-col
-                        cols="9"
-                        style="padding-left: 10px; padding-top: 19px"
-                      >
+                      <v-col cols="3"><img style="padding-top: 5px" src="/icons/icon_print.png"
+                          class="iconsize" /></v-col>
+                      <v-col cols="9" style="padding-left: 10px; padding-top: 19px">
                         Print
                       </v-col>
                     </v-row>
@@ -220,16 +174,9 @@
                 <v-list-item @click="invoicePrint(item.id, 'download')">
                   <v-list-item-title style="cursor: pointer">
                     <v-row>
-                      <v-col cols="3"
-                        ><img
-                          style="padding-top: 5px"
-                          src="/icons/icon_pdf.png"
-                          class="iconsize"
-                      /></v-col>
-                      <v-col
-                        cols="9"
-                        style="padding-left: 10px; padding-top: 19px"
-                      >
+                      <v-col cols="3"><img style="padding-top: 5px" src="/icons/icon_pdf.png"
+                          class="iconsize" /></v-col>
+                      <v-col cols="9" style="padding-left: 10px; padding-top: 19px">
                         PDF
                       </v-col>
                     </v-row>
@@ -354,7 +301,7 @@ export default {
     invoicePrint(invoice_id, option) {
       //let option = "print";
 
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/invoice_print_pdf";
       if (option == "excel") url += "/invoice_print_pdf";
       if (option == "download") url += "/invoice_print_pdf";
@@ -395,7 +342,7 @@ export default {
             this.getDataFromApi();
             this.loading = false;
           });
-        } catch (e) {}
+        } catch (e) { }
       }
     },
     sendReminderMail(item) {
@@ -448,7 +395,7 @@ export default {
             this.totalRowsCount = data.total;
             this.loading = false;
           });
-        } catch (e) {}
+        } catch (e) { }
       }
     },
   },

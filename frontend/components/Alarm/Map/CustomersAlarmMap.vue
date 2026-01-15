@@ -10,74 +10,39 @@
           </v-icon>
         </v-card-title>
         <v-card-text style="padding: 0px">
-          <AlarmCustomerTabsView
-            v-if="customerInfo"
-            :key="key"
-            :_id="customerInfo.id"
-            :isPopup="true"
-            :isMapviewOnly="true"
-            :alarmId="eventId"
-        /></v-card-text>
+          <AlarmCustomerTabsView v-if="customerInfo" :key="key" :_id="customerInfo.id" :isPopup="true"
+            :isMapviewOnly="true" :alarmId="eventId" />
+        </v-card-text>
       </v-card>
     </v-dialog>
-    <v-dialog
-      v-model="dialogViewCustomer"
-      width="1200px"
-      height="700px"
-      style="overflow: visible"
-    >
+    <v-dialog v-model="dialogViewCustomer" width="1200px" height="700px" style="overflow: visible">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
           <span dense style="color: black3333">Customer Information</span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="dialogViewCustomer = false"
-            outlined
-          >
+          <v-icon style="color: black3333" @click="dialogViewCustomer = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
         <v-card-text style="padding-left: 10px; background-color: #e9e9e9">
-          <TechnicianCustomerTabsView
-            v-if="selectedCustomer"
-            :key="key"
-            :_id="viewCustomerId"
-            :selectedCustomer="selectedCustomer"
-            :isPopup="true"
-            :isEditable="false"
-            :selectedAlarm="selectedAlarm"
-          />
+          <TechnicianCustomerTabsView v-if="selectedCustomer" :key="key" :_id="viewCustomerId"
+            :selectedCustomer="selectedCustomer" :isPopup="true" :isEditable="false" :selectedAlarm="selectedAlarm" />
         </v-card-text>
       </v-card>
     </v-dialog>
-    <v-dialog
-      v-model="dialogAlarmEventCustomerContactsTabView"
-      width="1000px"
-      style="overflow: visible"
-    >
+    <v-dialog v-model="dialogAlarmEventCustomerContactsTabView" width="1000px" style="overflow: visible">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
           <span dense style="color: black3333">
-            Map Alarm {{ popupEventText }}</span
-          >
+            Map Alarm {{ popupEventText }}</span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="dialogAlarmEventCustomerContactsTabView = false"
-            outlined
-          >
+          <v-icon style="color: black3333" @click="dialogAlarmEventCustomerContactsTabView = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
         <v-card-text style="padding: 0px; overflow: hidden">
-          <AlarmEventCustomerContactsTabView
-            :key="key"
-            :_customerID="viewCustomerId"
-            :alarmId="eventId"
-            :customer="customer"
-            :isPopup="true"
-          />
+          <AlarmEventCustomerContactsTabView :key="key" :_customerID="viewCustomerId" :alarmId="eventId"
+            :customer="customer" :isPopup="true" />
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -88,71 +53,29 @@
             <div :key="mapkeycount" id="map" :style="mapStyleCss"></div>
 
             <div style="position: absolute; top: 0px; left: 140px">
-              <v-btn-toggle
-                v-model="mapStyle"
-                height="20"
-                tile
-                color="deep-purple accent-3"
-                group
-              >
-                <v-btn
-                  height="22"
-                  width="60"
-                  value="bw"
-                  small
-                  dense
-                  @click="changeGoogleMapColor('bw')"
-                  >B & W</v-btn
-                >
-                <v-btn
-                  height="22"
-                  width="60"
-                  value="map"
-                  small
-                  dense
-                  @click="changeGoogleMapColor('map')"
-                  fill
-                  >Regular</v-btn
-                >
+              <v-btn-toggle v-model="mapStyle" height="20" tile color="deep-purple accent-3" group>
+                <v-btn height="22" width="60" value="bw" small dense @click="changeGoogleMapColor('bw')">B & W</v-btn>
+                <v-btn height="22" width="60" value="map" small dense @click="changeGoogleMapColor('map')"
+                  fill>Regular</v-btn>
               </v-btn-toggle>
             </div>
-          </v-card-text></v-card
-        >
+          </v-card-text></v-card>
       </v-col>
-      <v-col
-        cols="3"
-        v-if="displayTable == true"
-        style="padding: 0px; padding-top: 10px"
-      >
-        <v-card
-          elevation="2"
-          :style="
-            'overflow-y:auto;overflow-x:hidden;height:' +
-            (browserHeight - 10) +
-            'px'
-          "
-        >
-          <v-data-table
-            dense
-            :headers="headers"
-            :items="data"
-            :loading="loading"
-            :options.sync="options"
-            :footer-props="{
-              itemsPerPageOptions: [10, 50, 100, 500, 1000],
-              'disable-items-per-page': true,
-              'items-per-page-text': ' ',
-            }"
-            fixed-header
-            hide-default-header
-            class="map-customers-list-table"
-            :style="'height:' + (browserHeight - 20) + 'px'"
-          >
+      <v-col cols="3" v-if="displayTable == true" style="padding: 0px; padding-top: 10px">
+        <v-card elevation="2" :style="'overflow-y:auto;overflow-x:hidden;height:' +
+          (browserHeight - 10) +
+          'px'
+          ">
+          <v-data-table dense :headers="headers" :items="data" :loading="loading" :options.sync="options" :footer-props="{
+            itemsPerPageOptions: [10, 50, 100, 500, 1000],
+            'disable-items-per-page': true,
+            'items-per-page-text': ' ',
+          }" fixed-header hide-default-header class="map-customers-list-table"
+            :style="'height:' + (browserHeight - 20) + 'px'">
             <template v-slot:top>
               <v-container>
                 <v-row>
-                  <v-col cols="3" style="font-size: 14px; padding-top: 17px"
-                    >Customers List
+                  <v-col cols="3" style="font-size: 14px; padding-top: 17px">Customers List
                     <!-- <span v-if="filterText != ''"
                       >({{ caps(filterText) }})</span
                     > -->
@@ -160,13 +83,8 @@
                   <v-col>
                     <v-row>
                       <v-col cols="4">
-                        <v-checkbox
-                          class="mt-0"
-                          v-model="filterText"
-                          value="Alarm"
-                          label="Alarms"
-                          @click="getCustomers()"
-                        ></v-checkbox>
+                        <v-checkbox class="mt-0" v-model="filterText" value="Alarm" label="Alarms"
+                          @click="getCustomers()"></v-checkbox>
                       </v-col>
                       <!-- <v-col cols="2">
                         <v-icon
@@ -177,18 +95,9 @@
                       </v-col> -->
 
                       <v-col cols="8">
-                        <v-text-field
-                          class="small-custom-textbox"
-                          @input="getCustomers()"
-                          v-model="commonSearch"
-                          label="Search..."
-                          dense
-                          outlined
-                          type="text"
-                          append-icon="mdi-magnify"
-                          clearable
-                          hide-details
-                        ></v-text-field>
+                        <v-text-field class="small-custom-textbox" @input="getCustomers()" v-model="commonSearch"
+                          label="Search..." dense outlined type="text" append-icon="mdi-magnify" clearable
+                          hide-details></v-text-field>
                       </v-col>
                     </v-row>
                   </v-col>
@@ -197,43 +106,33 @@
               </v-container>
             </template>
             <template v-slot:item.building_name="{ item, index }">
-              <v-card
-                @click="setCustomerCenterLocationOnMap(item)"
-                :key="index + 55"
-                elevation="5"
-                style="border-bottom: 0px solid black; margin: 6px"
-              >
-                <v-card-text
-                  :style="{
-                    paddingRight: '5px',
-                    color: 'black',
-                    border:
-                      selectedCustomer?.id === item.id
-                        ? '1px solid #ecf0f4'
-                        : '0px',
-                    backgroundColor:
-                      selectedCustomer?.id === item.id ? '#8d8d8d' : null,
-                  }"
-                >
+              <v-card @click="setCustomerCenterLocationOnMap(item)" :key="index + 55" elevation="5"
+                style="border-bottom: 0px solid black; margin: 6px">
+                <v-card-text :style="{
+                  paddingRight: '5px',
+                  color: 'black',
+                  border:
+                    selectedCustomer?.id === item.id
+                      ? '1px solid #ecf0f4'
+                      : '0px',
+                  backgroundColor:
+                    selectedCustomer?.id === item.id ? '#8d8d8d' : null,
+                }">
                   <v-row style="height: auto; width: 100%">
-                    <v-col
-                      style="
+                    <v-col style="
                         max-width: 30px;
                         padding: 0px;
                         margin: auto;
                         text-align: center;
-                      "
-                    >
+                      ">
                       {{ index + 1 }}
                     </v-col>
-                    <v-col
-                      style="
+                    <v-col style="
                         padding: 0px;
                         font-size: 9px;
                         padding-left: 10px;
                         line-height: 15px;
-                      "
-                    >
+                      ">
                       <div style="overflow: hidden">
                         <div>
                           {{
@@ -252,33 +151,27 @@
                           {{ item.city || "---" }}, {{ item.state || "---" }}
                         </div>
                         <div>
-                          <v-icon style="margin-top: -3px" size="10"
-                            >mdi-account-tie</v-icon
-                          >{{
+                          <v-icon style="margin-top: -3px" size="10">mdi-account-tie</v-icon>{{
                             item.primary_contact
                               ? $utils.caps(item.primary_contact.first_name) +
-                                " " +
-                                $utils.caps(item.primary_contact.last_name)
+                              " " +
+                              $utils.caps(item.primary_contact.last_name)
                               : "---"
                           }}
                         </div>
                       </div>
                     </v-col>
                     <v-col style="max-width: 50px">
-                      <v-img
-                        style="
+                      <v-img style="
                           border-radius: 2%;
                           height: 45px;
                           min-height: 45px;
                           width: 45px;
                           max-width: 45px;
-                        "
-                        :src="
-                          item.profile_picture
+                        " :src="item.profile_picture
                             ? item.profile_picture
                             : '/no-business_profile.png'
-                        "
-                      >
+                          ">
                       </v-img>
                     </v-col>
                   </v-row>
@@ -547,7 +440,7 @@ export default {
         if (typeof window !== "undefined")
           this.browserHeight = window.innerHeight - 70;
         this.browserMapHeight = window.innerHeight - 70;
-      } catch (e) {}
+      } catch (e) { }
     }
   },
   beforeDestroy() {
@@ -700,7 +593,7 @@ export default {
             ) {
               if (!this.selectedCustomer)
                 this.setCustomerCenterLocationOnMap(this.data[0]);
-              setTimeout(() => {}, 1000 * 5);
+              setTimeout(() => { }, 1000 * 5);
             }
           });
         } catch (e) {
@@ -984,7 +877,7 @@ export default {
               };
 
               let iconURL =
-                process.env.BACKEND_APP_URL +
+                this.$env.settings.BACKEND_APP_URL +
                 "/google_map_icons/google_online.png";
 
               let colorObject = this.getAlarmColorObject(
@@ -1016,7 +909,7 @@ export default {
                   content: content,
                 });
                 this.mapMarkersLabelsList.push(markerLabel); // ✅ Track marker
-              } catch (e) {}
+              } catch (e) { }
               const marker = new google.maps.Marker({
                 position,
                 map: this.map,
@@ -1067,9 +960,9 @@ export default {
         </tr>
     </table>`;
               let googleDirectionIcon =
-                process.env.APP_URL + "/icons/google-directions.png";
+                this.$env.settings.APP_URL + "/icons/google-directions.png";
               let googleInfoIcon =
-                process.env.APP_URL + "/icons/google-info.png";
+                this.$env.settings.APP_URL + "/icons/google-info.png";
               // Create content for the infowindow
               alarmHtmlLink = "";
               customerHtmlLink = `<button class="primary v-btn v-btn--is-elevated v-btn--has-bg theme--light v-size--x-small" id="customerInfowindow-btn-${item.id}">View</button>`;

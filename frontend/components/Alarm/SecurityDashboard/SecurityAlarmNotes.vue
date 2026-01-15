@@ -8,15 +8,9 @@
     <v-dialog v-model="dialogNotes" max-width="700px" :key="key">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
-          <span dense style="color: black3333"
-            >Alarm Notes - ID: {{ selectedItem?.alarm_id || "---" }}</span
-          >
+          <span dense style="color: black3333">Alarm Notes - ID: {{ selectedItem?.alarm_id || "---" }}</span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="dialogNotes = false"
-            outlined
-          >
+          <v-icon style="color: black3333" @click="dialogNotes = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
@@ -36,127 +30,45 @@
               </v-text-field>
             </v-col> -->
             <v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Date"
-                dense
-                outlined
-                flat
-                :value="selectedItem.created_datetime"
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Security Login Name"
-                dense
-                outlined
-                flat
-                :value="
-                  selectedItem.security
-                    ? selectedItem.security.first_name +
-                      ' ' +
-                      selectedItem.security?.last_name
-                    : '---'
-                "
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Closed PIN Customer Name"
-                dense
-                outlined
-                flat
-                :value="
-                  selectedItem.contact
-                    ? selectedItem.contact.first_name +
-                      ' ' +
-                      selectedItem.contact?.last_name
-                    : '---'
-                "
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Closed PIN Customer Type"
-                dense
-                outlined
-                flat
-                :value="selectedItem.contact?.address_type || '---'"
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Phone"
-                dense
-                outlined
-                flat
-                :value="selectedItem.contact?.phone1 || '---'"
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Call Status"
-                dense
-                outlined
-                flat
-                :value="selectedItem.call_status"
-                hide-details
-              >
-              </v-text-field> </v-col
-            ><v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Response"
-                dense
-                outlined
-                flat
-                :value="selectedItem.response"
-                hide-details
-              >
+              <v-text-field readonly class="" label="Date" dense outlined flat :value="selectedItem.created_datetime"
+                hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Security Login Name" dense outlined flat :value="selectedItem.security
+                  ? selectedItem.security.first_name +
+                  ' ' +
+                  selectedItem.security?.last_name
+                  : '---'
+                " hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Closed PIN Customer Name" dense outlined flat :value="selectedItem.contact
+                  ? selectedItem.contact.first_name +
+                  ' ' +
+                  selectedItem.contact?.last_name
+                  : '---'
+                " hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Closed PIN Customer Type" dense outlined flat
+                :value="selectedItem.contact?.address_type || '---'" hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Phone" dense outlined flat
+                :value="selectedItem.contact?.phone1 || '---'" hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Call Status" dense outlined flat :value="selectedItem.call_status"
+                hide-details>
+              </v-text-field> </v-col><v-col cols="6">
+              <v-text-field readonly class="" label="Response" dense outlined flat :value="selectedItem.response"
+                hide-details>
               </v-text-field>
             </v-col>
             <v-col cols="6">
-              <v-text-field
-                readonly
-                class=""
-                label="Event/Alarm Status"
-                dense
-                outlined
-                flat
-                :value="selectedItem.event_status"
-                hide-details
-              >
+              <v-text-field readonly class="" label="Event/Alarm Status" dense outlined flat
+                :value="selectedItem.event_status" hide-details>
               </v-text-field>
             </v-col>
 
             <v-col cols="12">
-              <v-textarea
-                outlined
-                class="mt-2"
-                name="input-7-4"
-                label="Action Notes"
-                value=""
-                rows="2"
-                hide-details
-                v-model="selectedItem.notes"
-              ></v-textarea>
+              <v-textarea outlined class="mt-2" name="input-7-4" label="Action Notes" value="" rows="2" hide-details
+                v-model="selectedItem.notes"></v-textarea>
             </v-col>
           </v-row>
         </v-card-text>
@@ -173,32 +85,15 @@
                   <v-col class="mt-2">
                     <v-icon @click="getDataFromApi()">mdi-refresh</v-icon>
                   </v-col>
-                  <v-col
-                    ><v-text-field
-                      style="padding-top: 7px"
-                      width="150px"
-                      height="20"
-                      class="employee-schedule-search-box"
-                      @input="getDataFromApi()"
-                      v-model="commonSearch"
-                      label="Search"
-                      dense
-                      outlined
-                      type="text"
-                      append-icon="mdi-magnify"
-                      clearable
-                      hide-details
-                    ></v-text-field
-                  ></v-col>
+                  <v-col><v-text-field style="padding-top: 7px" width="150px" height="20"
+                      class="employee-schedule-search-box" @input="getDataFromApi()" v-model="commonSearch"
+                      label="Search" dense outlined type="text" append-icon="mdi-magnify" clearable
+                      hide-details></v-text-field></v-col>
                   <v-col>
-                    <CustomFilter
-                      style="float: right; padding-top: 5px; z-index: 9999"
-                      @filter-attr="filterAttr"
-                      :default_date_from="date_from"
-                      :default_date_to="date_to"
-                      :defaultFilterType="1"
-                      :height="'40px'"
-                  /></v-col>
+                    <CustomFilter style="float: right; padding-top: 5px; z-index: 9999" @filter-attr="filterAttr"
+                      :default_date_from="date_from" :default_date_to="date_to" :defaultFilterType="1"
+                      :height="'40px'" />
+                  </v-col>
                 </v-row>
               </v-col>
               <!--<v-col cols="1" class="text-left pt-5 pl-0">
@@ -211,91 +106,58 @@
                       Print
                     </span>
                   </template>
-                  <v-list width="100" dense>
-                    <v-list-item @click="downloadOptions(`print`)">
-                      <v-list-item-title style="cursor: pointer">
-                        <v-row>
-                          <v-col cols="5"
-                            ><img
-                              style="padding-top: 5px"
-                              src="/icons/icon_print.png"
-                              class="iconsize"
-                          /></v-col>
-                          <v-col
-                            cols="7"
-                            style="padding-left: 0px; padding-top: 19px"
-                          >
-                            Print
-                          </v-col>
-                        </v-row>
-                      </v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="downloadOptions('download')">
-                      <v-list-item-title style="cursor: pointer">
-                        <v-row>
-                          <v-col cols="5"
-                            ><img
-                              style="padding-top: 5px"
-                              src="/icons/icon_pdf.png"
-                              class="iconsize"
-                          /></v-col>
-                          <v-col
-                            cols="7"
-                            style="padding-left: 0px; padding-top: 19px"
-                          >
-                            PDF
-                          </v-col>
-                        </v-row>
-                      </v-list-item-title>
-                    </v-list-item>
+<v-list width="100" dense>
+  <v-list-item @click="downloadOptions(`print`)">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_print.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          Print
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
+  <v-list-item @click="downloadOptions('download')">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_pdf.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          PDF
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
 
-                    <v-list-item @click="downloadOptions('excel')">
-                      <v-list-item-title style="cursor: pointer">
-                        <v-row>
-                          <v-col cols="5"
-                            ><img
-                              style="padding-top: 5px"
-                              src="/icons/icon_excel.png"
-                              class="iconsize"
-                          /></v-col>
-                          <v-col
-                            cols="7"
-                            style="padding-left: 0px; padding-top: 19px"
-                          >
-                            EXCEL
-                          </v-col>
-                        </v-row>
-                      </v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </v-col>-->
+  <v-list-item @click="downloadOptions('excel')">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_excel.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          EXCEL
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
+</v-list>
+</v-menu>
+</v-col>-->
             </v-row>
           </v-col>
         </v-row>
         <v-row>
           <v-col>
-            <v-data-table
-              :style="
-                contact_id
-                  ? 'height: 300px; overflow: auto'
-                  : 'height: 600px; overflow: auto'
-              "
-              :headers="headers"
-              :items="items"
-              :server-items-length="totalRowsCount"
-              :loading="loading"
-              :options.sync="options"
-              :footer-props="{
+            <v-data-table :style="contact_id
+                ? 'height: 300px; overflow: auto'
+                : 'height: 600px; overflow: auto'
+              " :headers="headers" :items="items" :server-items-length="totalRowsCount" :loading="loading"
+              :options.sync="options" :footer-props="{
                 itemsPerPageOptions: [100, 500, 1000],
-              }"
-              class="elevation-0"
-            >
+              }" class="elevation-0">
               <template v-slot:item.sno="{ item, index }">
                 {{
                   currentPage
                     ? (currentPage - 1) * perPage +
-                      (cumulativeIndex + items.indexOf(item))
+                    (cumulativeIndex + items.indexOf(item))
                     : "-"
                 }}
               </template>
@@ -326,8 +188,8 @@
               <template v-slot:item.response="{ item, index }">
                 {{
                   item.response != "null" &&
-                  item.response != "" &&
-                  item.response != null
+                    item.response != "" &&
+                    item.response != null
                     ? item.response
                     : "---"
                 }}
@@ -335,18 +197,14 @@
               <template v-slot:item.call_status="{ item, index }">
                 {{
                   item.call_status != "null" &&
-                  item.call_status != "" &&
-                  item.call_status != null
+                    item.call_status != "" &&
+                    item.call_status != null
                     ? item.call_status
                     : "---"
                 }}
               </template>
               <template v-slot:item.notes="{ item, index }">
-                <span
-                  class="d-inline-block text-truncate"
-                  style="max-width: 100px"
-                  >{{ item.notes }}</span
-                >
+                <span class="d-inline-block text-truncate" style="max-width: 100px">{{ item.notes }}</span>
               </template>
 
               <template v-slot:item.event_status="{ item, index }">
@@ -358,9 +216,7 @@
                 </div>
               </template>
               <template v-slot:item.action="{ item, index }">
-                <v-icon @click="displayNotes(item)" color="black"
-                  >mdi mdi-information-slab-circle</v-icon
-                >
+                <v-icon @click="displayNotes(item)" color="black">mdi mdi-information-slab-circle</v-icon>
               </template>
             </v-data-table>
           </v-col>
@@ -413,7 +269,7 @@ export default {
     commonSearch: "",
   }),
   computed: {},
-  mounted() {},
+  mounted() { },
   created() {
     let today = new Date();
     let monthObj = this.$dateFormat.monthStartEnd(today);
@@ -449,7 +305,7 @@ export default {
       this.getDataFromApi();
     },
     downloadOptions(option) {
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/security_alarm_notes_print_pdf";
       if (option == "excel") url += "/security_alarm_notes_export_excel";
       if (option == "download") url += "/security_alarm_notes_download_pdf";

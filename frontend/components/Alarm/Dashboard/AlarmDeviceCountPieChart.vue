@@ -27,10 +27,7 @@
     </v-row>
     <v-divider color="#5a82ca" style="margin-bottom: 10px" />-->
     <v-row class="pt-0 mt-0">
-      <v-col
-        cols="5"
-        class="pt-0"
-        style="
+      <v-col cols="5" class="pt-0" style="
           font-size: 11px;
 
           padding-left: 0px;
@@ -38,16 +35,10 @@
           line-height: 32px;
           margin: auto;
           height: 230px;
-        "
-      >
+        ">
         <v-row style="">
-          <v-col
-            cols="5"
-            class="text-right justify-right vertical-center"
-            style="margin: auto"
-          >
-            <img style="width: 40px" :src="armedIcon"
-          /></v-col>
+          <v-col cols="5" class="text-right justify-right vertical-center" style="margin: auto">
+            <img style="width: 40px" :src="armedIcon" /></v-col>
           <v-col cols="7" class="text-center justify-center">
             <div style="font-size: 35px; color: #07af50; font-weight: bold">
               {{ categories && categories.armed > 0 ? categories.armed : "0" }}
@@ -58,13 +49,8 @@
         </v-row>
         <v-divider color="#353538" />
         <v-row>
-          <v-col
-            style="margin: auto"
-            cols="5"
-            class="text-right justify-right vertical-center"
-          >
-            <img style="width: 40px" :src="disarmIcon"
-          /></v-col>
+          <v-col style="margin: auto" cols="5" class="text-right justify-right vertical-center">
+            <img style="width: 40px" :src="disarmIcon" /></v-col>
           <v-col cols="7" class="text-center justify-center mt-2">
             <div style="font-size: 35px; color: #fe0004; font-weight: bold">
               {{
@@ -77,13 +63,8 @@
         </v-row>
         <v-divider color="#353538" />
         <v-row>
-          <v-col
-            style="margin: auto"
-            cols="5"
-            class="text-right justify-right vertical-center"
-          >
-            <img style="width: 40px" :src="technicalIcon"
-          /></v-col>
+          <v-col style="margin: auto" cols="5" class="text-right justify-right vertical-center">
+            <img style="width: 40px" :src="technicalIcon" /></v-col>
           <v-col cols="7" class="text-center justify-center mt-2">
             <div style="font-size: 35px; color: #ffbe00; font-weight: bold">
               {{ categories && categories.other > 0 ? categories.other : "0" }}
@@ -111,21 +92,12 @@
         </v-row>
         <v-divider color="#dddddd" /> -->
       </v-col>
-      <v-col
-        cols="7"
-        class="text-center pt-0 doughtchart"
-        style="margin: 0 auto; text-align: left; margin-left: -10px"
-      >
+      <v-col cols="7" class="text-center pt-0 doughtchart" style="margin: 0 auto; text-align: left; margin-left: -10px">
         <div v-if="chartOptions.customTotalValue == 0" class="empty-doughnut2">
           Total <br />0
         </div>
-        <div
-          :style="chartOptions.customTotalValue == 0 ? 'display:none' : ''"
-          :id="name"
-          :name="name"
-          class="doughtchart"
-          style="width: 320px; margin: 0 auto; text-align: left"
-        ></div>
+        <div :style="chartOptions.customTotalValue == 0 ? 'display:none' : ''" :id="name" :name="name"
+          class="doughtchart" style="width: 320px; margin: 0 auto; text-align: left"></div>
       </v-col>
     </v-row>
 
@@ -277,13 +249,13 @@ export default {
   },
   computed: {
     armedIcon() {
-      return process.env.BACKEND_URL2 + "/google_map_icons/google_armed.png";
+      return this.$env.settings.BACKEND_URL2 + "/google_map_icons/google_armed.png";
     },
     disarmIcon() {
-      return process.env.BACKEND_URL2 + "/google_map_icons/google_disarm.png";
+      return this.$env.settings.BACKEND_URL2 + "/google_map_icons/google_disarm.png";
     },
     technicalIcon() {
-      return process.env.BACKEND_URL2 + "/google_map_icons/google_offline.png";
+      return this.$env.settings.BACKEND_URL2 + "/google_map_icons/google_offline.png";
     },
   },
   mounted() {

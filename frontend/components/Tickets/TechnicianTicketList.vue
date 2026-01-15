@@ -8,87 +8,47 @@
     <v-dialog v-model="dialogViewStartJob" width="700px">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
-          <span dense style="color: black3333"
-            >Start Job - Customer Contacs</span
-          >
+          <span dense style="color: black3333">Start Job - Customer Contacs</span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="dialogViewStartJob = false"
-            outlined
-          >
+          <v-icon style="color: black3333" @click="dialogViewStartJob = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
         <v-card-text style="">
-          <PrimaryContactsInfo
-            v-if="selectedCustomer && selectedTicket"
-            :key="key"
-            :customer="selectedCustomer"
-            :ticketId="selectedTicket.id"
-            @closeDialogCall="closeDialogProcess()"
-            :ticket="selectedTicket"
-          />
+          <PrimaryContactsInfo v-if="selectedCustomer && selectedTicket" :key="key" :customer="selectedCustomer"
+            :ticketId="selectedTicket.id" @closeDialogCall="closeDialogProcess()" :ticket="selectedTicket" />
         </v-card-text>
       </v-card>
     </v-dialog>
-    <v-dialog
-      v-model="dialogViewCustomer"
-      width="1200px"
-      height="700px"
-      style="overflow: visible"
-    >
+    <v-dialog v-model="dialogViewCustomer" width="1200px" height="700px" style="overflow: visible">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
-          <span dense style="color: black3333"
-            >Ticket Customer Information</span
-          >
+          <span dense style="color: black3333">Ticket Customer Information</span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="dialogViewCustomer = false"
-            outlined
-          >
+          <v-icon style="color: black3333" @click="dialogViewCustomer = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
         <v-card-text style="padding-left: 10px; background-color: #e9e9e9">
-          <TechnicianCustomerTabsView
-            v-if="selectedCustomer"
-            :key="key"
-            :_id="viewCustomerId"
-            :selectedCustomer="selectedCustomer"
-            :isPopup="true"
-            :isEditable="false"
-          />
+          <TechnicianCustomerTabsView v-if="selectedCustomer" :key="key" :_id="viewCustomerId"
+            :selectedCustomer="selectedCustomer" :isPopup="true" :isEditable="false" />
         </v-card-text>
       </v-card>
     </v-dialog>
     <v-dialog v-model="dialogCloseJob" width="900px">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
-          <span dense style="color: black3333"
-            >Close Ticket - Customer Contacs
+          <span dense style="color: black3333">Close Ticket - Customer Contacs
           </span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="dialogCloseJob = false"
-            outlined
-          >
+          <v-icon style="color: black3333" @click="dialogCloseJob = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
         <v-card-text style="padding-left: 10px; background-color: #e9e9e9">
-          <PrimaryContactsInfo
-            v-if="selectedCustomer"
-            :key="selectedCustomerCounter"
-            :customer="selectedCustomer"
-            :ticketId="editId"
-            @closeDialogCall="closeDialogProcess()"
-            @savedResults="savedResults()"
-            :close_ticket="true"
-          />
+          <PrimaryContactsInfo v-if="selectedCustomer" :key="selectedCustomerCounter" :customer="selectedCustomer"
+            :ticketId="editId" @closeDialogCall="closeDialogProcess()" @savedResults="savedResults()"
+            :close_ticket="true" />
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -97,11 +57,7 @@
         <v-card-title dark class="popup_background_noviolet">
           <span dense style="color: black3333">Ticket - Testing Sensors </span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="dialogTestingJob = false"
-            outlined
-          >
+          <v-icon style="color: black3333" @click="dialogTestingJob = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
@@ -116,19 +72,11 @@
             :close_ticket="true"
           /> -->
 
-          <TechnicianSensorsTesting
-            v-if="selectedCustomer"
-            :customer_id="selectedCustomer.id"
-            :ticket_id="editId"
-          />
+          <TechnicianSensorsTesting v-if="selectedCustomer" :customer_id="selectedCustomer.id" :ticket_id="editId" />
         </v-card-text>
       </v-card>
     </v-dialog>
-    <v-dialog
-      v-model="dialogTicketResponsesList"
-      max-width="700px"
-      style="z-index: 9999"
-    >
+    <v-dialog v-model="dialogTicketResponsesList" max-width="700px" style="z-index: 9999">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
           <span dense>Ticket History</span>
@@ -142,11 +90,7 @@
         </v-card-text>
       </v-card>
     </v-dialog>
-    <v-dialog
-      v-model="dialogNewTicket"
-      max-width="1000px"
-      style="z-index: 9999"
-    >
+    <v-dialog v-model="dialogNewTicket" max-width="1000px" style="z-index: 9999">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
           <span dense> New Ticket</span>
@@ -156,12 +100,8 @@
           </v-icon>
         </v-card-title>
         <v-card-text>
-          <NewTicket
-            :security_id="security_id"
-            :customer_id="customer_id"
-            :key="key"
-            @close_dialog="close_dialog_reaction"
-          />
+          <NewTicket :security_id="security_id" :customer_id="customer_id" :key="key"
+            @close_dialog="close_dialog_reaction" />
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -175,14 +115,8 @@
           </v-icon>
         </v-card-title>
         <v-card-text>
-          <ReplyToTicket
-            :key="key"
-            :editId="editId"
-            :editItem="editItem"
-            :ticketId="ticketId"
-            :messageReply="messageReply"
-            @close_dialog="close_dialog_reaction"
-          />
+          <ReplyToTicket :key="key" :editId="editId" :editItem="editItem" :ticketId="ticketId"
+            :messageReply="messageReply" @close_dialog="close_dialog_reaction" />
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -196,163 +130,78 @@
           </v-icon>
         </v-card-title>
         <v-card-text>
-          <ViewTicket
-            :key="key"
-            :editItem="editItem"
-            :editId="editItem?.id"
-            @close_dialog="close_dialog_reaction"
-            @refreshTickets="getDataFromApi"
-          />
+          <ViewTicket :key="key" :editItem="editItem" :editId="editItem?.id" @close_dialog="close_dialog_reaction"
+            @refreshTickets="getDataFromApi" />
         </v-card-text>
       </v-card>
     </v-dialog>
 
-    <v-dialog
-      v-model="dialogAssignTechnician"
-      width="300px"
-      style="overflow: visible"
-    >
+    <v-dialog v-model="dialogAssignTechnician" width="300px" style="overflow: visible">
       <v-card :key="key">
         <v-card-title dark class="popup_background_noviolet">
           <span dense style="color: black3333"> Assign Technician</span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="
-              dialogAssignTechnician = false;
-              closeDialogProcess();
-            "
-            outlined
-          >
+          <v-icon style="color: black3333" @click="
+            dialogAssignTechnician = false;
+          closeDialogProcess();
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
         <v-card-text>
-          <v-select
-            v-model="assignTechnicianId"
-            label="Select Technician"
-            height="20"
-            class="employee-schedule-search-box11111111 pt-8"
-            outlined
-            dense
-            :items="techniciansList"
-            item-text="full_name"
-            item-value="id"
-            clearable
-          >
+          <v-select v-model="assignTechnicianId" label="Select Technician" height="20"
+            class="employee-schedule-search-box11111111 pt-8" outlined dense :items="techniciansList"
+            item-text="full_name" item-value="id" clearable>
           </v-select>
 
-          <v-col cols="12" class="text-center pt-5"
-            ><v-btn
-              dense
-              class="primary"
-              @click="updateTicketTechnicianId()"
-              small
-              >Submit</v-btn
-            ></v-col
-          >
+          <v-col cols="12" class="text-center pt-5"><v-btn dense class="primary" @click="updateTicketTechnicianId()"
+              small>Submit</v-btn></v-col>
         </v-card-text>
       </v-card>
     </v-dialog>
     <v-card elevation="3" class="mt-1">
       <v-card-text>
         <v-row>
-          <v-col class="pl-4"><h3>Tickets</h3></v-col>
+          <v-col class="pl-4">
+            <h3>Tickets</h3>
+          </v-col>
 
           <v-col style="max-width: 40px; padding-top: 20px">
             <v-icon @click="getDataFromApi()">mdi-refresh</v-icon>
           </v-col>
-          <v-col style="max-width: 300px"
-            ><v-text-field
-              style="padding-top: 7px; width: 250px"
-              height="20"
-              class="employee-schedule-search-box"
-              @input="getDataFromApi()"
-              v-model="commonSearch"
-              label="Common Search"
-              dense
-              outlined
-              type="text"
-              append-icon="mdi-magnify"
-              clearable
-              hide-details
-            ></v-text-field
-          ></v-col>
+          <v-col style="max-width: 300px"><v-text-field style="padding-top: 7px; width: 250px" height="20"
+              class="employee-schedule-search-box" @input="getDataFromApi()" v-model="commonSearch"
+              label="Common Search" dense outlined type="text" append-icon="mdi-magnify" clearable
+              hide-details></v-text-field></v-col>
           <v-col style="max-width: 200px; padding-right: 20px">
-            <CustomFilter
-              v-if="displayDateFilter"
-              style="float: right; padding-top: 5px; z-index: 9"
-              @filter-attr="filterAttr"
-              :default_date_from="date_from"
-              :default_date_to="date_to"
-              :defaultFilterType="1"
-              :height="'40px'"
-          /></v-col>
+            <CustomFilter v-if="displayDateFilter" style="float: right; padding-top: 5px; z-index: 9"
+              @filter-attr="filterAttr" :default_date_from="date_from" :default_date_to="date_to" :defaultFilterType="1"
+              :height="'40px'" />
+          </v-col>
 
           <v-col style="max-width: 200px" class="pt-5">
-            <v-autocomplete
-              @change="getDataFromApi()"
-              clearable
-              style="width: 200px"
-              class="reports-events-autocomplete"
-              v-model="filter_customer_id"
-              :items="customersList"
-              dense
-              placeholder="Customers"
-              outlined
-              item-value="id"
-              item-text="building_name"
-              hide-details
-            >
+            <v-autocomplete @change="getDataFromApi()" clearable style="width: 200px"
+              class="reports-events-autocomplete" v-model="filter_customer_id" :items="customersList" dense
+              placeholder="Customers" outlined item-value="id" item-text="building_name" hide-details>
             </v-autocomplete>
           </v-col>
           <v-col style="max-width: 200px" class="pt-5">
-            <v-select
-              @change="getDataFromApi()"
-              clearable
-              style="width: 200px"
-              v-model="filterCategoryId"
-              :items="[{ id: null, name: 'All Categories' }, ...categoryList]"
-              dense
-              placeholder="Category"
-              outlined
-              item-value="id"
-              item-text="name"
-              height="20px"
-              class="employee-schedule-search-box"
-              hide-details
-            >
+            <v-select @change="getDataFromApi()" clearable style="width: 200px" v-model="filterCategoryId"
+              :items="[{ id: null, name: 'All Categories' }, ...categoryList]" dense placeholder="Category" outlined
+              item-value="id" item-text="name" height="20px" class="employee-schedule-search-box" hide-details>
             </v-select>
           </v-col>
           <v-col style="max-width: 100px" class="pt-5">
-            <v-select
-              @change="getDataFromApi()"
-              :items="[
-                { text: 'All', value: '' },
-                { text: 'Operator', value: 'security' },
-                { text: 'Customer', value: 'customer' },
-              ]"
-              v-model="filterRequestfrom"
-              outlined
-              dense
-              height="20px"
-              class="employee-schedule-search-box"
-              hide-details
-            >
+            <v-select @change="getDataFromApi()" :items="[
+              { text: 'All', value: '' },
+              { text: 'Operator', value: 'security' },
+              { text: 'Customer', value: 'customer' },
+            ]" v-model="filterRequestfrom" outlined dense height="20px" class="employee-schedule-search-box"
+              hide-details>
             </v-select>
           </v-col>
-          <v-col
-            v-if="technician_id == null"
-            class="pt-5"
-            style="max-width: 50px"
-          >
-            <v-btn
-              title="Add Ticket"
-              x-small
-              :ripple="false"
-              text
-              @click="addItem()"
-            >
+          <v-col v-if="technician_id == null" class="pt-5" style="max-width: 50px">
+            <v-btn title="Add Ticket" x-small :ripple="false" text @click="addItem()">
               <v-icon class="">mdi mdi-plus-circle</v-icon>
             </v-btn>
           </v-col>
@@ -366,65 +215,41 @@
                         Print
                       </span>
                     </template>
-                    <v-list width="100" dense>
-                      <v-list-item @click="downloadOptions(`print`)">
-                        <v-list-item-title style="cursor: pointer">
-                          <v-row>
-                            <v-col cols="5"
-                              ><img
-                                style="padding-top: 5px"
-                                src="/icons/icon_print.png"
-                                class="iconsize"
-                            /></v-col>
-                            <v-col
-                              cols="7"
-                              style="padding-left: 0px; padding-top: 19px"
-                            >
-                              Print
-                            </v-col>
-                          </v-row>
-                        </v-list-item-title>
-                      </v-list-item>
-                      <v-list-item @click="downloadOptions('download')">
-                        <v-list-item-title style="cursor: pointer">
-                          <v-row>
-                            <v-col cols="5"
-                              ><img
-                                style="padding-top: 5px"
-                                src="/icons/icon_pdf.png"
-                                class="iconsize"
-                            /></v-col>
-                            <v-col
-                              cols="7"
-                              style="padding-left: 0px; padding-top: 19px"
-                            >
-                              PDF
-                            </v-col>
-                          </v-row>
-                        </v-list-item-title>
-                      </v-list-item>
+<v-list width="100" dense>
+  <v-list-item @click="downloadOptions(`print`)">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_print.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          Print
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
+  <v-list-item @click="downloadOptions('download')">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_pdf.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          PDF
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
 
-                      <v-list-item @click="downloadOptions('excel')">
-                        <v-list-item-title style="cursor: pointer">
-                          <v-row>
-                            <v-col cols="5"
-                              ><img
-                                style="padding-top: 5px"
-                                src="/icons/icon_excel.png"
-                                class="iconsize"
-                            /></v-col>
-                            <v-col
-                              cols="7"
-                              style="padding-left: 0px; padding-top: 19px"
-                            >
-                              EXCEL
-                            </v-col>
-                          </v-row>
-                        </v-list-item-title>
-                      </v-list-item>
-                    </v-list>
-                  </v-menu>
-                </v-col>-->
+  <v-list-item @click="downloadOptions('excel')">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_excel.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          EXCEL
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
+</v-list>
+</v-menu>
+</v-col>-->
         </v-row>
       </v-card-text>
     </v-card>
@@ -433,22 +258,15 @@
       <v-card-text>
         <v-row>
           <v-col>
-            <v-data-table
-              :headers="headers"
-              :items="items"
-              :server-items-length="totalRowsCount"
-              :loading="loading"
-              :options.sync="options"
-              :footer-props="{
+            <v-data-table :headers="headers" :items="items" :server-items-length="totalRowsCount" :loading="loading"
+              :options.sync="options" :footer-props="{
                 itemsPerPageOptions: [10, 50, 100, 500, 1000],
-              }"
-              class="elevation-0"
-            >
+              }" class="elevation-0">
               <template v-slot:item.sno="{ item, index }">
                 {{
                   currentPage
                     ? (currentPage - 1) * perPage +
-                      (cumulativeIndex + items.indexOf(item))
+                    (cumulativeIndex + items.indexOf(item))
                     : "-"
                 }}
               </template>
@@ -458,29 +276,20 @@
                 </div>
               </template>
               <template v-slot:item.subject="{ item }">
-                <div
-                  :class="getIsReadStatus(item) ? '' : 'bold'"
-                  :title="item.subject"
-                >
+                <div :class="getIsReadStatus(item) ? '' : 'bold'" :title="item.subject">
                   <!-- {{ item.subject.slice(0, 10) }} -->
                   {{ item.subject }}
                 </div>
               </template>
               <template v-slot:item.customer="{ item }">
-                <div
-                  :class="getIsReadStatus(item) ? '' : 'bold'"
-                  v-if="item.category_id > 0"
-                >
+                <div :class="getIsReadStatus(item) ? '' : 'bold'" v-if="item.category_id > 0">
                   Admin
                   <div class="secondary-value">
                     <!-- Customer <br /> -->
                     For {{ item.customer.building_name }}
                   </div>
                 </div>
-                <div
-                  :class="getIsReadStatus(item) ? '' : 'bold'"
-                  v-else-if="item.customer"
-                >
+                <div :class="getIsReadStatus(item) ? '' : 'bold'" v-else-if="item.customer">
                   {{ item.customer.building_name }}
                   <div class="secondary-value">Customer</div>
                 </div>
@@ -504,10 +313,7 @@
               </div> -->
               </template>
               <template v-slot:item.ticket_responses="{ item }">
-                <div
-                  :class="getIsReadStatus(item) ? '' : 'bold'"
-                  @click="responses(item)"
-                >
+                <div :class="getIsReadStatus(item) ? '' : 'bold'" @click="responses(item)">
                   {{ item.responses?.length || 0 }}
                 </div>
               </template>
@@ -526,71 +332,44 @@
               <template v-slot:item.status="{ item }">
                 <div :class="getIsReadStatus(item) ? '' : 'bold'">
                   <div v-if="item.status == 0" style="color: red">
-                    <v-chip
-                      label
-                      color="green"
-                      style="
+                    <v-chip label color="green" style="
                         width: 60px;
                         color: #fff;
                         height: 18px;
                         text-align: center;
-                      "
-                      >Closed</v-chip
-                    >
+                      ">Closed</v-chip>
                   </div>
-                  <div
-                    v-else-if="
-                      item.status == 1 && item.job_start_datetime != null
-                    "
-                  >
-                    <v-chip
-                      label
-                      color="#a2b117"
-                      style="
+                  <div v-else-if="
+                    item.status == 1 && item.job_start_datetime != null
+                  ">
+                    <v-chip label color="#a2b117" style="
                         width: 60px;
                         color: #fff;
                         height: 18px;
                         text-align: center;
-                      "
-                      >Process</v-chip
-                    >
+                      ">Process</v-chip>
                   </div>
-                  <div
-                    v-else-if="
-                      item.status == 1 &&
-                      item.job_start_datetime == null &&
-                      item.responses.length > 0
-                    "
-                  >
-                    <v-chip
-                      label
-                      color="#1e71c3"
-                      style="
+                  <div v-else-if="
+                    item.status == 1 &&
+                    item.job_start_datetime == null &&
+                    item.responses.length > 0
+                  ">
+                    <v-chip label color="#1e71c3" style="
                         width: 60px;
                         color: #fff;
                         height: 18px;
                         text-align: center;
-                      "
-                      >Open</v-chip
-                    >
+                      ">Open</v-chip>
                   </div>
-                  <div
-                    v-else-if="
-                      item.status == 1 && item.job_start_datetime == null
-                    "
-                    style="color: green"
-                  >
-                    <v-chip
-                      label
-                      color="#a70000"
-                      style="
+                  <div v-else-if="
+                    item.status == 1 && item.job_start_datetime == null
+                  " style="color: green">
+                    <v-chip label color="#a70000" style="
                         width: 60px;
                         color: #fff;
                         height: 18px;
                         text-align: center;
-                      "
-                      >New</v-chip
-                    >
+                      ">New</v-chip>
                   </div>
                 </div>
               </template>
@@ -602,11 +381,7 @@
                 </div>
               </template>
               <template v-slot:item.closed_datetime="{ item }">
-                <div
-                  v-if="item.status == 0"
-                  :class="getIsReadStatus(item) ? '' : 'bold'"
-                  style="color: green"
-                >
+                <div v-if="item.status == 0" :class="getIsReadStatus(item) ? '' : 'bold'" style="color: green">
                   {{
                     $dateFormat.formatDateMonthYear(item.last_active_datetime)
                   }}
@@ -614,10 +389,7 @@
                 <div v-else>---</div>
               </template>
               <template v-slot:item.job_start_datetime="{ item }">
-                <div
-                  v-if="item.job_start_datetime != null"
-                  style="color: #4b9eff"
-                >
+                <div v-if="item.job_start_datetime != null" style="color: #4b9eff">
                   {{ $dateFormat.formatDateMonthYear(item.job_start_datetime) }}
                 </div>
                 <div v-else>---</div>
@@ -631,10 +403,7 @@
                     </v-btn>
                   </template>
                   <v-list width="120" dense>
-                    <v-list-item
-                      @click="addReply(item)"
-                      v-if="item.status != 0"
-                    >
+                    <v-list-item @click="addReply(item)" v-if="item.status != 0">
                       <v-list-item-title style="cursor: pointer">
                         <v-icon color="secondary" small> mdi-reply</v-icon>
                         Reply
@@ -643,8 +412,7 @@
                     <v-list-item @click="viewTicket(item)">
                       <v-list-item-title style="cursor: pointer">
                         <v-icon color="secondary" small>
-                          mdi-information</v-icon
-                        >
+                          mdi-information</v-icon>
                         View Ticket
                       </v-list-item-title>
                     </v-list-item>
@@ -654,49 +422,37 @@
                         Customer
                       </v-list-item-title>
                     </v-list-item>
-                    <v-list-item
-                      v-if="userType == 'company' && item.status == 1"
-                      @click="showTichnician(item)"
-                    >
+                    <v-list-item v-if="userType == 'company' && item.status == 1" @click="showTichnician(item)">
                       <v-list-item-title style="cursor: pointer">
                         <v-icon color="green" small> mdi-account-tie</v-icon>
                         Technician
                       </v-list-item-title>
                     </v-list-item>
-                    <v-list-item
-                      @click="startJob(item)"
-                      v-if="
-                        userType == 'technician' &&
-                        item.status == 1 &&
-                        item.job_start_datetime == null
-                      "
-                    >
+                    <v-list-item @click="startJob(item)" v-if="
+                      userType == 'technician' &&
+                      item.status == 1 &&
+                      item.job_start_datetime == null
+                    ">
                       <v-list-item-title style="cursor: pointer">
                         <v-icon color="green" small> mdi-button-pointer</v-icon>
                         Start Job
                       </v-list-item-title>
                     </v-list-item>
-                    <v-list-item
-                      @click="testSensors(item)"
-                      v-if="
-                        userType == 'technician' &&
-                        item.status == 1 &&
-                        item.job_start_datetime != null
-                      "
-                    >
+                    <v-list-item @click="testSensors(item)" v-if="
+                      userType == 'technician' &&
+                      item.status == 1 &&
+                      item.job_start_datetime != null
+                    ">
                       <v-list-item-title style="cursor: pointer">
                         <v-icon color="green" small> mdi-button-pointer</v-icon>
                         Testing
                       </v-list-item-title>
                     </v-list-item>
-                    <v-list-item
-                      v-if="
-                        userType == 'technician' &&
-                        item.status == 1 &&
-                        item.job_start_datetime != null
-                      "
-                      @click="closeTicket(item)"
-                    >
+                    <v-list-item v-if="
+                      userType == 'technician' &&
+                      item.status == 1 &&
+                      item.job_start_datetime != null
+                    " @click="closeTicket(item)">
                       <v-list-item-title style="cursor: pointer">
                         <v-icon color="red" small> mdi-close-box</v-icon>
                         Close Job
@@ -867,7 +623,7 @@ export default {
 
     try {
       if (window) this.browserHeight = window.innerHeight;
-    } catch (e) {}
+    } catch (e) { }
     await this.getCustomersList();
     await this.getTechniciansList();
   },
@@ -1057,7 +813,7 @@ export default {
         filterSensorname = this.eventFilter;
       }
 
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/device_armed_logs_print_pdf";
       if (option == "excel") url += "/device_armed_logs_export_excel";
       if (option == "download") url += "/device_armed_logs_download_pdf";

@@ -11,67 +11,32 @@
         <v-card class="elevation-0 p-2" style="padding: 5px">
           <v-row class="pt-0">
             <v-col cols="6" dense>
-              <v-text-field
-                label="Camera Title"
-                dense
-                small
-                outlined
-                type="text"
-                v-model="payload_camera.title"
-                hide-details
-              ></v-text-field>
-              <span
-                v-if="primary_errors && primary_errors.title"
-                class="text-danger mt-2"
-                >{{ primary_errors.title[0] }}</span
-              >
+              <v-text-field label="Camera Title" dense small outlined type="text" v-model="payload_camera.title"
+                hide-details></v-text-field>
+              <span v-if="primary_errors && primary_errors.title" class="text-danger mt-2">{{ primary_errors.title[0]
+                }}</span>
             </v-col>
             <v-col cols="6" dense>
-              <v-text-field
-                label="Display Order"
-                dense
-                small
-                outlined
-                type="number"
-                v-model="payload_camera.display_order"
-                hide-details
-              ></v-text-field>
-              <span
-                v-if="primary_errors && primary_errors.display_order"
-                class="text-danger mt-2"
-                >{{ primary_errors.display_order[0] }}</span
-              >
+              <v-text-field label="Display Order" dense small outlined type="number"
+                v-model="payload_camera.display_order" hide-details></v-text-field>
+              <span v-if="primary_errors && primary_errors.display_order" class="text-danger mt-2">{{
+                primary_errors.display_order[0] }}</span>
             </v-col>
           </v-row>
           <v-row>
             <v-col cols="12" dense>
-              <v-text-field
-                label="Camera URL"
-                dense
-                small
-                outlined
-                v-model="payload_camera.camera_url"
-                hide-details
-              ></v-text-field>
-              <span
-                v-if="primary_errors && primary_errors.camera_url"
-                class="text-danger mt-2"
-                >{{ primary_errors.camera_url[0] }}</span
-              >
+              <v-text-field label="Camera URL" dense small outlined v-model="payload_camera.camera_url"
+                hide-details></v-text-field>
+              <span v-if="primary_errors && primary_errors.camera_url" class="text-danger mt-2">{{
+                primary_errors.camera_url[0] }}</span>
             </v-col>
           </v-row>
 
           <v-row>
             <v-col cols="12" class="text-right">
-              <v-btn
-                small
-                :loading="loading"
-                color="primary"
-                @click="submit_primary"
-              >
+              <v-btn small :loading="loading" color="primary" @click="submit_primary">
                 Submit
-              </v-btn></v-col
-            >
+              </v-btn></v-col>
           </v-row>
         </v-card>
       </v-col>
@@ -105,7 +70,7 @@ export default {
       attachment: "",
       title: "",
       display_order: "",
-      camera_url: process.env.CAMERA_RTMP,
+      camera_url: this.$env.settings.CAMERA_RTMP,
     },
 
     e1: 1,
@@ -124,7 +89,7 @@ export default {
   created() {
     this.payload_camera = {
       camera_url:
-        process.env.CAMERA_RTMP + "" + (this.building_cameras.length + 1),
+        this.$env.settings.CAMERA_RTMP + "" + (this.building_cameras.length + 1),
     };
     this.preloader = false;
     // this.getBranchesList();

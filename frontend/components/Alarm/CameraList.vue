@@ -9,31 +9,20 @@
       <v-card>
         <v-card-title dense class="popup_background_noviolet">
           <span style="color: black111">
-            {{ editItem ? editItem.title : "---" }}</span
-          >
+            {{ editItem ? editItem.title : "---" }}</span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="dialogViewPhotos = false"
-            outlined
-          >
+          <v-icon style="color: black3333" @click="dialogViewPhotos = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text>
           <v-container style="min-height: 100px">
-            <v-img
-              :src="editItem ? editItem.picture : '/no-business_profile.png'"
-              aspect-ratio="1"
-              class="grey222 lighten-2"
-            >
+            <v-img :src="editItem ? editItem.picture : '/no-business_profile.png'" aspect-ratio="1"
+              class="grey222 lighten-2">
               <template v-slot:placeholder>
                 <v-row class="fill-height ma-0" align="center" justify="center">
-                  <v-progress-circular
-                    indeterminate
-                    color="grey lighten-5"
-                  ></v-progress-circular>
+                  <v-progress-circular indeterminate color="grey lighten-5"></v-progress-circular>
                 </v-row>
               </template>
             </v-img>
@@ -46,28 +35,18 @@
         <v-card-title dense class="popup_background_noviolet">
           <span style="color: black111"> Camera </span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="
-              closeDialog();
-              dialogEditPhotos = false;
-            "
-            outlined
-          >
+          <v-icon style="color: black3333" @click="
+            closeDialog();
+          dialogEditPhotos = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text>
           <v-container style="min-height: 100px">
-            <EditCustomerCamera
-              :key="key"
-              :customer_id="customer_id"
-              @closeDialog="closeDialog"
-              :editId="editId"
-              :item="editItem"
-              :building_cameras="building_cameras"
-            />
+            <EditCustomerCamera :key="key" :customer_id="customer_id" @closeDialog="closeDialog" :editId="editId"
+              :item="editItem" :building_cameras="building_cameras" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -82,18 +61,8 @@
           {{ cameraSelected ? cameraSelected.camera_url : "---" }}</span
         > -->
       </v-col>
-      <v-col
-        v-if="!isMapviewOnly && isEditable"
-        class="text-right"
-        style="max-width: 150px"
-      >
-        <v-btn
-          :loading="loading"
-          color="primary"
-          @click="newPhoto()"
-          dense
-          x-small
-        >
+      <v-col v-if="!isMapviewOnly && isEditable" class="text-right" style="max-width: 150px">
+        <v-btn :loading="loading" color="primary" @click="newPhoto()" dense x-small>
           + Camera
         </v-btn>
       </v-col>
@@ -102,38 +71,24 @@
         <v-tabs v-model="tab" right show-arrows class="tabswidthalignment">
           <v-tabs-slider></v-tabs-slider>
 
-          <v-tab
-            v-for="(item, camindex) in building_cameras"
-            :key="'camera' + item.id"
-            :href="'#tab' + item.id"
-            @click="selectCamera(item)"
-            ><v-icon color="green" size="18">mdi-webcam</v-icon
-            >{{ caps(item.title) }}</v-tab
-          >
+          <v-tab v-for="(item, camindex) in building_cameras" :key="'camera' + item.id" :href="'#tab' + item.id"
+            @click="selectCamera(item)"><v-icon color="green" size="18">mdi-webcam</v-icon>{{ caps(item.title)
+            }}</v-tab>
           <v-tabs-items v-model="tab">
-            <v-tab-item
-              v-for="(item, tabindex) in building_cameras"
-              :key="'camera2' + item.id"
-              :value="'tab' + item.id"
-              ><v-row style="margin-top: -5px">
+            <v-tab-item v-for="(item, tabindex) in building_cameras" :key="'camera2' + item.id"
+              :value="'tab' + item.id"><v-row style="margin-top: -5px">
                 <v-col cols="8">
                   <!-- <h3>{{ caps(item.title) }}</h3> -->
                 </v-col>
-                <v-col cols="4" class="text-right" style="margin-top: -10px"
-                  ><v-menu bottom left v-if="!isMapviewOnly && isEditable">
+                <v-col cols="4" class="text-right" style="margin-top: -10px"><v-menu bottom left
+                    v-if="!isMapviewOnly && isEditable">
                     <template v-slot:activator="{ on, attrs }">
-                      <v-btn
-                        dark-2
-                        icon
-                        v-bind="attrs"
-                        v-on="on"
-                        style="
+                      <v-btn dark-2 icon v-bind="attrs" v-on="on" style="
                           position: absolute;
                           color: black;
                           right: -7px;
                           z-index: 9999;
-                        "
-                      >
+                        ">
                         <v-icon>mdi-dots-vertical</v-icon>
                       </v-btn>
                     </template>
@@ -148,45 +103,28 @@
                         </v-list-item-title>
                       </v-list-item> -->
 
-                      <v-list-item
-                        v-if="can('device_notification_contnet_view')"
-                        @click="editPhoto(item)"
-                      >
+                      <v-list-item v-if="can('device_notification_contnet_view')" @click="editPhoto(item)">
                         <v-list-item-title style="cursor: pointer">
                           <v-icon color="secondary" small> mdi-pencil </v-icon>
                           Edit
                         </v-list-item-title>
                       </v-list-item>
 
-                      <v-list-item
-                        v-if="can('device_notification_contnet_delete')"
-                        @click="deletePhoto(item.id)"
-                      >
+                      <v-list-item v-if="can('device_notification_contnet_delete')" @click="deletePhoto(item.id)">
                         <v-list-item-title style="cursor: pointer">
                           <v-icon color="error" small> mdi-delete </v-icon>
                           Delete
                         </v-list-item-title>
                       </v-list-item>
                     </v-list>
-                  </v-menu></v-col
-                >
+                  </v-menu></v-col>
               </v-row>
 
               <v-row>
-                <v-col
-                  cols="12"
-                  class="text-center"
-                  style="border: 1px solid #ddd"
-                >
-                  <iframe
-                    v-if="getCameraUrl(item) != ''"
-                    :src="getCameraUrl(item)"
-                    width="100%"
-                    style="border: 0; min-height: 510px; height: auto"
-                    allowfullscreen=""
-                    loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"
-                  ></iframe>
+                <v-col cols="12" class="text-center" style="border: 1px solid #ddd">
+                  <iframe v-if="getCameraUrl(item) != ''" :src="getCameraUrl(item)" width="100%"
+                    style="border: 0; min-height: 510px; height: auto" allowfullscreen="" loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </v-col>
               </v-row>
             </v-tab-item>
@@ -346,7 +284,7 @@ export default {
     dialogViewPhotos: false,
   }),
   created() {
-    this.cameraServerURL = process.env.CAMERA_RTMP;
+    this.cameraServerURL = this.$env.settings.CAMERA_RTMP;
     this.preloader = false;
     this.getDatafromapi();
   },

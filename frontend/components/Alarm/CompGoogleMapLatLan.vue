@@ -2,14 +2,10 @@
   <div>
     <!-- <v-dialog v-model="dialog" max-width="200px">TTTTTTTTTTT</v-dialog> -->
 
-    <div
-      :id="'mapCustomer' + contact_id"
-      :style="
-        'border-radious:10%; height:' +
-        (mapheight ? mapheight : '210px') +
-        ' ; width: 100%'
-      "
-    ></div>
+    <div :id="'mapCustomer' + contact_id" :style="'border-radious:10%; height:' +
+      (mapheight ? mapheight : '210px') +
+      ' ; width: 100%'
+      "></div>
 
     <!-- <v-btn
       class="text-right"
@@ -143,14 +139,14 @@ export default {
         let colorcodes = this.$utils.getAlarmIcons();
 
         // let iconURL =
-        //   process.env.BACKEND_URL2 + "/google_map_icons/google_customer.png";
+        //   this.$env.settings.BACKEND_URL2 + "/google_map_icons/google_customer.png";
         // if (this.alarm?.alarm_type) {
         //   const colorObject = colorcodes[this.alarm.alarm_type.toLowerCase()];
         //   if (colorObject) iconURL = colorObject.image;
         // }
 
         let iconURL =
-          process.env.BACKEND_APP_URL + "/google_map_icons/google_online.png";
+          this.$env.settings.BACKEND_APP_URL + "/google_map_icons/google_online.png";
 
         let colorObject = this.getAlarmColorObject(this.alarm);
         if (colorObject) iconURL = colorObject.image;
@@ -179,7 +175,7 @@ export default {
             content: content,
           });
           // this.mapMarkersLabelsList.push(markerLabel); // ✅ Track marker
-        } catch (e) {}
+        } catch (e) { }
         const marker = new google.maps.Marker({
           position,
           map: this.map,
@@ -194,7 +190,7 @@ export default {
         this.map.panTo(position);
         if (this.alarm) {
           let googleDirectionIcon =
-            process.env.APP_URL + "/icons/google_map.jpg";
+            this.$env.settings.APP_URL + "/icons/google_map.jpg";
           let html = `
             <table style="width:250px; min-height:100px" id="infowindow-content-${this.alarm.device.customer.id}">
 

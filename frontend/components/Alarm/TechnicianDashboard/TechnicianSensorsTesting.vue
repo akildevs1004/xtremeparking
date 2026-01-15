@@ -9,25 +9,15 @@
     <v-row>
       <v-col class="mt-0 pt-0">
         <v-card elevation="0" class="mt-0">
-          <v-data-table
-            dense
-            :headers="headers"
-            :items="data"
-            :loading="loading"
-            :options.sync="options"
-            :items-per-page="-1"
-            :footer-props="{
+          <v-data-table dense :headers="headers" :items="data" :loading="loading" :options.sync="options"
+            :items-per-page="-1" :footer-props="{
               itemsPerPageOptions: [10, 50, 100, 500, 1000],
-            }"
-            class="elevation-1"
-            fixed-header
-            :disable-sort="true"
-          >
+            }" class="elevation-1" fixed-header :disable-sort="true">
             <template v-slot:item.sno="{ item, index }">
               {{
                 currentPage
                   ? (currentPage - 1) * perPage +
-                    (cumulativeIndex + data.indexOf(item))
+                  (cumulativeIndex + data.indexOf(item))
                   : ""
               }}
             </template>
@@ -46,37 +36,17 @@
 
             <template v-slot:item.test_status="{ item }">
               <div>
-                <v-btn
-                  v-if="testingStatus == false"
-                  small
-                  color="primary"
-                  fill
-                  @click="sensor_test(item)"
-                  >Test</v-btn
-                >
-                <v-btn
-                  v-if="testingStatus == true && item.test_status == 1"
-                  :loading="true"
-                  small
-                  color="red"
-                  fill
-                  @click="stop_test(item)"
-                >
+                <v-btn v-if="testingStatus == false" small color="primary" fill @click="sensor_test(item)">Test</v-btn>
+                <v-btn v-if="testingStatus == true && item.test_status == 1" :loading="true" small color="red" fill
+                  @click="stop_test(item)">
                 </v-btn>
               </div>
             </template>
             <template v-slot:item.test_result="{ item }">
               <!-- {{ item.test_result }} -->
-              <v-icon
-                v-if="item.test_result == null || item.test_result == 0"
-                small
-                color="red"
-                fill
-                >mdi-close-circle-outline</v-icon
-              >
-              <v-icon v-else-if="item.test_result == 1" small color="green" fill
-                >mdi-check-circle</v-icon
-              >
+              <v-icon v-if="item.test_result == null || item.test_result == 0" small color="red"
+                fill>mdi-close-circle-outline</v-icon>
+              <v-icon v-else-if="item.test_result == 1" small color="green" fill>mdi-check-circle</v-icon>
 
               <v-icon v-else small color="brown" fill>checking...</v-icon>
               <div class="secondary-value1" v-if="item.test_result != 2">
@@ -90,17 +60,13 @@
     <v-row>
       <v-col></v-col>
       <v-col style="max-width: 100px">
-        <span style="padding: 5px" @click="downloadOptions('print')"
-          ><img src="/icons/icon_print.png" class="iconsize"
-        /></span>
-        <span style="padding: 5px" @click="downloadOptions('download')"
-          ><img src="/icons/icon_pdf.png" class="iconsize"
-        /></span>
+        <span style="padding: 5px" @click="downloadOptions('print')"><img src="/icons/icon_print.png"
+            class="iconsize" /></span>
+        <span style="padding: 5px" @click="downloadOptions('download')"><img src="/icons/icon_pdf.png"
+            class="iconsize" /></span>
       </v-col>
       <v-col style="max-width: 150px">
-        <v-btn small fill color="primary" @click="saveResults()"
-          >Save Results</v-btn
-        >
+        <v-btn small fill color="primary" @click="saveResults()">Save Results</v-btn>
       </v-col>
 
       <!-- <v-col v-if="savedResults" style="max-width: 150px">
@@ -266,7 +232,7 @@ export default {
       }
     },
     downloadOptions(option) {
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/technician_test_results_print_pdf";
       if (option == "excel") url += "/technician_test_results_export_excel";
       if (option == "download") url += "/technician_test_results_download_pdf";

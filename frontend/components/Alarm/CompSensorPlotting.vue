@@ -13,66 +13,30 @@
     </div>
 
     <v-row>
-      <v-col
-        v-if="IMG_PLOTTING_WIDTH"
-        :style="'padding: 0px;max-width:' + IMG_PLOTTING_WIDTH + ''"
-      >
-        <v-card
-          ><v-card-text elevation="3" style="border: 0px solid #ddd"
-            ><v-row>
-              <v-col
-                cols="12"
-                :style="'position: relative; padding: 0px; text-align: center;'"
-                class="dropzone"
-                @drop="onDrop"
-                @dragover="allowDrop"
-              >
+      <v-col v-if="IMG_PLOTTING_WIDTH" :style="'padding: 0px;max-width:' + IMG_PLOTTING_WIDTH + ''">
+        <v-card><v-card-text elevation="3" style="border: 0px solid #ddd"><v-row>
+              <v-col cols="12" :style="'position: relative; padding: 0px; text-align: center;'" class="dropzone"
+                @drop="onDrop" @dragover="allowDrop">
                 <!-- <v-img :src="item.picture" style="width: 100%; height: auto" /> -->
 
-                <img
-                  :src="item.picture"
-                  :width="IMG_PLOTTING_WIDTH"
-                  :height="IMG_PLOTTING_HEIGHT"
-                />
+                <img :src="item.picture" :width="IMG_PLOTTING_WIDTH" :height="IMG_PLOTTING_HEIGHT" />
 
                 <span v-if="!loading">
-                  <div
-                    v-for="(plotting, index) in plottings"
-                    :key="index"
-                    style="position: absolute"
-                    :style="{ top: plotting.top, left: plotting.left }"
-                    draggable="false"
-                  >
+                  <div v-for="(plotting, index) in plottings" :key="index" style="position: absolute"
+                    :style="{ top: plotting.top, left: plotting.left }" draggable="false">
                     <!-- <v-icon v-if="plotting.alarm_event" class="alarm">
                             mdi-alarm-light
                           </v-icon> -->
-                    <v-img
-                      :title="plotting.sensorTypeName"
-                      draggable="true"
-                      @dragstart="dragStart($event, index)"
-                      style="width: 40px"
-                      :src="plotting.sensorImage"
-                      @contextmenu.prevent="showContextMenu($event, index)"
-                    ></v-img>
+                    <v-img :title="plotting.sensorTypeName" draggable="true" @dragstart="dragStart($event, index)"
+                      style="width: 40px" :src="plotting.sensorImage"
+                      @contextmenu.prevent="showContextMenu($event, index)"></v-img>
 
-                    <v-card
-                      :style="
-                        'border: 0px solid black; color:black; ' +
-                        'position:relative; left:-45px;z-index:9999'
-                      "
-                      class="context-menu"
-                      v-if="menuVisible && selectedImageId == index"
-                    >
+                    <v-card :style="'border: 0px solid black; color:black; ' +
+                      'position:relative; left:-45px;z-index:9999'
+                      " class="context-menu" v-if="menuVisible && selectedImageId == index">
                       <v-card-text elevation="2">
-                        <v-btn
-                          x-small
-                          dense
-                          color="primary"
-                          @click="unmapSensor(index)"
-                          primary
-                          fill
-                          >Delete Sensor</v-btn
-                        >
+                        <v-btn x-small dense color="primary" @click="unmapSensor(index)" primary fill>Delete
+                          Sensor</v-btn>
                       </v-card-text>
                     </v-card>
                   </div>
@@ -86,84 +50,43 @@
                 @dragover="allowDrop"
                 >DELETE ZONE - Drag Icon here to delete
               </v-col> -->
-            </v-row></v-card-text
-          ></v-card
-        ></v-col
-      >
+            </v-row></v-card-text></v-card></v-col>
 
-      <v-col
-        style="height: 500px; overflow: auto"
-        class="sensorPlottingdevices"
-      >
+      <v-col style="height: 500px; overflow: auto" class="sensorPlottingdevices">
         <v-expansion-panels v-model="panelOpenList" multiple>
-          <v-expansion-panel
-            :key="'panelOpenList' + index"
-            v-for="(device, index) in devices"
-          >
-            <v-expansion-panel-header
-              style="background-color: rgb(32 56 100); color: #fff"
-            >
+          <v-expansion-panel :key="'panelOpenList' + index" v-for="(device, index) in devices">
+            <v-expansion-panel-header style="background-color: rgb(32 56 100); color: #fff">
               {{ device.name }}
             </v-expansion-panel-header>
             <v-expansion-panel-content class="sensorplotting">
               <div v-for="(plotting, plotIndex) in plottings" :key="plotIndex">
-                <div
-                  v-if="device.id == plotting.device_id"
-                  style="color: green"
-                >
-                  <v-img
-                    :title="plotting.sensorTypeName"
-                    v-if="checkIsSensorAddedAnyPhoto(plotting) > 0"
-                    :src="
-                      getSensorTypeRelaventImage(
-                        getDeviceCategory(device.id),
-                        plotting
-                      )
-                    "
-                    disabled="true"
-                    draggable="false"
-                    style="
+                <div v-if="device.id == plotting.device_id" style="color: green">
+                  <v-img :title="plotting.sensorTypeName" v-if="checkIsSensorAddedAnyPhoto(plotting) > 0" :src="getSensorTypeRelaventImage(
+                    getDeviceCategory(device.id),
+                    plotting
+                  )
+                    " disabled="true" draggable="false" style="
                       width: 40px;
                       float: left;
                       margin: 5px;
                       filter: grayscale(100%);
-                    "
-                  ></v-img>
-                  <v-img
-                    :title="plotting.sensorTypeName"
-                    v-else-if="plotting.sensorTypeName == null"
-                    draggable="true"
-                    @dragstart="dragStart($event, plotIndex)"
-                    style="width: 40px; float: left; margin: 5px"
-                    :src="
-                      getSensorTypeRelaventImage(
-                        getDeviceCategory(device.id),
-                        plotting
-                      )
-                    "
-                  ></v-img>
-                  <v-img
-                    :title="plotting.sensorTypeName"
-                    v-else-if="checkIsSensorAddedAnyPhoto(plotting) == 0"
-                    draggable="true"
-                    @dragstart="dragStart($event, plotIndex)"
-                    style="width: 40px; float: left; margin: 5px"
-                    :src="plotting.sensorImage"
-                  ></v-img>
+                    "></v-img>
+                  <v-img :title="plotting.sensorTypeName" v-else-if="plotting.sensorTypeName == null" draggable="true"
+                    @dragstart="dragStart($event, plotIndex)" style="width: 40px; float: left; margin: 5px" :src="getSensorTypeRelaventImage(
+                      getDeviceCategory(device.id),
+                      plotting
+                    )
+                      "></v-img>
+                  <v-img :title="plotting.sensorTypeName" v-else-if="checkIsSensorAddedAnyPhoto(plotting) == 0"
+                    draggable="true" @dragstart="dragStart($event, plotIndex)"
+                    style="width: 40px; float: left; margin: 5px" :src="plotting.sensorImage"></v-img>
 
-                  <v-img
-                    v-else
-                    :title="plotting.sensorTypeName"
-                    disabled="true"
-                    draggable="false"
-                    style="
+                  <v-img v-else :title="plotting.sensorTypeName" disabled="true" draggable="false" style="
                       width: 40px;
                       float: left;
                       margin: 5px;
                       filter: grayscale(100%);
-                    "
-                    :src="plotting.sensorImage"
-                  ></v-img>
+                    " :src="plotting.sensorImage"></v-img>
                 </div>
               </div>
             </v-expansion-panel-content>
@@ -555,7 +478,7 @@ export default {
           this.snackbar = true;
           this.response = "Unmap Sensor is updated successfully";
         }
-      } catch (e) {}
+      } catch (e) { }
     },
     async deleteOnDrop(event) {
       if (confirm(`Are you sure you want to delete`)) {
@@ -618,7 +541,7 @@ export default {
 
         // Default values
         // element.sensorImage =
-        //   process.env.BACKEND_URL2 + "/sensor_type_icons/" + "other_sensor.png";
+        //   this.$env.settings.BACKEND_URL2 + "/sensor_type_icons/" + "other_sensor.png";
 
         element.sensorImage = "/sensor_type_icons/" + "other_sensor.png";
         element.sensorTypeName = "Unknown";
@@ -632,7 +555,7 @@ export default {
             "/sensor_type_icons/" + (find ? find.image : "other_sensor.png");
           element.sensorTypeName = element2.sensor_type;
           // element.sensorImage =
-          //   process.env.BACKEND_URL2 +
+          //   this.$env.settings.BACKEND_URL2 +
           //   "/sensor_type_icons/" +
           //   (find ? find.image : "other_sensor.png");
           // element.sensorTypeName = element2.sensor_type;
@@ -652,7 +575,7 @@ export default {
             );
 
             return (
-              process.env.BACKEND_URL2 +
+              this.$env.settings.BACKEND_URL2 +
               "/sensor_type_icons/" +
               (find ? find.image : "other_sensor.png")
             );
@@ -662,7 +585,7 @@ export default {
 
       return "/sensor_type_icons/" + "/other_sensor.png";
       return (
-        process.env.BACKEND_URL2 + "/sensor_type_icons/" + "/other_sensor.png"
+        this.$env.settings.BACKEND_URL2 + "/sensor_type_icons/" + "/other_sensor.png"
       ); // Default if no match
 
       // return this.$utils.getSensorTypeRelaventImage(

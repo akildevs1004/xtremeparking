@@ -1,60 +1,36 @@
 <template>
   <div>
-    <v-dialog
-      v-model="dialogAlarmPopupNotificationStatus"
-      transition="dialog-top-transition"
-      max-width="1000"
-      style="z-index: 9999"
-      key="key"
-    >
+    <v-dialog v-model="dialogAlarmPopupNotificationStatus" transition="dialog-top-transition" max-width="1000"
+      style="z-index: 9999" key="key">
       <template v-slot:default="dialog">
         <v-card style="z-index: 9999">
-          <v-card-title
-            dense
-            class="error popup_background_red"
-            style="
+          <v-card-title dense class="error popup_background_red" style="
               text-align: center !important;
               padding-left: 30%;
               color: #fff !important;
               background-color: red;
-            "
-          >
+            ">
             <div style="text-align: right; width: 60%">
               Attention : Alarm Notification(s)
             </div>
             <v-spacer></v-spacer>
-            <v-icon
-              style="color: #fff"
-              @click="wait5MinutesNextNotification()"
-              outlined
-            >
+            <v-icon style="color: #fff" @click="wait5MinutesNextNotification()" outlined>
               mdi mdi-close-circle
             </v-icon>
           </v-card-title>
 
           <v-card-text style="padding-left: 0px">
-            <AlarmPopupAllAlarmEvents
-              :items="notificationAlarmDevicesContent"
-              @callwait5MinutesNextNotification="wait5MinutesNotification"
-              @callReset5Minutes="Reset5Minutes"
-              :key="popupKey"
-              :alarm_icons="alarm_icons"
-            />
+            <AlarmPopupAllAlarmEvents :items="notificationAlarmDevicesContent"
+              @callwait5MinutesNextNotification="wait5MinutesNotification" @callReset5Minutes="Reset5Minutes"
+              :key="popupKey" :alarm_icons="alarm_icons" />
           </v-card-text>
         </v-card>
       </template>
     </v-dialog>
     <v-row>
       <v-col>
-        <v-menu
-          nudge-bottom="50"
-          transition="scale-transition"
-          origin="center center"
-          bottom
-          left
-          min-width="200"
-          nudge-left="20"
-        >
+        <v-menu nudge-bottom="50" transition="scale-transition" origin="center center" bottom left min-width="200"
+          nudge-left="20">
           <template v-slot:activator="{ on, attrs }">
             <v-btn icon color="red" v-bind="attrs" v-on="on">
               <v-avatar size="35" style="border: 1px solid #6946dd">
@@ -85,7 +61,7 @@
                 <v-list-item-content>
                   <v-list-item-title class="black--text">{{
                     displayName
-                  }}</v-list-item-title>
+                    }}</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
               <v-list-item @click="gotoDashboard()">
@@ -93,9 +69,7 @@
                   <v-icon>mdi-view-dashboard</v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
-                  <v-list-item-title class="black--text"
-                    >Dashboard</v-list-item-title
-                  >
+                  <v-list-item-title class="black--text">Dashboard</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
               <v-list-item @click="logout">
@@ -103,9 +77,7 @@
                   <v-icon>mdi-logout</v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
-                  <v-list-item-title class="black--text"
-                    >Logout</v-list-item-title
-                  >
+                  <v-list-item-title class="black--text">Logout</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
             </v-list-item-group>
@@ -131,17 +103,9 @@
       </v-col>
 
       <v-col class="text-right" style="max-width: 85px; padding-left: 0px">
-        <v-icon
-          v-if="displayFullScreenButton()"
-          class="mr-2"
-          color="red"
-          @click="openWindow"
-          >mdi-overscan</v-icon
-        >
+        <v-icon v-if="displayFullScreenButton()" class="mr-2" color="red" @click="openWindow">mdi-overscan</v-icon>
 
-        <v-icon v-if="!displayFullScreenButton()" @click="refreshEventsList()"
-          >mdi-refresh</v-icon
-        >
+        <v-icon v-if="!displayFullScreenButton()" @click="refreshEventsList()">mdi-refresh</v-icon>
         <!-- <v-menu
           style="z-index: 9999 !important"
           bottom
@@ -308,7 +272,7 @@ export default {
       const width = window.screen.width;
       const height = window.screen.height;
       window.open(
-        process.env.APP_URL + "/operator/eventslist",
+        this.$env.settings.APP_URL + "/operator/eventslist",
         "_blank",
         `width=${width},height=${height},toolbar=yes, location=yes,resizable=yes,scrollbars=yes`
       );
@@ -382,8 +346,8 @@ export default {
             let notification = {
               title: element.device?.customer?.building_name
                 ? element.device.customer.building_name +
-                  " - " +
-                  element.alarm_type
+                " - " +
+                element.alarm_type
                 : "---",
               date_from: element?.alarm_start_datetime,
               click: "/alarm/allevents",

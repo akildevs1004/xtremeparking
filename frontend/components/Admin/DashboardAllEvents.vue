@@ -9,19 +9,11 @@
       <v-card>
         <v-card-title dense class="popup_background_noviolet">
           <span>Alarm Event Track#{{ selecteAlarm?.id }}</span>
-          <v-spacer></v-spacer
-          ><v-icon
-            style="padding-right: 20px"
-            @click="alarmNotesPrint(selecteAlarm?.id, 'download')"
-            outlined
-          >
+          <v-spacer></v-spacer><v-icon style="padding-right: 20px"
+            @click="alarmNotesPrint(selecteAlarm?.id, 'download')" outlined>
             mdi-download-box-outline
           </v-icon>
-          <v-icon
-            style="padding-right: 20px"
-            @click="alarmNotesPrint(selecteAlarm?.id, 'print')"
-            outlined
-          >
+          <v-icon style="padding-right: 20px" @click="alarmNotesPrint(selecteAlarm?.id, 'print')" outlined>
             mdi-printer-outline
           </v-icon>
           <v-icon @click="dialogViewAlarmFormat = false" outlined>
@@ -31,11 +23,7 @@
 
         <v-card-text style="padding: 0px">
           <v-container style="min-height: 100px; padding-left: 0px">
-            <AlarmNotesFormatView
-              v-if="selecteAlarm"
-              :alarm="selecteAlarm"
-              :key="key"
-            />
+            <AlarmNotesFormatView v-if="selecteAlarm" :alarm="selecteAlarm" :key="key" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -45,25 +33,17 @@
         <v-card-title dense class="popup_background_noviolet">
           <span>Operator Logs #{{ eventId }}</span>
           <v-spacer></v-spacer>
-          <v-icon
-            @click="
-              closeDialog();
-              dialogViewLogs = false;
-            "
-            outlined
-          >
+          <v-icon @click="
+            closeDialog();
+          dialogViewLogs = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text style="padding: 0px">
           <v-container style="min-height: 100px; padding-left: 0px">
-            <SecurityAlarmNotes
-              v-if="customer"
-              :alarmId="eventId"
-              :customer="customer"
-              :key="key"
-            />
+            <SecurityAlarmNotes v-if="customer" :alarmId="eventId" :customer="customer" :key="key" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -73,28 +53,18 @@
         <v-card-title dense class="popup_background_noviolet">
           <span>Alarm - Forward Details #{{ eventId }}</span>
           <v-spacer></v-spacer>
-          <v-icon
-            @click="
-              closeDialog();
-              dialogForwardEventDetails = false;
-            "
-            outlined
-          >
+          <v-icon @click="
+            closeDialog();
+          dialogForwardEventDetails = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text>
           <v-container style="min-height: 100px">
-            <AlarmForwardEvent
-              name="AlramCloseNotes"
-              :key="key"
-              :customer_id="customer_id"
-              :customer="customer"
-              @closeDialog="closeDialog"
-              :alarm_id="eventId"
-              :popupEventText="popupEventText"
-            />
+            <AlarmForwardEvent name="AlramCloseNotes" :key="key" :customer_id="customer_id" :customer="customer"
+              @closeDialog="closeDialog" :alarm_id="eventId" :popupEventText="popupEventText" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -104,27 +74,18 @@
         <v-card-title dense class="popup_background_noviolet">
           <span style="color: black111">Alarm Event Close/Turn off </span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="
-              closeDialog();
-              dialogCloseAlarm = false;
-            "
-            outlined
-          >
+          <v-icon style="color: black3333" @click="
+            closeDialog();
+          dialogCloseAlarm = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text>
           <v-container style="min-height: 100px">
-            <AlramCloseNotes
-              name="AlramCloseNotes"
-              :key="key"
-              :customer_id="customer_id"
-              @closeDialog="closeDialog"
-              :alarmId="eventId"
-            />
+            <AlramCloseNotes name="AlramCloseNotes" :key="key" :customer_id="customer_id" @closeDialog="closeDialog"
+              :alarmId="eventId" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -134,27 +95,18 @@
         <v-card-title dense class="popup_background_noviolet">
           <span style="color: black111">Alarm Notes </span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="
-              closeDialog();
-              dialogAddCustomerNotes = false;
-            "
-            outlined
-          >
+          <v-icon style="color: black3333" @click="
+            closeDialog();
+          dialogAddCustomerNotes = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text>
           <v-container style="min-height: 100px">
-            <EditAlarmCustomerEventNotes
-              name="EditAlarmCustomerEventNotes"
-              :key="key"
-              :customer_id="customer_id"
-              @closeDialog="closeDialog"
-              :alarmId="eventId"
-            />
+            <EditAlarmCustomerEventNotes name="EditAlarmCustomerEventNotes" :key="key" :customer_id="customer_id"
+              @closeDialog="closeDialog" :alarmId="eventId" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -164,28 +116,18 @@
         <v-card-title dense class="popup_background_noviolet">
           <span style="color: black111">Alarm Notes List</span>
           <v-spacer></v-spacer>
-          <v-icon
-            style="color: black3333"
-            @click="
-              closeDialog();
-              dialogNotesList = false;
-            "
-            outlined
-          >
+          <v-icon style="color: black3333" @click="
+            closeDialog();
+          dialogNotesList = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text>
           <v-container style="min-height: 100px">
-            <AlarmEventNotesListView
-              name="AlarmEventNotesListView"
-              :key="key"
-              :customer_id="customer_id"
-              @closeDialog="closeDialog"
-              :alarm_id="eventId"
-              showOptions="false"
-            />
+            <AlarmEventNotesListView name="AlarmEventNotesListView" :key="key" :customer_id="customer_id"
+              @closeDialog="closeDialog" :alarm_id="eventId" showOptions="false" />
           </v-container>
         </v-card-text>
       </v-card>
@@ -195,70 +137,36 @@
         <v-card-title dense class="popup_background_noviolet">
           <span>Alarm : {{ popupEventText }}</span>
           <v-spacer></v-spacer>
-          <v-icon
-            @click="
-              closeDialog();
-              dialogTabViewCustomer = false;
-            "
-            outlined
-          >
+          <v-icon @click="
+            closeDialog();
+          dialogTabViewCustomer = false;
+          " outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
 
         <v-card-text style="padding: 0px; overflow: hidden">
-          <AlarmEventCustomerContactsTabView
-            @closeCustomerDialog="closeCustomerDialog()"
-            :key="key"
-            :_customerID="viewCustomerId"
-            :alarmId="eventId"
-            :customer="customer"
-            :isPopup="true"
-          />
+          <AlarmEventCustomerContactsTabView @closeCustomerDialog="closeCustomerDialog()" :key="key"
+            :_customerID="viewCustomerId" :alarmId="eventId" :customer="customer" :isPopup="true" />
         </v-card-text>
       </v-card>
     </v-dialog>
     <v-row class="p-0" style="padding-top: 0px">
-      <v-col
-        cols="12"
-        class="text-right"
-        style="padding-top: 0px; z-index: 9; padding-right: 0px"
-      >
+      <v-col cols="12" class="text-right" style="padding-top: 0px; z-index: 9; padding-right: 0px">
         <v-row class="mt-0" v-if="!eventFilter">
           <v-col v-if="sensorItems.length > 1" cols="4" class="text-left mt-1">
-            <h4>Alarm Events</h4></v-col
-          >
+            <h4>Alarm Events</h4>
+          </v-col>
 
-          <v-col
-            :cols="sensorItems.length > 1 ? 8 : 12"
-            class="text-right"
-            style="width: 500px"
-          >
+          <v-col :cols="sensorItems.length > 1 ? 8 : 12" class="text-right" style="width: 500px">
             <v-row>
               <v-col>
-                <v-icon
-                  loading="true"
-                  @click="getDataFromApi(0)"
-                  class="mt-2 mr-2"
-                  >mdi-reload</v-icon
-                >
+                <v-icon loading="true" @click="getDataFromApi(0)" class="mt-2 mr-2">mdi-reload</v-icon>
 
-                <v-text-field
-                  style="padding-top: 7px; float: right; width: 180px"
-                  height="20"
-                  class="employee-schedule-search-box"
-                  @input="getDataFromApi(0)"
-                  v-model="commonSearch"
-                  label="Search"
-                  placeholder="ID,Name,location etc..."
-                  dense
-                  outlined
-                  type="text"
-                  append-icon="mdi-magnify"
-                  clearable
-                  hide-details
-                ></v-text-field
-              ></v-col>
+                <v-text-field style="padding-top: 7px; float: right; width: 180px" height="20"
+                  class="employee-schedule-search-box" @input="getDataFromApi(0)" v-model="commonSearch" label="Search"
+                  placeholder="ID,Name,location etc..." dense outlined type="text" append-icon="mdi-magnify" clearable
+                  hide-details></v-text-field></v-col>
               <!-- <v-col cols="3"
                     ><v-select
                       class="employee-schedule-search-box"
@@ -285,40 +193,24 @@
                     ></v-select>
                   </v-col> -->
               <v-col style="min-width: 100px; padding-right: 0px">
-                <v-select
-                  class="employee-schedule-search-box"
-                  style="
+                <v-select class="employee-schedule-search-box" style="
                     padding-top: 7px;
                     z-index: 999;
                     min-width: 100%;
                     width: 150px;
-                  "
-                  height="25px"
-                  outlined
-                  @change="getDataFromApi(0)"
-                  v-model="filterAlarmStatus"
-                  dense
-                  :items="[
+                  " height="25px" outlined @change="getDataFromApi(0)" v-model="filterAlarmStatus" dense :items="[
                     { id: null, name: 'All Events' },
 
                     { id: 1, name: 'Open' },
 
                     { id: 0, name: 'Closed' },
                     { id: 3, name: 'Forwarded' },
-                  ]"
-                  item-text="name"
-                  item-value="id"
-                ></v-select>
+                  ]" item-text="name" item-value="id"></v-select>
               </v-col>
               <v-col>
-                <CustomFilter
-                  style="float: left; padding-top: 5px; z-index: 999"
-                  @filter-attr="filterAttr"
-                  :default_date_from="date_from"
-                  :default_date_to="date_to"
-                  :defaultFilterType="1"
-                  :height="'30px'"
-              /></v-col>
+                <CustomFilter style="float: left; padding-top: 5px; z-index: 999" @filter-attr="filterAttr"
+                  :default_date_from="date_from" :default_date_to="date_to" :defaultFilterType="1" :height="'30px'" />
+              </v-col>
               <!-- <v-col cols="2" style="margin-top: 10px; margin-left: -16px">
                     <v-menu bottom right>
                       <template v-slot:activator="{ on, attrs }">
@@ -329,65 +221,41 @@
                           Print
                         </span>
                       </template>
-                      <v-list width="100" dense>
-                        <v-list-item @click="downloadOptions(`print`)">
-                          <v-list-item-title style="cursor: pointer">
-                            <v-row>
-                              <v-col cols="5"
-                                ><img
-                                  style="padding-top: 5px"
-                                  src="/icons/icon_print.png"
-                                  class="iconsize"
-                              /></v-col>
-                              <v-col
-                                cols="7"
-                                style="padding-left: 0px; padding-top: 19px"
-                              >
-                                Print
-                              </v-col>
-                            </v-row>
-                          </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item @click="downloadOptions('download')">
-                          <v-list-item-title style="cursor: pointer">
-                            <v-row>
-                              <v-col cols="5"
-                                ><img
-                                  style="padding-top: 5px"
-                                  src="/icons/icon_pdf.png"
-                                  class="iconsize"
-                              /></v-col>
-                              <v-col
-                                cols="7"
-                                style="padding-left: 0px; padding-top: 19px"
-                              >
-                                PDF
-                              </v-col>
-                            </v-row>
-                          </v-list-item-title>
-                        </v-list-item>
+<v-list width="100" dense>
+  <v-list-item @click="downloadOptions(`print`)">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_print.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          Print
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
+  <v-list-item @click="downloadOptions('download')">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_pdf.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          PDF
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
 
-                        <v-list-item @click="downloadOptions('excel')">
-                          <v-list-item-title style="cursor: pointer">
-                            <v-row>
-                              <v-col cols="5"
-                                ><img
-                                  style="padding-top: 5px"
-                                  src="/icons/icon_excel.png"
-                                  class="iconsize"
-                              /></v-col>
-                              <v-col
-                                cols="7"
-                                style="padding-left: 0px; padding-top: 19px"
-                              >
-                                EXCEL
-                              </v-col>
-                            </v-row>
-                          </v-list-item-title>
-                        </v-list-item>
-                      </v-list>
-                    </v-menu>
-                  </v-col> -->
+  <v-list-item @click="downloadOptions('excel')">
+    <v-list-item-title style="cursor: pointer">
+      <v-row>
+        <v-col cols="5"><img style="padding-top: 5px" src="/icons/icon_excel.png" class="iconsize" /></v-col>
+        <v-col cols="7" style="padding-left: 0px; padding-top: 19px">
+          EXCEL
+        </v-col>
+      </v-row>
+    </v-list-item-title>
+  </v-list-item>
+</v-list>
+</v-menu>
+</v-col> -->
             </v-row>
           </v-col>
         </v-row>
@@ -396,19 +264,10 @@
           <v-col cols="12" style="padding: 0px; margin-top: -30px">
             <v-card color="basil" flat>
               <v-card-text style="padding: 0px">
-                <v-data-table
-                  style="height: auto"
-                  v-if="showTable"
-                  :headers="headers"
-                  :items="items"
-                  :server-items-length="totalRowsCount"
-                  :loading="loading"
-                  :options.sync="options"
-                  :footer-props="{
+                <v-data-table style="height: auto" v-if="showTable" :headers="headers" :items="items"
+                  :server-items-length="totalRowsCount" :loading="loading" :options.sync="options" :footer-props="{
                     itemsPerPageOptions: [10, 50, 100, 500, 1000],
-                  }"
-                  class="elevation-0"
-                >
+                  }" class="elevation-0">
                   <template v-slot:item.sno="{ item, index }">
                     {{ item.id }}
                   </template>
@@ -480,8 +339,8 @@
                       {{
                         item.alarm_end_datetime
                           ? $dateFormat.formatDateMonthYear(
-                              item.alarm_end_datetime
-                            )
+                            item.alarm_end_datetime
+                          )
                           : "---"
                       }}
                     </div>
@@ -518,22 +377,13 @@
 
                   <template v-slot:item.status="{ item }">
                     <div v-if="item.forwarded === true">
-                      <v-icon
-                        title="Forwarded"
-                        color="orange"
-                        style="color: red"
-                        >mdi-lock-open-variant-outline</v-icon
-                      >
+                      <v-icon title="Forwarded" color="orange" style="color: red">mdi-lock-open-variant-outline</v-icon>
                     </div>
                     <div v-else-if="item.alarm_status == 1">
-                      <v-icon title="Open" colo="red" style="color: red"
-                        >mdi-lock-open-outline</v-icon
-                      >
+                      <v-icon title="Open" colo="red" style="color: red">mdi-lock-open-outline</v-icon>
                     </div>
                     <div v-else-if="item.alarm_status == 0">
-                      <v-icon title="Closed" color="green" style="color: red"
-                        >mdi-lock-outline</v-icon
-                      >
+                      <v-icon title="Closed" color="green" style="color: red">mdi-lock-outline</v-icon>
                     </div>
                   </template>
                   <template v-slot:item.options="{ item }">
@@ -558,10 +408,7 @@
                             Contacts
                           </v-list-item-title>
                         </v-list-item>
-                        <v-list-item
-                          v-if="can('branch_view')"
-                          @click="eventForward(item)"
-                        >
+                        <v-list-item v-if="can('branch_view')" @click="eventForward(item)">
                           <v-list-item-title style="cursor: pointer">
                             <v-icon color="secondary" small>
                               mdi mdi-share-all
@@ -569,10 +416,7 @@
                             Forward
                           </v-list-item-title>
                         </v-list-item>
-                        <v-list-item
-                          v-if="can('branch_view')"
-                          @click="viewLogs(item)"
-                        >
+                        <v-list-item v-if="can('branch_view')" @click="viewLogs(item)">
                           <v-list-item-title style="cursor: pointer">
                             <v-icon color="secondary" small>
                               mdi-format-list-numbered
@@ -777,7 +621,7 @@ export default {
     alarmNotesPrint(alarmId, option) {
       //let option = "print";
 
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/alarm_notes_print_pdf";
       if (option == "excel") url += "/alarm_notes_download_pdf";
       if (option == "download") url += "/alarm_notes_download_pdf";
@@ -908,7 +752,7 @@ export default {
             this.getDataFromApi();
             this.loading = false;
           });
-        } catch (e) {}
+        } catch (e) { }
       }
     },
 
@@ -919,7 +763,7 @@ export default {
         filterSensorname = this.eventFilter;
       }
 
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/alarm_events_print_pdf";
       if (option == "excel") url += "/alarm_events_export_excel";
       if (option == "download") url += "/alarm_events_download_pdf";

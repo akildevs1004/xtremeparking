@@ -457,7 +457,7 @@ export default {
     alarmNotesPrint(alarmId, option) {
       //let option = "print";
 
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/alarm_notes_print_pdf";
       if (option == "excel") url += "/alarm_notes_download_pdf";
       if (option == "download") url += "/alarm_notes_download_pdf";
@@ -571,7 +571,7 @@ export default {
         filterSensorname = this.eventFilter;
       }
 
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/parking_camera_logs_print_pdf";
       if (option == "excel") url += "/parking_camera_logs_export_excel";
       if (option == "download")
@@ -642,7 +642,7 @@ export default {
     //     filterSensorname = this.eventFilter;
     //   }
 
-    //   let url = process.env.BACKEND_URL;
+    //   let url = this.$env.settings.BACKEND_URL;
     //   if (option == "print") url += "/alarm_events_print_pdf";
     //   if (option == "excel") url += "/alarm_events_export_excel";
     //   if (option == "download") url += "/alarm_events_download_pdf";

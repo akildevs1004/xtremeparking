@@ -447,7 +447,7 @@ export default {
     invoicePrint(invoice_id, option) {
       //let option = "print";
 
-      let url = process.env.BACKEND_URL;
+      let url = this.$env.settings.BACKEND_URL;
       if (option == "print") url += "/invoice_print_pdf";
       if (option == "excel") url += "/invoice_print_pdf";
       if (option == "download") url += "/invoice_print_pdf";

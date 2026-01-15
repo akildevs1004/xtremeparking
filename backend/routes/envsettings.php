@@ -52,6 +52,9 @@ Route::get('/envsettings',  function (Request $request) {
             //live camera
             "BASE_HTTP_PORT" =>  "7081",
             "BASE_WS_PORT" =>  "9991",
+
+            "SECRET_PASS_PHRASE" =>  "CatchMeIfYouCan",
+
         ];
     }
 
@@ -77,6 +80,7 @@ Route::get('/envsettings',  function (Request $request) {
         //live camera
         "BASE_HTTP_PORT" =>  "7081",
         "BASE_WS_PORT" =>  "9991",
+        "SECRET_PASS_PHRASE" =>  "CatchMeIfYouCan",
 
 
 

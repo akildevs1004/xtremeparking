@@ -13,46 +13,34 @@
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>
           </template>
-          <v-list width="120" dense>
-            <v-list-item @click="viewLogs()">
-              <v-list-item-title style="cursor: pointer">
-                View Logs
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </v-col>
-    </v-row>-->
+<v-list width="120" dense>
+  <v-list-item @click="viewLogs()">
+    <v-list-item-title style="cursor: pointer">
+      View Logs
+    </v-list-item-title>
+  </v-list-item>
+</v-list>
+</v-menu>
+</v-col>
+</v-row>-->
 
-    <v-data-table
-      dense
-      :headers="headers"
-      :items="logs.data"
-      :server-items-length="totalRowsCount"
-      :loading="loading"
-      :options.sync="options"
-      :footer-props="{
+    <v-data-table dense :headers="headers" :items="logs.data" :server-items-length="totalRowsCount" :loading="loading"
+      :options.sync="options" :footer-props="{
         itemsPerPageOptions: [5, 50],
-      }"
-      hide-default-header
-    >
+      }" hide-default-header>
       <template v-slot:item.employee="{ item, index }">
         <v-row no-gutters>
           <v-col style="padding-left: 0px; width: 25px; max-width: 25px">
-            <v-img
-              style="
+            <v-img style="
                 border-radius: 50%;
                 height: auto;
                 width: 25px;
                 max-width: 25px;
                 max-height: 25px;
-              "
-              :src="
-                item.user.security
+              " :src="item.user.security
                   ? item.user.security.picture
                   : '/no-profile-image.jpg'
-              "
-            >
+                ">
             </v-img>
           </v-col>
         </v-row>
@@ -91,7 +79,7 @@ export default {
       emptyLogmessage: "",
       number_of_records: 5,
       logs: [],
-      url: process.env.SOCKET_ENDPOINT,
+      url: this.$env.settings.SOCKET_ENDPOINT,
       socket: null,
       totalRowsCount: 0,
 
