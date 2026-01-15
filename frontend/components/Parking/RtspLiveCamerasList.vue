@@ -60,6 +60,7 @@
           <v-col v-for="(cam, index) in cameras" :key="cam.id" cols="12" :md="12 / gridColumns" :lg="12 / gridColumns"
             class="nvr-grid-col">
             <div class="nvr-grid-item" @dblclick.stop="focusCamera(index)">
+
               <RtspLiveCameraPlayer class="nvr-grid-player" :title="cam.name" :wsPort="BASE_WS_PORT + index"
                 :wsHost="NODE_SERVER_IP" />
             </div>

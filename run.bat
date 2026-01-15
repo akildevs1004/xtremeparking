@@ -46,11 +46,11 @@ start "Organize Files Watcher" cmd /k "node organize_files_by_date.js"
 timeout /t 5 /nobreak
 
 REM ==================================================
-REM CAMERA WATCHER
+REM CAMERA Images 
 REM ==================================================
 cd /d "%NODESCRIPT%"
-start "Camera Watcher" cmd /k "node watchCameraImages.js"
-timeout /t 5 /nobreak
+start "Camera Images" cmd /k "node watchCameraImages.js"
+timeout /t 10 /nobreak
 
 REM ==================================================
 REM CAMERA WATCHER
