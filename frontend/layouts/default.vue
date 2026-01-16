@@ -658,6 +658,10 @@ export default {
           elevation: 0,
           selected: "",
         },
+        parking_cameras: {
+          elevation: 0,
+          selected: "",
+        },
 
         alarm_dashboard: {
           elevation: 0,

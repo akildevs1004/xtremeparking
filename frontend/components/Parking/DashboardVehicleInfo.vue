@@ -43,11 +43,11 @@
                   {{ log.log_vehicle_number }}
                 </v-btn>
 
-                <span class="code" style="width: 80px;">
+                <span class="code" style="width: 20px;">
                   {{ log.raw_country_region || '---' }}
                 </span>
 
-                <span class="time" style="width: 150px;">
+                <span class="time" style="width: 130px;">
                   <v-icon x-small class="time-icon">mdi-clock-outline</v-icon>
                   {{ log.log_time }}
                 </span>

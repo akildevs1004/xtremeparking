@@ -38,6 +38,13 @@
   },
   {
     "icon": "mdi-bell",
+    "title": "Cameras",
+    "to": "/parking/cameras",
+    "menu": "parking_cameras",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi-bell",
     "title": "Settings",
     "to": "/settings",
     "menu": "settings",

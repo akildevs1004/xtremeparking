@@ -3,7 +3,10 @@
     <!-- Header: status + title + controls -->
     <div class="nvr-camera-header d-flex align-center">
       <div class="d-flex align-center">
-        <span class="status-dot" :class="connected ? 'status-dot--online' : 'status-dot--offline'"></span>
+        <!-- <span class="status-dot" :class="connected ? 'status-dot--online' : 'status-dot--offline'"></span> -->
+
+        <span><v-icon :color="connected ? 'success' : 'error'" style="transform: scaleX(-1);">mdi
+            mdi-cctv</v-icon></span>
         <span class="ml-2 nvr-title">
           {{ title }}
         </span>
