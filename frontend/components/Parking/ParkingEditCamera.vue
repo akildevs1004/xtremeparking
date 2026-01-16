@@ -104,6 +104,8 @@ export default {
 
           res = await this.$axios.put(`${this.endpoint}/${this.editId}`, this.form);
         } else {
+
+          this.form.company_id = this.$auth.user.company_id;
           res = await this.$axios.post(`${this.endpoint}`, this.form);
         }
 

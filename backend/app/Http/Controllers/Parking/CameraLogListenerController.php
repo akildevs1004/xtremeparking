@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Parking;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ParkingCameraLogsController;
 use App\Http\Controllers\ParkingDeviceController;
+use App\Models\CamerasList;
 use App\Models\Company;
 use App\Models\Device;
 use App\Models\ParkingCameraLogs;
@@ -48,8 +49,10 @@ class CameraLogListenerController extends Controller
 
     //     ]);
     // }
-    public function CamerasList()
+    public function CamerasList(Request $request)
     {
+
+        return CamerasList::where("company_id", $request->company_id)->get();
         return [
             "data" => [
 

@@ -33,6 +33,7 @@ class CamerasListController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'company_id' => ['required', 'integer', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'rtsp_url' => ['required', 'string'],
             'node_server_ip' => ['nullable', 'string', 'max:64'],
@@ -84,8 +85,11 @@ class CamerasListController extends Controller
         ], 200);
     }
 
-    public function destroy(CamerasList $camera)
+    public function destroy(CamerasList $camera, $id)
     {
+        //$camera->delete();
+
+        $camera = CamerasList::where("id", $id);
         $camera->delete();
 
         return response()->json([
