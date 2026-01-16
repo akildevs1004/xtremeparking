@@ -8,12 +8,12 @@
       <v-spacer></v-spacer>
       <!-- 2 split: rows=1, cams/page=2 -->
       <v-btn v-if="cameraCount >= 2" small class="mr-1" :color="isSplit(2)" @click="setSplit(2)">
-        2 Split
+        2 <v-icon>mdi-numeric-2-box</v-icon>
       </v-btn>
 
       <!-- 4 split: rows=2, cams/page=4 -->
       <v-btn v-if="cameraCount >= 4" small class="mr-1" :color="isSplit(4)" @click="setSplit(4)">
-        4 Split
+        4 <v-icon>mdi-view-grid</v-icon>
       </v-btn>
 
 

@@ -25,7 +25,7 @@
           <v-icon small>mdi-reload</v-icon>
         </v-btn>
 
-        <v-btn icon small class="ml-1" @click="fullscreen">
+        <v-btn icon small class="ml-1" ::disabled="!player || !isPlaying" @click="fullscreen">
           <v-icon small>mdi-fullscreen</v-icon>
         </v-btn>
       </div>
