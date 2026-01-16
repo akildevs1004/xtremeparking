@@ -42,7 +42,9 @@ Route::get('/envsettings',  function (Request $request) {
 
             "MQTT_QRCODE_PAYMENT" => "mqtt://xtremeguard.org",
             "host" => "mqtts://{$serverAddr}:8083",
-            "WATCH_DIR" => "D:\\projects\\vehicleparkingbills\\parking_camera_logs\\data",
+            // "WATCH_DIR" => "D:\\projects\\vehicleparkingbills\\parking_camera_logs\\data",
+            "WATCH_DIR" => realpath(base_path('../../parking_camera_logs/data')) ?: base_path('../../parking_camera_logs/data'),
+
             "COMPANY_ID" =>  "8",
             "API_URL" =>  "https://{$serverAddr}:8000/api/camera_log_listner",
             "API_KEY" =>  "",
@@ -70,7 +72,10 @@ Route::get('/envsettings',  function (Request $request) {
 
         "MQTT_QRCODE_PAYMENT" => "mqtt://xtremeguard.org",
         "host" => "mqtt://{$ip}:8083",
-        "WATCH_DIR" => "D:\\projects\\vehicleparkingbills\\parking_camera_logs\\data",
+        // "WATCH_DIR" => "D:\\projects\\vehicleparkingbills\\parking_camera_logs\\data",
+        "WATCH_DIR" => realpath(base_path('../../parking_camera_logs/data')) ?: base_path('../../parking_camera_logs/data'),
+
+
         "COMPANY_ID" =>  "8",
         "API_URL" =>  "http://{$ip}:8000/api/camera_log_listner",
         "API_KEY" =>  "",

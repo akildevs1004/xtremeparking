@@ -42,6 +42,7 @@
     <div class="nvr-content">
       <!-- FOCUS (single camera) -->
       <div v-if="mode === 'focus'" class="nvr-focus">
+        {{ selectedCamera }}
         <RtspLiveCameraPlayer v-if="selectedCamera" :key="'focus-' + selectedWsPort" class="nvr-focus-player"
           :title="selectedCamera.name" :wsPort="selectedWsPort" :wsHost="NODE_SERVER_IP" />
         <div v-else class="nvr-empty d-flex align-center justify-center">
@@ -52,6 +53,9 @@
       <!-- PREVIEW MODE -->
       <div v-else-if="mode === 'preview'" class="nvr-preview">
         <img :src="previewImage" class="nvr-preview-image" />
+      </div>
+      <div v-if="cameras.length == 0">
+        No Camera Available
       </div>
 
       <!-- GRID MODE (ALL CAMERAS) -->
@@ -140,8 +144,11 @@ export default {
 
   methods: {
     async loadCameras() {
-      const res = await this.$axios.get("/parking-cameras");
-      this.cameras = res.data.data || [];
+      const res = await this.$axios.get("/parking-cameras", { params: { "company_id": this.$auth.user.company_id } });
+
+      // console.log("res", res);
+
+      this.cameras = res.data || [];
       this.NODE_SERVER_IP =
         this.cameras?.[0]?.node_server_ip ?? "192.168.2.16";
 
