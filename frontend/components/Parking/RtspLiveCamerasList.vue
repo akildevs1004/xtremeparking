@@ -61,7 +61,7 @@
             class="nvr-grid-col">
             <div class="nvr-grid-item" @dblclick.stop="focusCamera(index)">
 
-              <RtspLiveCameraPlayer class="nvr-grid-player" :title="cam.name" :wsPort="BASE_WS_PORT + index"
+              <RtspLiveCameraPlayer class="nvr-grid-player" :title="cam.name" :wsPort="BASE_WS_PORT + cam.id"
                 :wsHost="NODE_SERVER_IP" />
             </div>
           </v-col>
@@ -103,7 +103,7 @@ export default {
     },
 
     selectedWsPort() {
-      return this.BASE_WS_PORT + this.selectedIndex;
+      return this.BASE_WS_PORT + this.cameras[this.selectedIndex].id;
     },
 
     previewImage() {

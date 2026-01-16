@@ -221,8 +221,8 @@ function startFFmpeg(cam, httpPort) {
 // START SERVERS PER CAMERA
 // -----------------------------------------------
 function startCameraServers(cam, index) {
-  const httpPort = BASE_HTTP_PORT + index;
-  const wsPort = BASE_WS_PORT + index;
+  const httpPort = BASE_HTTP_PORT + cam.id;
+  const wsPort = BASE_WS_PORT + cam.id;
 
   initCameraHealth(cam, httpPort, wsPort);
 

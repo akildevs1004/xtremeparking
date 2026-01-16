@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccessControlController;
+use App\Http\Controllers\CamerasListController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\EmployeeController;
@@ -125,3 +126,7 @@ Route::get('test_generate_qrcode', function () {
 
     return response($qr)->header('Content-Type', 'image/png');
 });
+
+
+
+Route::apiResource('cameraslist', CamerasListController::class);
