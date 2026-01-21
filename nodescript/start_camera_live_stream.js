@@ -85,15 +85,15 @@ async function loadPortsFromApi() {
     }
 
     console.log(
-      `Using ports → BASE_HTTP_PORT=${BASE_HTTP_PORT}, BASE_WS_PORT=${BASE_WS_PORT}`
+      `Using ports → BASE_HTTP_PORT=${BASE_HTTP_PORT}, BASE_WS_PORT=${BASE_WS_PORT}`,
     );
   } catch (e) {
     console.error(
       "⚠️ Failed to load ports from API. Using default ports.",
-      e.message
+      e.message,
     );
     console.log(
-      `BASE_HTTP_PORT=${BASE_HTTP_PORT}, BASE_WS_PORT=${BASE_WS_PORT}`
+      `BASE_HTTP_PORT=${BASE_HTTP_PORT}, BASE_WS_PORT=${BASE_WS_PORT}`,
     );
   }
 }
@@ -105,7 +105,11 @@ async function fetchCameras() {
   console.log("Fetching cameras from Laravel:", CAMERA_API_URL);
 
   const response = await axios.get(CAMERA_API_URL, { timeout: 10000 });
-  const cameras = response.data?.data || [];
+  // const cameras = response.data?.data || [];
+  const cameras = response.data || [];
+  console.log("response", response.data);
+
+  console.log("cameras", cameras);
 
   if (!Array.isArray(cameras) || cameras.length === 0) {
     throw new Error("Laravel API returned no cameras.");
@@ -157,7 +161,7 @@ function startFFmpeg(cam, httpPort) {
   });
 
   console.log(
-    `[FFMPEG CAM ${cam.id}] Starting → ${pushUrl} (${STREAM_WIDTH}x${STREAM_HEIGHT} @ ${STREAM_FPS}fps)`
+    `[FFMPEG CAM ${cam.id}] Starting → ${pushUrl} (${STREAM_WIDTH}x${STREAM_HEIGHT} @ ${STREAM_FPS}fps)`,
   );
 
   const args = [
@@ -207,7 +211,7 @@ function startFFmpeg(cam, httpPort) {
 
     if (code !== 0) {
       console.log(
-        `[FFMPEG CAM ${cam.id}] Non-zero exit (code=${code}). Will restart in 5 seconds.`
+        `[FFMPEG CAM ${cam.id}] Non-zero exit (code=${code}). Will restart in 5 seconds.`,
       );
       setCameraStatus(cam.id, { status: "restarting" });
       setTimeout(() => startFFmpeg(cam, httpPort), 5000);
@@ -244,7 +248,7 @@ function startCameraServers(cam, index) {
     });
   } catch (error) {
     console.error(
-      `[ERROR] Could not open WS port ${wsPort}. Already in use?\n${error.message}`
+      `[ERROR] Could not open WS port ${wsPort}. Already in use?\n${error.message}`,
     );
     process.exit(1);
   }
@@ -254,7 +258,7 @@ function startCameraServers(cam, index) {
       viewers: wsServer.clients.size,
     });
     console.log(
-      `[CAM ${cam.id}] Viewer connected (${wsServer.clients.size} total)`
+      `[CAM ${cam.id}] Viewer connected (${wsServer.clients.size} total)`,
     );
 
     socket.on("close", () => {
@@ -262,7 +266,7 @@ function startCameraServers(cam, index) {
         viewers: wsServer.clients.size,
       });
       console.log(
-        `[CAM ${cam.id}] Viewer disconnected (${wsServer.clients.size} total)`
+        `[CAM ${cam.id}] Viewer disconnected (${wsServer.clients.size} total)`,
       );
     });
   });
@@ -338,7 +342,7 @@ function startHealthApiServer() {
 
   server.listen(HEALTH_PORT, "0.0.0.0", () => {
     console.log(
-      `Camera Health API listening on http://127.0.0.1:${HEALTH_PORT}/health`
+      `Camera Health API listening on http://127.0.0.1:${HEALTH_PORT}/health`,
     );
   });
 }

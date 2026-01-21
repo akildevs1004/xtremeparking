@@ -73,7 +73,7 @@ Route::get('/envsettings',  function (Request $request) {
         "MQTT_QRCODE_PAYMENT" => "mqtt://xtremeguard.org",
         "host" => "mqtt://{$ip}:8083",
         // "WATCH_DIR" => "D:\\projects\\vehicleparkingbills\\parking_camera_logs\\data",
-        "WATCH_DIR" => realpath(base_path('../../parking_camera_logs/data')) ?: base_path('../../parking_camera_logs/data'),
+        "WATCH_DIR" => realpath(base_path('../../../parking_camera_logs/data')) ?: base_path('../../../parking_camera_logs/data'),
 
 
         "COMPANY_ID" =>  "8",
