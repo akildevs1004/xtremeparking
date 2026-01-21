@@ -1,0 +1,125 @@
+{
+  "name": "xtremeguard-parking-desktop-app",
+  "version": "1.0.1",
+  "description": "Xtremeguard Parking Desktop Application",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "npm run obf && electron .",
+    "dev:www": "cd www && npm run dev",
+    "build": "npm run obf && electron-builder",
+    "obf": "javascript-obfuscator main.js --output dist/main.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true && javascript-obfuscator helpers.js --output dist/helpers.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true && javascript-obfuscator socket.js --output dist/socket.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true &&javascript-obfuscator camera_2_start_camera_live_stream.js --output dist/camera_2_start_camera_live_stream.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true && javascript-obfuscator camera_1_organize_files_by_date.js --output dist/camera_1_organize_files_by_date.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true  && javascript-obfuscator camera_3_watchCameraImages.js --output dist/camera_3_watchCameraImages.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true"
+  },
+  "build": {
+    "publish": {
+      "provider": "generic",
+      "url": "https://backend.smart-queue.com/desktop_updates/"
+    },
+    "appId": "xtremeguard-parking-desktop-app",
+    "files": [
+      "assets/**/*",
+      "dist/main.js",
+      "dist/helpers.js",
+      "dist/socket.js",
+      "index.html",
+      "www/**/*",
+      "!www/node_modules/**"
+    ],
+    "extraResources": [
+      {
+        "from": "stop-services.bat",
+        "to": "stop-services.bat"
+      },
+      {
+        "from": "assets",
+        "to": "assets"
+      },
+      {
+        "from": "conf",
+        "to": "conf"
+      },
+      {
+        "from": "logs",
+        "to": "logs"
+      },
+      {
+        "from": "temp",
+        "to": "temp"
+      },
+      {
+        "from": "nginx.exe",
+        "to": "nginx.exe"
+      },
+      {
+        "from": "vs_redist.exe",
+        "to": "vs_redist.exe"
+      },
+      {
+        "from": "www",
+        "to": "www",
+        "filter": [
+          "**/*",
+          "!node_modules/**",
+          "!package.json"
+        ]
+      },
+      {
+        "from": "frontend",
+        "to": "frontend"
+      },
+      {
+        "from": "mosquitto",
+        "to": "mosquitto"
+      },
+      {
+        "from": "database_deploy",
+        "to": "database_deploy"
+      },
+      {
+        "from": "service-status.html",
+        "to": "service-status.html"
+      }
+    ],
+    "productName": "XtremeGuardParking",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "icon": "favicon1.png"
+    },
+    "nsis": {
+      "include": "build/installer.nsh",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "license": "license.txt",
+      "createDesktopShortcut": true
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "javascript-obfuscator": "^5.1.0"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "electron-updater": "^6.6.2",
+    "simple-git": "^3.28.0",
+    "systeminformation": "^5.30.0",
+    "unzipper": "^0.12.3",
+    "ws": "^8.18.3",
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "chokidar": "^4.0.3",
+    "dotenv": "^17.2.1",
+    "jimp": "^1.6.0",
+    "mqtt": "^5.14.0",
+    "request": "^2.88.2",
+    "sharp": "^0.34.3",
+    "ssh2-sftp-client": "^12.0.1",
+    "tesseract.js": "^6.0.1"
+  }
+}
