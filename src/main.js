@@ -1,21 +1,33 @@
 /**
- * main.js — FULL CODE (Log-only observability)
+ * main.js — FULL CODE (External log ON/OFF + Production-safe log path)
  *
- * What you asked:
- * 1) NO camera logs displayed in UI (service-status.html). Only written to logs folder.
- * 2) Logs are grouped by date folder: logs/YYYY-MM-DD/
- * 3) Camera log files are renamed:
- *    - CAM1 -> camera_files_organizer.log
- *    - CAM2 -> camera_live_streaming.log
- *    - CAM3 -> camera_vehicle_event_images.log
- * 4) Camera require modules start ONLY AFTER artisan (port 8000) is listening.
+ * Adds:
+ * 1) Logs stored in writable location (ProgramData preferred):
+ *    C:\ProgramData\XtremeGuardParking\logs\YYYY-MM-DD\
+ * 2) External ON/OFF switch via:
+ *    C:\ProgramData\XtremeGuardParking\config.json
+ *    Example:
+ *      { "debugLogs": true, "showLogsInUI": true, "cameraMuteConsole": false }
+ * 3) Optional CLI overrides:
+ *    --debug-logs, --no-debug-logs, --show-logs, --hide-logs
+ * 4) Optional UI tools via IPC:
+ *    - open-logs-folder
+ *    - get-runtime-config
  *
- * Notes:
- * - Your existing svcUpdate/svcMeta etc are kept for showing port-based services status
- *   (mosquitto/nginx/php/laravel). Camera logs are file-only.
+ * Keeps:
+ * - Port-based service status UI updates (mosquitto/nginx/php/laravel)
+ * - Camera logs file-only (but can be unmuted in debug)
+ * - Cameras start ONLY after artisan (port 8000) is listening
  */
 
-const { app, BrowserWindow, screen, ipcMain, dialog } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  screen,
+  ipcMain,
+  dialog,
+  shell,
+} = require("electron");
 const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
@@ -53,6 +65,7 @@ let mainWindow = null;
 let isQuitting = false;
 
 const isDev = !app.isPackaged;
+// NOTE: resourcesPath is often not writable. Use it for binaries only, not logs.
 const appDir = isDev ? process.cwd() : process.resourcesPath;
 
 const srcDirectory = path.join(appDir, "www");
@@ -86,7 +99,7 @@ const mosquittoConf = firstExists([
   path.join(appDir, "mosquitto", "mosquitto.conf"),
 ]);
 
-// Track only what we start (so we stop only these)
+// -------------------- SERVICES TRACKING --------------------
 const services = {
   mosquitto: { name: "Mosquitto", port: 1883, proc: null, startedByUs: false },
   artisanServe: {
@@ -106,6 +119,88 @@ const services = {
 
 let MACHINE_ID = null;
 
+// -------------------- RUNTIME CONFIG (EXTERNAL ON/OFF) --------------------
+const PRODUCT_NAME = "XtremeGuardParking";
+const PROGRAM_DATA = process.env.ProgramData || null;
+
+// Prefer ProgramData so any Windows user can share logs easily
+const BASE_DATA_DIR = PROGRAM_DATA
+  ? path.join(PROGRAM_DATA, PRODUCT_NAME)
+  : path.join(app.getPath("userData"), PRODUCT_NAME);
+
+const LOG_BASE = path.join(BASE_DATA_DIR, "logs");
+const CONFIG_PATH = path.join(BASE_DATA_DIR, "config.json");
+
+const DEFAULT_CONFIG = {
+  debugLogs: false, // master debug logging switch
+  showLogsInUI: false, // if you later add a "Logs" panel in service-status.html
+  cameraMuteConsole: true, // true = keep current behavior (mute console during camera require/start)
+  alwaysLogCritical: true, // always keep FATAL/STOP/Application logs even if debugLogs=false
+};
+
+let RUNTIME_CONFIG = { ...DEFAULT_CONFIG };
+
+function ensureBaseDataDir() {
+  try {
+    fs.mkdirSync(BASE_DATA_DIR, { recursive: true });
+  } catch {}
+}
+
+function safeParseJson(raw) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function readRuntimeConfig() {
+  ensureBaseDataDir();
+
+  // CLI overrides (highest priority)
+  const argv = process.argv || [];
+  const cli = {
+    debugLogs: argv.includes("--debug-logs")
+      ? true
+      : argv.includes("--no-debug-logs")
+        ? false
+        : undefined,
+    showLogsInUI: argv.includes("--show-logs")
+      ? true
+      : argv.includes("--hide-logs")
+        ? false
+        : undefined,
+  };
+
+  // file config (medium priority)
+  let fileCfg = null;
+  try {
+    if (fs.existsSync(CONFIG_PATH)) {
+      const raw = fs.readFileSync(CONFIG_PATH, "utf8");
+      fileCfg = safeParseJson(raw);
+    }
+  } catch {}
+
+  // merge
+  let merged = { ...DEFAULT_CONFIG };
+  if (fileCfg && typeof fileCfg === "object")
+    merged = { ...merged, ...fileCfg };
+  Object.keys(cli).forEach((k) => {
+    if (cli[k] !== undefined) merged[k] = cli[k];
+  });
+
+  RUNTIME_CONFIG = merged;
+  return RUNTIME_CONFIG;
+}
+
+// Reload config periodically so you can ON/OFF externally while app is running
+function startConfigWatcher() {
+  readRuntimeConfig();
+  setInterval(() => {
+    readRuntimeConfig();
+  }, 3000);
+}
+
 // -------------------- LOGGING (DATE FOLDER + SERVICE FILES) --------------------
 function getTodayFolderName() {
   const d = new Date();
@@ -117,18 +212,22 @@ function getTodayFolderName() {
 
 function ensureLogsDir() {
   try {
-    const dayFolder = path.join(appDir, "logs", getTodayFolderName());
+    ensureBaseDataDir();
+    const dayFolder = path.join(LOG_BASE, getTodayFolderName());
     fs.mkdirSync(dayFolder, { recursive: true });
     return dayFolder;
   } catch {
     try {
-      const base = path.join(appDir, "logs");
-      fs.mkdirSync(base, { recursive: true });
-      return base;
+      fs.mkdirSync(LOG_BASE, { recursive: true });
+      return LOG_BASE;
     } catch {
-      return appDir;
+      return app.getPath("userData");
     }
   }
+}
+
+function safeName(s) {
+  return String(s || "log").replace(/[^a-z0-9_\-]/gi, "_");
 }
 
 function writeLog(fileBaseName, message) {
@@ -136,22 +235,40 @@ function writeLog(fileBaseName, message) {
     const dayFolder = ensureLogsDir();
     const line = `[${new Date().toISOString()}] ${message}\n`;
     fs.appendFileSync(
-      path.join(dayFolder, `${fileBaseName}.log`),
+      path.join(dayFolder, `${safeName(fileBaseName)}.log`),
       line,
       "utf8",
     );
-  } catch {}
+  } catch {
+    // avoid throwing in production; logging should never crash the app
+  }
 }
 
 /**
  * log(serviceName, message)
- * - Writes to logs/YYYY-MM-DD/<serviceName>.log
- * - Also calls your existing logger() (if it writes somewhere else, fine)
+ * - External ON/OFF via config.json (debugLogs)
+ * - Always logs critical items if alwaysLogCritical=true
+ * - Also calls your existing logger() (if you want, it may log elsewhere too)
  */
 function log(serviceName, message) {
+  const cfg = RUNTIME_CONFIG || DEFAULT_CONFIG;
+
+  const isCritical =
+    serviceName === "FATAL" ||
+    serviceName === "STOP" ||
+    serviceName === "Application" ||
+    serviceName === "Installer";
+
+  if (!cfg.debugLogs) {
+    if (!(cfg.alwaysLogCritical && isCritical)) {
+      return; // debug off => skip non-critical noise
+    }
+  }
+
   try {
     logger(serviceName, message);
   } catch {}
+
   writeLog(serviceName, message);
 }
 
@@ -242,10 +359,11 @@ function svcError(meta) {
 
 // -------------------- GLOBAL ERROR LOGGING (FILE) --------------------
 process.on("uncaughtException", (err) => {
-  log("FATAL", err?.stack || String(err));
+  // always write fatal regardless of debug switch
+  writeLog("FATAL", err?.stack || String(err));
 });
 process.on("unhandledRejection", (reason) => {
-  log("FATAL", reason?.stack || String(reason));
+  writeLog("FATAL", reason?.stack || String(reason));
 });
 
 // -------------------- SOCKET INIT (NON-INVASIVE) --------------------
@@ -254,7 +372,10 @@ function initSocketNonInvasive() {
     require("./socket");
     log("SOCKET", "Socket init requested (./socket).");
   } catch (e) {
-    log("SOCKET", `Socket init failed: ${e?.message || String(e)}`);
+    writeLog(
+      "SOCKET",
+      `Socket init failed: ${e?.stack || e?.message || String(e)}`,
+    );
   }
 }
 
@@ -280,21 +401,18 @@ function initCameraServicesNonInvasive() {
       logFile: CAMERA_LOG_FILES.cam2,
       file: "./camera_2_start_camera_live_stream",
     },
-    {
-      logFile: CAMERA_LOG_FILES.cam3,
-      file: "./camera_3_watchCameraImages",
-    },
+    { logFile: CAMERA_LOG_FILES.cam3, file: "./camera_3_watchCameraImages" },
   ];
 
   for (const s of list) {
-    const isCamService = true; // this loop is only for cam services
-
-    // File-only logger/heartbeat (no console/logger/svcUpdate)
+    // File-only logger/heartbeat
     const fileOnlyLogger = (msg) => writeLog(s.logFile, msg);
     const fileOnlyBeat = (msg) => writeLog(s.logFile, `HEARTBEAT: ${msg}`);
 
-    // Hard-mute console while requiring + starting the cam module
-    // This blocks console.log/error/warn/info/debug from cam code (require-time + start-time).
+    // In debug mode, do NOT mute console (helps you see unexpected errors)
+    const cfg = RUNTIME_CONFIG || DEFAULT_CONFIG;
+    const shouldMuteConsole = cfg.cameraMuteConsole && !cfg.debugLogs;
+
     const originalConsole = {
       log: console.log,
       error: console.error,
@@ -304,12 +422,13 @@ function initCameraServicesNonInvasive() {
     };
 
     try {
-      // mute console for camera modules
-      console.log = () => {};
-      console.error = () => {};
-      console.warn = () => {};
-      console.info = () => {};
-      console.debug = () => {};
+      if (shouldMuteConsole) {
+        console.log = () => {};
+        console.error = () => {};
+        console.warn = () => {};
+        console.info = () => {};
+        console.debug = () => {};
+      }
 
       const mod = require(s.file);
 
@@ -320,6 +439,8 @@ function initCameraServicesNonInvasive() {
             srcDirectory,
             logger: fileOnlyLogger,
             beat: fileOnlyBeat,
+            // You can pass config into camera modules if you later want:
+            config: cfg,
           });
           writeLog(s.logFile, `SERVICE STARTED via ${s.file} start().`);
         } else {
@@ -337,7 +458,6 @@ function initCameraServicesNonInvasive() {
         `LOAD FAILED: ${e?.stack || e?.message || String(e)}`,
       );
     } finally {
-      // restore console back for the rest of the app
       console.log = originalConsole.log;
       console.error = originalConsole.error;
       console.warn = originalConsole.warn;
@@ -349,7 +469,6 @@ function initCameraServicesNonInvasive() {
 
 /**
  * Start camera modules only after artisan is listening (port 8000).
- * This ensures camera modules can call your Laravel APIs safely.
  */
 async function startCameraAfterLaravelReady() {
   try {
@@ -357,6 +476,17 @@ async function startCameraAfterLaravelReady() {
       "camera_boot",
       "Waiting for Laravel port 8000 before starting camera modules...",
     );
+
+    // Quick short-circuit
+    if (isPortListening(8000)) {
+      writeLog(
+        "camera_boot",
+        "Laravel already listening on 8000. Starting camera modules...",
+      );
+      initCameraServicesNonInvasive();
+      return;
+    }
+
     const ok = await waitForPort(8000, 60000);
     if (!ok) {
       writeLog(
@@ -418,6 +548,24 @@ ipcMain.handle("open-login", async () => {
   }
 });
 
+// -------------------- LOGS IPC (OPTIONAL UI BUTTONS) --------------------
+ipcMain.handle("open-logs-folder", async () => {
+  const folder = ensureLogsDir(); // today folder
+  try {
+    await shell.openPath(folder);
+  } catch {}
+  return folder;
+});
+
+ipcMain.handle("get-runtime-config", async () => {
+  return {
+    configPath: CONFIG_PATH,
+    logBase: LOG_BASE,
+    todayLogFolder: ensureLogsDir(),
+    config: RUNTIME_CONFIG,
+  };
+});
+
 // -------------------- START SERVICES (NON-INVASIVE) --------------------
 async function startMissingServicesNonInvasive() {
   svcMeta("Checking existing services…");
@@ -461,20 +609,23 @@ async function startMissingServicesNonInvasive() {
         port: 1883,
         message: "Mosquitto exe/conf not found.",
       });
-      log("Mosquitto", "FAILED: Mosquitto exe/conf not found.");
+      writeLog("Mosquitto", "FAILED: Mosquitto exe/conf not found.");
     } else {
       services.mosquitto.proc = spawnWrapper(
         "[Mosquitto]",
         mosquittoPath,
         ["-c", mosquittoConf, "-v"],
-        { cwd: path.dirname(mosquittoPath), baseDir: appDir },
+        {
+          cwd: path.dirname(mosquittoPath),
+          baseDir: appDir,
+        },
       );
       services.mosquitto.startedByUs = true;
 
       const ok = await waitForPort(1883, 25000);
       const pid = getPid(services.mosquitto.proc);
 
-      log(
+      writeLog(
         "Mosquitto",
         ok ? `RUNNING pid=${pid} port=1883` : `FAILED pid=${pid} port=1883`,
       );
@@ -514,7 +665,7 @@ async function startMissingServicesNonInvasive() {
     const ok = await waitForPort(8000, 25000);
     const pid = getPid(services.artisanServe.proc);
 
-    log(
+    writeLog(
       "ArtisanServe",
       ok ? `RUNNING pid=${pid} port=8000` : `FAILED pid=${pid} port=8000`,
     );
@@ -552,7 +703,7 @@ async function startMissingServicesNonInvasive() {
     const ok = await waitForPort(9000, 25000);
     const pid = getPid(services.phpCgi.proc);
 
-    log(
+    writeLog(
       "PHP-CGI",
       ok ? `RUNNING pid=${pid} port=9000` : `FAILED pid=${pid} port=9000`,
     );
@@ -585,14 +736,17 @@ async function startMissingServicesNonInvasive() {
       "[Nginx]",
       nginxPath,
       ["-p", appDir, "-c", "conf/nginx.conf"],
-      { cwd: appDir, baseDir: appDir },
+      {
+        cwd: appDir,
+        baseDir: appDir,
+      },
     );
     services.nginx.startedByUs = true;
 
     const ok = await waitForPort(3000, 30000);
     const pid = getPid(services.nginx.proc);
 
-    log(
+    writeLog(
       "Nginx",
       ok ? `RUNNING pid=${pid} port=3000` : `FAILED pid=${pid} port=3000`,
     );
@@ -605,7 +759,7 @@ async function startMissingServicesNonInvasive() {
         ? "Listening on 3000."
         : isPidAlive(pid)
           ? "Process alive but not listening. Check nginx.conf."
-          : "Process exited. Check nginx logs inside daily folder.",
+          : "Process exited. Check nginx logs in logs folder.",
     });
 
     await sleep(5000);
@@ -623,11 +777,14 @@ async function startMissingServicesNonInvasive() {
     "[Scheduler]",
     phpPathCli,
     ["artisan", "schedule:work"],
-    { cwd: srcDirectory, baseDir: appDir },
+    {
+      cwd: srcDirectory,
+      baseDir: appDir,
+    },
   );
   services.scheduler.startedByUs = true;
 
-  log("Scheduler", `RUNNING pid=${getPid(services.scheduler.proc)}`);
+  writeLog("Scheduler", `RUNNING pid=${getPid(services.scheduler.proc)}`);
   svcUpdate({
     name: services.scheduler.name,
     status: "running",
@@ -648,11 +805,14 @@ async function startMissingServicesNonInvasive() {
     "[Queue]",
     phpPathCli,
     ["artisan", "queue:work"],
-    { cwd: srcDirectory, baseDir: appDir },
+    {
+      cwd: srcDirectory,
+      baseDir: appDir,
+    },
   );
   services.queue.startedByUs = true;
 
-  log("Queue", `RUNNING pid=${getPid(services.queue.proc)}`);
+  writeLog("Queue", `RUNNING pid=${getPid(services.queue.proc)}`);
   svcUpdate({
     name: services.queue.name,
     status: "running",
@@ -673,11 +833,14 @@ async function startMissingServicesNonInvasive() {
     "[MQTT]",
     phpPathCli,
     ["artisan", "mqtt:subscribe"],
-    { cwd: srcDirectory, baseDir: appDir },
+    {
+      cwd: srcDirectory,
+      baseDir: appDir,
+    },
   );
   services.mqttSub.startedByUs = true;
 
-  log("MQTT", `RUNNING pid=${getPid(services.mqttSub.proc)}`);
+  writeLog("MQTT", `RUNNING pid=${getPid(services.mqttSub.proc)}`);
   svcUpdate({
     name: services.mqttSub.name,
     status: "running",
@@ -698,11 +861,14 @@ async function startMissingServicesNonInvasive() {
     "[MQTT-QR]",
     phpPathCli,
     ["artisan", "mqtt:qrbackgroundlistener"],
-    { cwd: srcDirectory, baseDir: appDir },
+    {
+      cwd: srcDirectory,
+      baseDir: appDir,
+    },
   );
   services.mqttQr.startedByUs = true;
 
-  log("MQTT-QR", `RUNNING pid=${getPid(services.mqttQr.proc)}`);
+  writeLog("MQTT-QR", `RUNNING pid=${getPid(services.mqttQr.proc)}`);
   svcUpdate({
     name: services.mqttQr.name,
     status: "running",
@@ -718,7 +884,7 @@ async function startMissingServicesNonInvasive() {
     svcError("UI is not ready (port 3000 not listening). Check nginx logs.");
   }
 
-  log(
+  writeLog(
     "Application",
     `Local UI: http://127.0.0.1:3000/login | LAN UI: http://${ipv4Address}:3000/login`,
   );
@@ -747,14 +913,20 @@ app.disableHardwareAcceleration();
 
 // -------------------- APP READY --------------------
 app.whenReady().then(async () => {
-  // Ensure logs first, then cleanup
+  // Ensure data dirs + start config watcher
+  ensureBaseDataDir();
   ensureLogsDir();
+  startConfigWatcher();
+
+  // IMPORTANT: update cleanup helper to delete from LOG_BASE if needed
+  // If your existing cleanupOldLogs() deletes from appDir/logs, you should modify it to delete from LOG_BASE.
+  // For now, we keep your call (but you should update helper implementation accordingly).
   cleanupOldLogs(2);
 
-  log("Application", "App starting...");
+  writeLog("Application", "App starting...");
 
   if (isClockTampered()) {
-    log("Application", "System time tamper detected. Exiting.");
+    writeLog("Application", "System time tamper detected. Exiting.");
     dialog.showErrorBox(
       "System Time Error",
       "System date/time appears to have been changed.\n\nPlease correct your system clock and restart the application.",
@@ -779,45 +951,12 @@ app.whenReady().then(async () => {
         await startCameraAfterLaravelReady(); // ✅ only after port 8000 is listening
       })
       .catch(async (err) => {
-        log("Installer", err?.message || String(err));
+        writeLog("Installer", err?.stack || err?.message || String(err));
         await startMissingServicesNonInvasive();
         await startCameraAfterLaravelReady();
       });
   });
 });
-
-// -------------------- WINDOW --------------------
-function createMainWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-
-  mainWindow = new BrowserWindow({
-    width,
-    height,
-    autoHideMenuBar: true,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
-  });
-
-  if (!fs.existsSync(statusHtmlPath)) {
-    dialog.showErrorBox(
-      "Missing File",
-      `service-status.html not found:\n${statusHtmlPath}`,
-    );
-    app.quit();
-    return null;
-  }
-
-  mainWindow.loadFile(statusHtmlPath);
-  mainWindow.maximize();
-
-  mainWindow.on("closed", () => {
-    mainWindow = null;
-  });
-
-  return mainWindow;
-}
 
 // -------------------- CLEAN QUIT --------------------
 async function stopOnlyWhatWeStarted() {
@@ -826,9 +965,12 @@ async function stopOnlyWhatWeStarted() {
     if (svc.startedByUs && svc.proc) {
       try {
         await stopServices(svc.proc);
-        log(svc.name, "Stopped (requested).");
+        writeLog(svc.name, "Stopped (requested).");
       } catch (e) {
-        log("STOP", `${svc.name} stop error: ${e?.message || String(e)}`);
+        writeLog(
+          "STOP",
+          `${svc.name} stop error: ${e?.stack || e?.message || String(e)}`,
+        );
       }
       svc.proc = null;
       svc.startedByUs = false;
@@ -842,7 +984,7 @@ app.on("before-quit", async (e) => {
   e.preventDefault();
   isQuitting = true;
 
-  log("Application", "before-quit fired. Stopping started services...");
+  writeLog("Application", "before-quit fired. Stopping started services...");
   try {
     fs.appendFileSync(
       path.join(ensureLogsDir(), "XtremeGuardParking_SHUTDOWN.txt"),
@@ -855,7 +997,7 @@ app.on("before-quit", async (e) => {
 });
 
 app.on("will-quit", () => {
-  log("Application", "will-quit fired.");
+  writeLog("Application", "will-quit fired.");
   try {
     fs.appendFileSync(
       path.join(ensureLogsDir(), "XtremeGuardParking_SHUTDOWN.txt"),

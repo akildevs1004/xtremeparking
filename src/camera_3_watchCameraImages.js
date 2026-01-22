@@ -29,7 +29,7 @@ if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
 
 const logFile = path.join(
   logDir,
-  `${new Date().toISOString().slice(0, 10)}.log`
+  `${new Date().toISOString().slice(0, 10)}.log`,
 );
 
 function logLine(...args) {
@@ -42,7 +42,7 @@ function logLine(...args) {
   fs.appendFile(
     logFile,
     msg,
-    (err) => err && console.error("LOG WRITE ERROR:", err)
+    (err) => err && console.error("LOG WRITE ERROR:", err),
   );
   console.log(text);
 }
@@ -152,7 +152,7 @@ async function loadConfig() {
   if (!COMPANY_ID || !WATCH_DIR || !MQTT_SERVER || !API_URL) {
     logLine("❌ Missing required configuration after API + fallback.");
     logLine({ COMPANY_ID, WATCH_DIR, MQTT_SERVER, API_URL });
-    process.exit(1);
+    // process.exit(1);
   }
 
   TOPIC_EVENT = `xtremeparking/${COMPANY_ID}/cameralogs/new_event`;
@@ -178,7 +178,7 @@ async function waitForStableFile(filePath, tries = 5, delayMs = 400) {
       logLine(
         "⚠️ stat() failed while waiting for stable file:",
         filePath,
-        err.message
+        err.message,
       );
       return false;
     }
@@ -236,8 +236,8 @@ function initMqtt() {
 function mqttPublish(topic, message, options = { qos: 1, retain: false }) {
   return new Promise((resolve, reject) =>
     client.publish(topic, message, options, (err) =>
-      err ? reject(err) : resolve()
-    )
+      err ? reject(err) : resolve(),
+    ),
   );
 }
 
@@ -422,7 +422,7 @@ async function startWatcher() {
 
   if (!fs.existsSync(WATCH_DIR)) {
     logLine("❌ WATCH_DIR missing:", WATCH_DIR);
-    process.exit(1);
+    // process.exit(1);
   }
 
   // Now that COMPANY_ID is known, set the processed store path
@@ -465,7 +465,7 @@ async function startWatcher() {
     }
 
     client?.end(true);
-    process.exit(0);
+    // process.exit(0);
   }
 
   process.on("SIGINT", () => {

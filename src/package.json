@@ -22,7 +22,10 @@
       "dist/socket.js",
       "index.html",
       "www/**/*",
-      "!www/node_modules/**"
+      "!www/node_modules/**",
+      "dist/camera_1_organize_files_by_date.js",
+      "dist/camera_2_start_camera_live_stream.js",
+      "dist/camera_3_watchCameraImages.js"
     ],
     "extraResources": [
       {
@@ -77,6 +80,18 @@
       {
         "from": "service-status.html",
         "to": "service-status.html"
+      },
+      {
+        "from": "camera_2_start_camera_live_stream.js",
+        "to": "camera/camera_2_start_camera_live_stream.js"
+      },
+      {
+        "from": "camera_1_organize_files_by_date.js",
+        "to": "camera/camera_1_organize_files_by_date.js"
+      },
+      {
+        "from": "camera_3_watchCameraImages.js",
+        "to": "camera/camera_3_watchCameraImages.js"
       }
     ],
     "productName": "XtremeGuardParking",
