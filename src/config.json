@@ -1,5 +1,8 @@
 {
   "debugLogs": true,
   "showLogsInUI": true,
-  "cameraLogs": true
+  "cameraLogs": false,
+  "cameraMuteConsole": false,
+  "watchdogEnabled": true,
+  "watchdogIntervalMs": 300000
 }

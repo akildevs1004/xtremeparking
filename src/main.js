@@ -1,23 +1,5 @@
 /**
- * main.js — FULL CODE (External log ON/OFF + Production-safe log path)
- *
- * Adds:
- * 1) Logs stored in writable location (ProgramData preferred):
- *    C:\ProgramData\XtremeGuardParking\logs\YYYY-MM-DD\
- * 2) External ON/OFF switch via:
- *    C:\ProgramData\XtremeGuardParking\config.json
- *    Example:
- *      { "debugLogs": true, "showLogsInUI": true, "cameraMuteConsole": false }
- * 3) Optional CLI overrides:
- *    --debug-logs, --no-debug-logs, --show-logs, --hide-logs
- * 4) Optional UI tools via IPC:
- *    - open-logs-folder
- *    - get-runtime-config
- *
- * Keeps:
- * - Port-based service status UI updates (mosquitto/nginx/php/laravel)
- * - Camera logs file-only (but can be unmuted in debug)
- * - Cameras start ONLY after artisan (port 8000) is listening
+ * main.js — FULL CODE (Auto-Restart Watchdog + UI Start/Restart + MQTT Storm Fix)
  */
 
 const {
@@ -31,7 +13,6 @@ const {
 const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
-const { cleanupOldLogs } = require("./helpers");
 
 const {
   logger,
@@ -43,13 +24,29 @@ const {
   stopServices,
   getCachedMachineId,
   isClockTampered,
+  cleanupOldLogs,
 } = require("./helpers");
+
+// -------------------- ELECTRON STABILITY SWITCHES --------------------
+try {
+  app.commandLine.appendSwitch(
+    "disable-features",
+    "NetworkService,NetworkServiceInProcess",
+  );
+  app.commandLine.appendSwitch("disable-http-cache");
+  app.commandLine.appendSwitch("disable-background-networking");
+  app.commandLine.appendSwitch("disable-gpu");
+} catch {}
+app.disableHardwareAcceleration();
 
 app.setName("XtremeGuard Parking");
 app.setAppUserModelId("XtremeGuardParking");
 
 // -------------------- SINGLE INSTANCE --------------------
 const gotLock = app.requestSingleInstanceLock();
+let mainWindow = null;
+let isQuitting = false;
+
 if (!gotLock) {
   app.quit();
 } else {
@@ -61,11 +58,7 @@ if (!gotLock) {
   });
 }
 
-let mainWindow = null;
-let isQuitting = false;
-
 const isDev = !app.isPackaged;
-// NOTE: resourcesPath is often not writable. Use it for binaries only, not logs.
 const appDir = isDev ? process.cwd() : process.resourcesPath;
 
 const srcDirectory = path.join(appDir, "www");
@@ -99,31 +92,61 @@ const mosquittoConf = firstExists([
   path.join(appDir, "mosquitto", "mosquitto.conf"),
 ]);
 
-// -------------------- SERVICES TRACKING --------------------
+// Track only what we start
 const services = {
-  mosquitto: { name: "Mosquitto", port: 1883, proc: null, startedByUs: false },
+  // Ports
+  phpCgi: {
+    key: "phpCgi",
+    name: "PHP-CGI",
+    port: 9000,
+    proc: null,
+    startedByUs: false,
+  },
+  nginx: {
+    key: "nginx",
+    name: "Nginx",
+    port: 3000,
+    proc: null,
+    startedByUs: false,
+  },
+  mosquitto: {
+    key: "mosquitto",
+    name: "Mosquitto",
+    port: 1883,
+    proc: null,
+    startedByUs: false,
+  },
   artisanServe: {
+    key: "artisanServe",
     name: "ArtisanServe",
     port: 8000,
     proc: null,
     startedByUs: false,
   },
-  phpCgi: { name: "PHP-CGI", port: 9000, proc: null, startedByUs: false },
-  nginx: { name: "Nginx", port: 3000, proc: null, startedByUs: false },
 
-  scheduler: { name: "Scheduler", port: null, proc: null, startedByUs: false },
-  queue: { name: "Queue", port: null, proc: null, startedByUs: false },
-  mqttSub: { name: "MQTT", port: null, proc: null, startedByUs: false },
-  mqttQr: { name: "MQTT-QR", port: null, proc: null, startedByUs: false },
+  // Artisan workers (no port)
+  mqttSub: {
+    key: "mqttSub",
+    name: "MQTT",
+    port: null,
+    proc: null,
+    startedByUs: false,
+  },
+  mqttQr: {
+    key: "mqttQr",
+    name: "MQTT-QR",
+    port: null,
+    proc: null,
+    startedByUs: false,
+  },
 };
 
 let MACHINE_ID = null;
 
-// -------------------- RUNTIME CONFIG (EXTERNAL ON/OFF) --------------------
+// -------------------- EXTERNAL CONFIG (ProgramData) --------------------
 const PRODUCT_NAME = "XtremeGuardParking";
 const PROGRAM_DATA = process.env.ProgramData || null;
 
-// Prefer ProgramData so any Windows user can share logs easily
 const BASE_DATA_DIR = PROGRAM_DATA
   ? path.join(PROGRAM_DATA, PRODUCT_NAME)
   : path.join(app.getPath("userData"), PRODUCT_NAME);
@@ -132,10 +155,11 @@ const LOG_BASE = path.join(BASE_DATA_DIR, "logs");
 const CONFIG_PATH = path.join(BASE_DATA_DIR, "config.json");
 
 const DEFAULT_CONFIG = {
-  debugLogs: false, // master debug logging switch
-  showLogsInUI: false, // if you later add a "Logs" panel in service-status.html
-  cameraMuteConsole: true, // true = keep current behavior (mute console during camera require/start)
-  alwaysLogCritical: true, // always keep FATAL/STOP/Application logs even if debugLogs=false
+  debugLogs: false,
+  cameraMuteConsole: true,
+  alwaysLogCritical: true,
+  watchdogEnabled: true,
+  watchdogIntervalMs: 8000,
 };
 
 let RUNTIME_CONFIG = { ...DEFAULT_CONFIG };
@@ -157,22 +181,13 @@ function safeParseJson(raw) {
 function readRuntimeConfig() {
   ensureBaseDataDir();
 
-  // CLI overrides (highest priority)
   const argv = process.argv || [];
-  const cli = {
-    debugLogs: argv.includes("--debug-logs")
-      ? true
-      : argv.includes("--no-debug-logs")
-        ? false
-        : undefined,
-    showLogsInUI: argv.includes("--show-logs")
-      ? true
-      : argv.includes("--hide-logs")
-        ? false
-        : undefined,
-  };
+  const cliDebug = argv.includes("--debug-logs")
+    ? true
+    : argv.includes("--no-debug-logs")
+      ? false
+      : undefined;
 
-  // file config (medium priority)
   let fileCfg = null;
   try {
     if (fs.existsSync(CONFIG_PATH)) {
@@ -181,19 +196,15 @@ function readRuntimeConfig() {
     }
   } catch {}
 
-  // merge
   let merged = { ...DEFAULT_CONFIG };
   if (fileCfg && typeof fileCfg === "object")
     merged = { ...merged, ...fileCfg };
-  Object.keys(cli).forEach((k) => {
-    if (cli[k] !== undefined) merged[k] = cli[k];
-  });
+  if (cliDebug !== undefined) merged.debugLogs = cliDebug;
 
   RUNTIME_CONFIG = merged;
   return RUNTIME_CONFIG;
 }
 
-// Reload config periodically so you can ON/OFF externally while app is running
 function startConfigWatcher() {
   readRuntimeConfig();
   setInterval(() => {
@@ -201,7 +212,7 @@ function startConfigWatcher() {
   }, 3000);
 }
 
-// -------------------- LOGGING (DATE FOLDER + SERVICE FILES) --------------------
+// -------------------- LOGGING --------------------
 function getTodayFolderName() {
   const d = new Date();
   const yyyy = d.getFullYear();
@@ -239,17 +250,9 @@ function writeLog(fileBaseName, message) {
       line,
       "utf8",
     );
-  } catch {
-    // avoid throwing in production; logging should never crash the app
-  }
+  } catch {}
 }
 
-/**
- * log(serviceName, message)
- * - External ON/OFF via config.json (debugLogs)
- * - Always logs critical items if alwaysLogCritical=true
- * - Also calls your existing logger() (if you want, it may log elsewhere too)
- */
 function log(serviceName, message) {
   const cfg = RUNTIME_CONFIG || DEFAULT_CONFIG;
 
@@ -257,18 +260,17 @@ function log(serviceName, message) {
     serviceName === "FATAL" ||
     serviceName === "STOP" ||
     serviceName === "Application" ||
-    serviceName === "Installer";
+    serviceName === "Installer" ||
+    serviceName === "WATCHDOG" ||
+    serviceName === "SERVICE_CTRL";
 
   if (!cfg.debugLogs) {
-    if (!(cfg.alwaysLogCritical && isCritical)) {
-      return; // debug off => skip non-critical noise
-    }
+    if (!(cfg.alwaysLogCritical && isCritical)) return;
   }
 
   try {
     logger(serviceName, message);
   } catch {}
-
   writeLog(serviceName, message);
 }
 
@@ -285,8 +287,7 @@ function isPortListening(port) {
     )
       .toString()
       .trim();
-    const n = parseInt(out || "0", 10);
-    if (n > 0) return true;
+    return parseInt(out || "0", 10) > 0;
   } catch {}
 
   try {
@@ -335,38 +336,46 @@ function isPidAlive(pid) {
   }
 }
 
-// -------------------- STATUS UI IPC (PORT SERVICES ONLY) --------------------
+// -------------------- STATUS UI IPC --------------------
 function svcMeta(meta) {
-  if (mainWindow && !mainWindow.isDestroyed()) {
+  if (mainWindow && !mainWindow.isDestroyed())
     mainWindow.webContents.send("svc:init", { meta });
-  }
 }
 function svcUpdate(payload) {
-  if (mainWindow && !mainWindow.isDestroyed()) {
+  if (mainWindow && !mainWindow.isDestroyed())
     mainWindow.webContents.send("svc:update", payload);
-  }
 }
 function svcReady(meta) {
-  if (mainWindow && !mainWindow.isDestroyed()) {
+  if (mainWindow && !mainWindow.isDestroyed())
     mainWindow.webContents.send("svc:ready", { meta });
-  }
 }
 function svcError(meta) {
-  if (mainWindow && !mainWindow.isDestroyed()) {
+  if (mainWindow && !mainWindow.isDestroyed())
     mainWindow.webContents.send("svc:error", { meta });
-  }
 }
 
-// -------------------- GLOBAL ERROR LOGGING (FILE) --------------------
-process.on("uncaughtException", (err) => {
-  // always write fatal regardless of debug switch
-  writeLog("FATAL", err?.stack || String(err));
+// -------------------- GLOBAL ERROR LOGGING --------------------
+process.on("uncaughtException", (err) =>
+  writeLog("FATAL", err?.stack || String(err)),
+);
+process.on("unhandledRejection", (reason) =>
+  writeLog("FATAL", reason?.stack || String(reason)),
+);
+
+app.on("render-process-gone", (_event, _wc, details) => {
+  writeLog(
+    "ELECTRON",
+    `render-process-gone: reason=${details.reason} exitCode=${details.exitCode}`,
+  );
 });
-process.on("unhandledRejection", (reason) => {
-  writeLog("FATAL", reason?.stack || String(reason));
+app.on("child-process-gone", (_event, details) => {
+  writeLog(
+    "ELECTRON",
+    `child-process-gone: type=${details.type} reason=${details.reason} exitCode=${details.exitCode}`,
+  );
 });
 
-// -------------------- SOCKET INIT (NON-INVASIVE) --------------------
+// -------------------- SOCKET INIT --------------------
 function initSocketNonInvasive() {
   try {
     require("./socket");
@@ -379,7 +388,76 @@ function initSocketNonInvasive() {
   }
 }
 
-// -------------------- CAMERA SERVICES (REQUIRE MODULES) --------------------
+// -------------------- DEFERRED ARTISAN STARTER --------------------
+async function startDeferredArtisanCommand({
+  uiName,
+  logName,
+  args,
+  waitPorts = [],
+  timeoutMs = 60000,
+}) {
+  try {
+    svcUpdate({
+      name: uiName,
+      status: "starting",
+      message: waitPorts.length
+        ? `Waiting ports: ${waitPorts.join(", ")}…`
+        : "Starting…",
+    });
+    writeLog(
+      logName,
+      `Deferred start requested. Waiting ports: ${waitPorts.join(", ") || "none"}…`,
+    );
+
+    for (const p of waitPorts) {
+      svcUpdate({
+        name: uiName,
+        status: "starting",
+        message: `Waiting for port ${p}…`,
+      });
+      const ok = await waitForPort(p, timeoutMs);
+      if (!ok) {
+        svcUpdate({
+          name: uiName,
+          status: "failed",
+          message: `Timeout waiting for port ${p}. Not started.`,
+        });
+        writeLog(
+          logName,
+          `FAILED: Timeout waiting for port ${p}. Not started.`,
+        );
+        return null;
+      }
+    }
+
+    const proc = spawnWrapper(`[${uiName}]`, phpPathCli, ["artisan", ...args], {
+      cwd: srcDirectory,
+      baseDir: appDir,
+    });
+
+    writeLog(
+      logName,
+      `RUNNING pid=${getPid(proc)} args=artisan ${args.join(" ")}`,
+    );
+    svcUpdate({
+      name: uiName,
+      status: "running",
+      pid: getPid(proc),
+      message: "Started.",
+    });
+    return proc;
+  } catch (e) {
+    svcUpdate({
+      name: uiName,
+      status: "failed",
+      message: "Start exception. Check logs.",
+    });
+    writeLog(logName, `FAILED: ${e?.stack || e?.message || String(e)}`);
+    return null;
+  }
+}
+
+// -------------------- CAMERA SERVICES (ORDER: CAM2, CAM3, CAM1) --------------------
 let cameraServicesLoaded = false;
 
 const CAMERA_LOG_FILES = {
@@ -394,22 +472,20 @@ function initCameraServicesNonInvasive() {
 
   const list = [
     {
-      logFile: CAMERA_LOG_FILES.cam1,
-      file: "./camera_1_organize_files_by_date",
-    },
-    {
       logFile: CAMERA_LOG_FILES.cam2,
       file: "./camera_2_start_camera_live_stream",
     },
     { logFile: CAMERA_LOG_FILES.cam3, file: "./camera_3_watchCameraImages" },
+    {
+      logFile: CAMERA_LOG_FILES.cam1,
+      file: "./camera_1_organize_files_by_date",
+    },
   ];
 
   for (const s of list) {
-    // File-only logger/heartbeat
     const fileOnlyLogger = (msg) => writeLog(s.logFile, msg);
     const fileOnlyBeat = (msg) => writeLog(s.logFile, `HEARTBEAT: ${msg}`);
 
-    // In debug mode, do NOT mute console (helps you see unexpected errors)
     const cfg = RUNTIME_CONFIG || DEFAULT_CONFIG;
     const shouldMuteConsole = cfg.cameraMuteConsole && !cfg.debugLogs;
 
@@ -439,8 +515,6 @@ function initCameraServicesNonInvasive() {
             srcDirectory,
             logger: fileOnlyLogger,
             beat: fileOnlyBeat,
-            // You can pass config into camera modules if you later want:
-            config: cfg,
           });
           writeLog(s.logFile, `SERVICE STARTED via ${s.file} start().`);
         } else {
@@ -467,9 +541,6 @@ function initCameraServicesNonInvasive() {
   }
 }
 
-/**
- * Start camera modules only after artisan is listening (port 8000).
- */
 async function startCameraAfterLaravelReady() {
   try {
     writeLog(
@@ -477,7 +548,6 @@ async function startCameraAfterLaravelReady() {
       "Waiting for Laravel port 8000 before starting camera modules...",
     );
 
-    // Quick short-circuit
     if (isPortListening(8000)) {
       writeLog(
         "camera_boot",
@@ -517,10 +587,7 @@ function createMainWindow() {
     width,
     height,
     autoHideMenuBar: true,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
+    webPreferences: { nodeIntegration: true, contextIsolation: false },
   });
 
   if (!fs.existsSync(statusHtmlPath)) {
@@ -535,22 +602,19 @@ function createMainWindow() {
   mainWindow.loadFile(statusHtmlPath);
   mainWindow.maximize();
 
-  mainWindow.on("closed", () => {
-    mainWindow = null;
-  });
-
+  mainWindow.on("closed", () => (mainWindow = null));
   return mainWindow;
 }
 
+// -------------------- IPC HELPERS --------------------
 ipcMain.handle("open-login", async () => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     await mainWindow.loadURL("http://127.0.0.1:3000/login");
   }
 });
 
-// -------------------- LOGS IPC (OPTIONAL UI BUTTONS) --------------------
 ipcMain.handle("open-logs-folder", async () => {
-  const folder = ensureLogsDir(); // today folder
+  const folder = ensureLogsDir();
   try {
     await shell.openPath(folder);
   } catch {}
@@ -566,7 +630,460 @@ ipcMain.handle("get-runtime-config", async () => {
   };
 });
 
-// -------------------- START SERVICES (NON-INVASIVE) --------------------
+// -------------------- WATCHDOG + MANUAL START/RESTART --------------------
+const restartState = { lastRestartAt: {}, restartCount: {}, restarting: {} };
+
+// Backoff: 2s, 5s, 10s, 20s, 30s
+function getBackoffMs(key) {
+  const n = restartState.restartCount[key] || 0;
+  const seq = [2000, 5000, 10000, 20000, 30000];
+  return seq[Math.min(n, seq.length - 1)];
+}
+function canRestartNow(key) {
+  const now = Date.now();
+  const last = restartState.lastRestartAt[key] || 0;
+  return now - last >= getBackoffMs(key);
+}
+function markRestart(key) {
+  restartState.lastRestartAt[key] = Date.now();
+  restartState.restartCount[key] = (restartState.restartCount[key] || 0) + 1;
+}
+function markHealthy(key) {
+  restartState.restartCount[key] = 0;
+  restartState.lastRestartAt[key] = 0;
+}
+
+// -------------------- MQTT STORM FIX (single-flight + grace) --------------------
+let mqttStartInProgress = false;
+let mqttQrStartInProgress = false;
+
+let mqttLastStartAt = 0;
+let mqttQrLastStartAt = 0;
+
+const MQTT_GRACE_MS = 30000;
+
+// -------------------- STARTERS --------------------
+async function startMosquitto() {
+  if (isPortListening(1883)) {
+    svcUpdate({
+      name: services.mosquitto.name,
+      status: "running",
+      port: 1883,
+      message: "Already running.",
+    });
+    markHealthy("mosquitto");
+    return "already-running";
+  }
+
+  if (!mosquittoPath || !mosquittoConf) {
+    svcUpdate({
+      name: services.mosquitto.name,
+      status: "failed",
+      port: 1883,
+      message: "Mosquitto exe/conf not found.",
+    });
+    writeLog("Mosquitto", "FAILED: Mosquitto exe/conf not found.");
+    return "failed";
+  }
+
+  svcUpdate({
+    name: services.mosquitto.name,
+    status: "starting",
+    port: 1883,
+    message: "Starting broker…",
+  });
+  writeLog("Mosquitto", "Starting broker…");
+
+  services.mosquitto.proc = spawnWrapper(
+    "[Mosquitto]",
+    mosquittoPath,
+    ["-c", mosquittoConf, "-v"],
+    {
+      cwd: path.dirname(mosquittoPath),
+      baseDir: appDir,
+    },
+  );
+  services.mosquitto.startedByUs = true;
+
+  const ok = await waitForPort(1883, 25000);
+  const pid = getPid(services.mosquitto.proc);
+
+  svcUpdate({
+    name: services.mosquitto.name,
+    status: ok ? "running" : "failed",
+    port: 1883,
+    pid,
+    message: ok
+      ? "Listening on 1883."
+      : "Not listening. Check logs/conf/firewall.",
+  });
+  writeLog(
+    "Mosquitto",
+    ok ? `RUNNING pid=${pid} port=1883` : `FAILED pid=${pid} port=1883`,
+  );
+
+  if (ok) markHealthy("mosquitto");
+  return ok ? "started" : "failed";
+}
+
+async function startArtisanServe() {
+  if (isPortListening(8000)) {
+    svcUpdate({
+      name: services.artisanServe.name,
+      status: "running",
+      port: 8000,
+      message: "Already running.",
+    });
+    markHealthy("artisanServe");
+    return "already-running";
+  }
+
+  svcUpdate({
+    name: services.artisanServe.name,
+    status: "starting",
+    port: 8000,
+    message: "Starting artisan serve…",
+  });
+  writeLog("ArtisanServe", "Starting artisan serve…");
+
+  services.artisanServe.proc = spawnWrapper(
+    "[ArtisanServe]",
+    phpPathCli,
+    ["artisan", "serve", "--host=0.0.0.0", "--port=8000"],
+    { cwd: srcDirectory, baseDir: appDir },
+  );
+  services.artisanServe.startedByUs = true;
+
+  const ok = await waitForPort(8000, 25000);
+  const pid = getPid(services.artisanServe.proc);
+
+  svcUpdate({
+    name: services.artisanServe.name,
+    status: ok ? "running" : "failed",
+    port: 8000,
+    pid,
+    message: ok
+      ? "Listening on 8000."
+      : "Not listening. Check Laravel boot logs.",
+  });
+  writeLog(
+    "ArtisanServe",
+    ok ? `RUNNING pid=${pid} port=8000` : `FAILED pid=${pid} port=8000`,
+  );
+
+  if (ok) markHealthy("artisanServe");
+  return ok ? "started" : "failed";
+}
+
+async function startPhpCgi() {
+  if (isPortListening(9000)) {
+    svcUpdate({
+      name: services.phpCgi.name,
+      status: "running",
+      port: 9000,
+      message: "Already running.",
+    });
+    markHealthy("phpCgi");
+    return "already-running";
+  }
+
+  svcUpdate({
+    name: services.phpCgi.name,
+    status: "starting",
+    port: 9000,
+    message: "Starting php-cgi worker…",
+  });
+  writeLog("PHP-CGI", "Starting php-cgi worker…");
+
+  services.phpCgi.proc = spawnPhpCgiWorker(phpCGi, 9000, {
+    cwd: srcDirectory,
+    baseDir: appDir,
+  });
+  services.phpCgi.startedByUs = true;
+
+  const ok = await waitForPort(9000, 25000);
+  const pid = getPid(services.phpCgi.proc);
+
+  svcUpdate({
+    name: services.phpCgi.name,
+    status: ok ? "running" : "failed",
+    port: 9000,
+    pid,
+    message: ok ? "Listening on 9000." : "Not listening. Check PHP-CGI logs.",
+  });
+  writeLog(
+    "PHP-CGI",
+    ok ? `RUNNING pid=${pid} port=9000` : `FAILED pid=${pid} port=9000`,
+  );
+
+  if (ok) markHealthy("phpCgi");
+  return ok ? "started" : "failed";
+}
+
+async function startNginx() {
+  if (isPortListening(3000)) {
+    svcUpdate({
+      name: services.nginx.name,
+      status: "running",
+      port: 3000,
+      message: "Already running.",
+    });
+    markHealthy("nginx");
+    return "already-running";
+  }
+
+  svcUpdate({
+    name: services.nginx.name,
+    status: "starting",
+    port: 3000,
+    message: "Starting nginx…",
+  });
+  writeLog("Nginx", "Starting nginx…");
+
+  services.nginx.proc = spawnWrapper(
+    "[Nginx]",
+    nginxPath,
+    ["-p", appDir, "-c", "conf/nginx.conf"],
+    {
+      cwd: appDir,
+      baseDir: appDir,
+    },
+  );
+  services.nginx.startedByUs = true;
+
+  const ok = await waitForPort(3000, 30000);
+  const pid = getPid(services.nginx.proc);
+
+  svcUpdate({
+    name: services.nginx.name,
+    status: ok ? "running" : "failed",
+    port: 3000,
+    pid,
+    message: ok
+      ? "Listening on 3000."
+      : "Not listening. Check nginx logs/conf.",
+  });
+  writeLog(
+    "Nginx",
+    ok ? `RUNNING pid=${pid} port=3000` : `FAILED pid=${pid} port=3000`,
+  );
+
+  if (ok) markHealthy("nginx");
+  return ok ? "started" : "failed";
+}
+
+function startMqttDeferredNonBlocking() {
+  if (mqttStartInProgress) {
+    writeLog(
+      "MQTT",
+      "Start requested but already in progress. Ignoring duplicate.",
+    );
+    return "ignored";
+  }
+  mqttStartInProgress = true;
+
+  startDeferredArtisanCommand({
+    uiName: "MQTT",
+    logName: "MQTT",
+    args: ["mqtt:subscribe"],
+    waitPorts: [1883, 8000],
+  })
+    .then((proc) => {
+      services.mqttSub.proc = proc;
+      services.mqttSub.startedByUs = !!proc;
+      mqttLastStartAt = Date.now();
+      if (proc) markHealthy("mqttSub");
+    })
+    .finally(() => {
+      mqttStartInProgress = false;
+    });
+
+  return "queued";
+}
+
+function startMqttQrDeferredNonBlocking() {
+  if (mqttQrStartInProgress) {
+    writeLog(
+      "MQTT-QR",
+      "Start requested but already in progress. Ignoring duplicate.",
+    );
+    return "ignored";
+  }
+  mqttQrStartInProgress = true;
+
+  startDeferredArtisanCommand({
+    uiName: "MQTT-QR",
+    logName: "MQTT-QR",
+    args: ["mqtt:qrbackgroundlistener"],
+    waitPorts: [1883, 8000],
+  })
+    .then((proc) => {
+      services.mqttQr.proc = proc;
+      services.mqttQr.startedByUs = !!proc;
+      mqttQrLastStartAt = Date.now();
+      if (proc) markHealthy("mqttQr");
+    })
+    .finally(() => {
+      mqttQrStartInProgress = false;
+    });
+
+  return "queued";
+}
+
+async function startServiceByKey(key, reason = "manual") {
+  if (!key) return { ok: false, message: "Missing service key" };
+  if (restartState.restarting[key])
+    return { ok: false, message: "Already starting/restarting" };
+
+  restartState.restarting[key] = true;
+  try {
+    writeLog("SERVICE_CTRL", `startServiceByKey(${key}) reason=${reason}`);
+
+    switch (key) {
+      case "mqttSub":
+        svcUpdate({
+          name: services.mqttSub.name,
+          status: "starting",
+          message: "Starting (deferred)…",
+        });
+        startMqttDeferredNonBlocking();
+        return { ok: true, message: "MQTT queued (deferred)" };
+
+      case "mqttQr":
+        svcUpdate({
+          name: services.mqttQr.name,
+          status: "starting",
+          message: "Starting (deferred)…",
+        });
+        startMqttQrDeferredNonBlocking();
+        return { ok: true, message: "MQTT-QR queued (deferred)" };
+
+      case "phpCgi":
+        return {
+          ok: (await startPhpCgi()) !== "failed",
+          message: "PHP-CGI start attempted",
+        };
+
+      case "nginx":
+        return {
+          ok: (await startNginx()) !== "failed",
+          message: "Nginx start attempted",
+        };
+
+      case "mosquitto":
+        return {
+          ok: (await startMosquitto()) !== "failed",
+          message: "Mosquitto start attempted",
+        };
+
+      case "artisanServe":
+        return {
+          ok: (await startArtisanServe()) !== "failed",
+          message: "ArtisanServe start attempted",
+        };
+
+      default:
+        return { ok: false, message: `Unknown service key: ${key}` };
+    }
+  } finally {
+    restartState.restarting[key] = false;
+  }
+}
+
+async function restartServiceByKey(key, reason = "manual") {
+  writeLog("SERVICE_CTRL", `restartServiceByKey(${key}) reason=${reason}`);
+
+  const svc = services[key];
+  if (svc && svc.startedByUs && svc.proc) {
+    try {
+      await stopServices(svc.proc);
+    } catch {}
+    svc.proc = null;
+    svc.startedByUs = false;
+  }
+
+  // manual restart should not be blocked by backoff
+  restartState.lastRestartAt[key] = 0;
+  restartState.restartCount[key] = 0;
+
+  return await startServiceByKey(key, reason);
+}
+
+// UI buttons -> start/restart
+ipcMain.handle("service:start", async (_e, key) =>
+  startServiceByKey(key, "ui-start"),
+);
+ipcMain.handle("service:restart", async (_e, key) =>
+  restartServiceByKey(key, "ui-restart"),
+);
+
+// Auto-restart watchdog
+function startServiceWatchdog() {
+  const cfg = RUNTIME_CONFIG || DEFAULT_CONFIG;
+  if (!cfg.watchdogEnabled) {
+    writeLog("WATCHDOG", "Watchdog disabled by config.");
+    return;
+  }
+
+  const intervalMs = Number(cfg.watchdogIntervalMs || 8000);
+  writeLog("WATCHDOG", `Watchdog started. intervalMs=${intervalMs}`);
+
+  setInterval(async () => {
+    const localCfg = RUNTIME_CONFIG || DEFAULT_CONFIG;
+    if (!localCfg.watchdogEnabled) return;
+
+    const checks = [
+      { key: "phpCgi", type: "port", port: 9000, name: "PHP-CGI" },
+      { key: "nginx", type: "port", port: 3000, name: "Nginx" },
+      { key: "mosquitto", type: "port", port: 1883, name: "Mosquitto" },
+      { key: "artisanServe", type: "port", port: 8000, name: "ArtisanServe" },
+      { key: "mqttSub", type: "pid", name: "MQTT" },
+      { key: "mqttQr", type: "pid", name: "MQTT-QR" },
+    ];
+
+    for (const c of checks) {
+      const svc = services[c.key];
+      if (!svc || !svc.startedByUs) continue;
+
+      let healthy = true;
+      if (c.type === "port") healthy = isPortListening(c.port);
+      if (c.type === "pid") healthy = isPidAlive(getPid(svc.proc));
+
+      if (healthy) {
+        markHealthy(c.key);
+        continue;
+      }
+
+      // MQTT storm protection: if just started, do NOT restart yet
+      if (c.key === "mqttSub") {
+        if (mqttStartInProgress) continue;
+        if (mqttLastStartAt && Date.now() - mqttLastStartAt < MQTT_GRACE_MS)
+          continue;
+      }
+      if (c.key === "mqttQr") {
+        if (mqttQrStartInProgress) continue;
+        if (mqttQrLastStartAt && Date.now() - mqttQrLastStartAt < MQTT_GRACE_MS)
+          continue;
+      }
+
+      if (!canRestartNow(c.key)) continue;
+      if (restartState.restarting[c.key]) continue;
+
+      svcUpdate({
+        name: svc.name,
+        status: "failed",
+        port: c.port || null,
+        message: "Detected stopped. Watchdog restarting…",
+      });
+      writeLog("WATCHDOG", `${c.name} unhealthy. key=${c.key}. Restarting.`);
+
+      markRestart(c.key);
+      await restartServiceByKey(c.key, "watchdog");
+    }
+  }, intervalMs);
+}
+
+// -------------------- START SERVICES (ORDER AS REQUESTED) --------------------
 async function startMissingServicesNonInvasive() {
   svcMeta("Checking existing services…");
 
@@ -590,294 +1107,42 @@ async function startMissingServicesNonInvasive() {
     });
   }
 
-  svcMeta("Starting missing services (5 seconds gap)…");
+  svcMeta("Starting services in requested order…");
 
-  // 1) Mosquitto
-  if (!isPortListening(1883)) {
-    svcUpdate({
-      name: services.mosquitto.name,
-      status: "starting",
-      port: 1883,
-      message: "Starting broker…",
-    });
-    log("Mosquitto", "Starting broker…");
+  // 1) MQTT
+  svcUpdate({
+    name: services.mqttSub.name,
+    status: "starting",
+    message: "Waiting ports: 1883, 8000…",
+  });
+  startMqttDeferredNonBlocking();
+  await sleep(1000);
 
-    if (!mosquittoPath || !mosquittoConf) {
-      svcUpdate({
-        name: services.mosquitto.name,
-        status: "failed",
-        port: 1883,
-        message: "Mosquitto exe/conf not found.",
-      });
-      writeLog("Mosquitto", "FAILED: Mosquitto exe/conf not found.");
-    } else {
-      services.mosquitto.proc = spawnWrapper(
-        "[Mosquitto]",
-        mosquittoPath,
-        ["-c", mosquittoConf, "-v"],
-        {
-          cwd: path.dirname(mosquittoPath),
-          baseDir: appDir,
-        },
-      );
-      services.mosquitto.startedByUs = true;
-
-      const ok = await waitForPort(1883, 25000);
-      const pid = getPid(services.mosquitto.proc);
-
-      writeLog(
-        "Mosquitto",
-        ok ? `RUNNING pid=${pid} port=1883` : `FAILED pid=${pid} port=1883`,
-      );
-      svcUpdate({
-        name: services.mosquitto.name,
-        status: ok ? "running" : "failed",
-        port: 1883,
-        pid,
-        message: ok
-          ? "Listening on 1883."
-          : isPidAlive(pid)
-            ? "Process alive but not listening. Check conf/firewall."
-            : "Process exited. Check logs.",
-      });
-    }
-    await sleep(5000);
-  }
-
-  // 2) Artisan Serve
-  if (!isPortListening(8000)) {
-    svcUpdate({
-      name: services.artisanServe.name,
-      status: "starting",
-      port: 8000,
-      message: "Starting artisan serve…",
-    });
-    log("ArtisanServe", "Starting artisan serve…");
-
-    services.artisanServe.proc = spawnWrapper(
-      "[ArtisanServe]",
-      phpPathCli,
-      ["artisan", "serve", "--host=0.0.0.0", "--port=8000"],
-      { cwd: srcDirectory, baseDir: appDir },
-    );
-    services.artisanServe.startedByUs = true;
-
-    const ok = await waitForPort(8000, 25000);
-    const pid = getPid(services.artisanServe.proc);
-
-    writeLog(
-      "ArtisanServe",
-      ok ? `RUNNING pid=${pid} port=8000` : `FAILED pid=${pid} port=8000`,
-    );
-    svcUpdate({
-      name: services.artisanServe.name,
-      status: ok ? "running" : "failed",
-      port: 8000,
-      pid,
-      message: ok
-        ? "Listening on 8000."
-        : isPidAlive(pid)
-          ? "Process alive but not listening. Check Laravel boot errors."
-          : "Process exited. Check logs.",
-    });
-
-    await sleep(5000);
-  }
+  // 2) MQTT-QR
+  svcUpdate({
+    name: services.mqttQr.name,
+    status: "starting",
+    message: "Waiting ports: 1883, 8000…",
+  });
+  startMqttQrDeferredNonBlocking();
+  await sleep(1000);
 
   // 3) PHP-CGI
-  if (!isPortListening(9000)) {
-    svcUpdate({
-      name: services.phpCgi.name,
-      status: "starting",
-      port: 9000,
-      message: "Starting php-cgi worker…",
-    });
-    log("PHP-CGI", "Starting php-cgi worker…");
-
-    services.phpCgi.proc = spawnPhpCgiWorker(phpCGi, 9000, {
-      cwd: srcDirectory,
-      baseDir: appDir,
-    });
-    services.phpCgi.startedByUs = true;
-
-    const ok = await waitForPort(9000, 25000);
-    const pid = getPid(services.phpCgi.proc);
-
-    writeLog(
-      "PHP-CGI",
-      ok ? `RUNNING pid=${pid} port=9000` : `FAILED pid=${pid} port=9000`,
-    );
-    svcUpdate({
-      name: services.phpCgi.name,
-      status: ok ? "running" : "failed",
-      port: 9000,
-      pid,
-      message: ok
-        ? "Listening on 9000."
-        : isPidAlive(pid)
-          ? "Process alive but not listening. Check php-cgi."
-          : "Process exited. Check logs.",
-    });
-
-    await sleep(5000);
-  }
+  await startPhpCgi();
+  await sleep(1200);
 
   // 4) Nginx
-  if (!isPortListening(3000)) {
-    svcUpdate({
-      name: services.nginx.name,
-      status: "starting",
-      port: 3000,
-      message: "Starting nginx…",
-    });
-    log("Nginx", "Starting nginx…");
+  await startNginx();
+  await sleep(1200);
 
-    services.nginx.proc = spawnWrapper(
-      "[Nginx]",
-      nginxPath,
-      ["-p", appDir, "-c", "conf/nginx.conf"],
-      {
-        cwd: appDir,
-        baseDir: appDir,
-      },
-    );
-    services.nginx.startedByUs = true;
+  // 5) Mosquitto
+  await startMosquitto();
+  await sleep(1200);
 
-    const ok = await waitForPort(3000, 30000);
-    const pid = getPid(services.nginx.proc);
+  // 6) ArtisanServe
+  await startArtisanServe();
+  await sleep(1200);
 
-    writeLog(
-      "Nginx",
-      ok ? `RUNNING pid=${pid} port=3000` : `FAILED pid=${pid} port=3000`,
-    );
-    svcUpdate({
-      name: services.nginx.name,
-      status: ok ? "running" : "failed",
-      port: 3000,
-      pid,
-      message: ok
-        ? "Listening on 3000."
-        : isPidAlive(pid)
-          ? "Process alive but not listening. Check nginx.conf."
-          : "Process exited. Check nginx logs in logs folder.",
-    });
-
-    await sleep(5000);
-  }
-
-  // 5) Scheduler
-  svcUpdate({
-    name: services.scheduler.name,
-    status: "starting",
-    message: "Starting schedule:work…",
-  });
-  log("Scheduler", "Starting schedule:work…");
-
-  services.scheduler.proc = spawnWrapper(
-    "[Scheduler]",
-    phpPathCli,
-    ["artisan", "schedule:work"],
-    {
-      cwd: srcDirectory,
-      baseDir: appDir,
-    },
-  );
-  services.scheduler.startedByUs = true;
-
-  writeLog("Scheduler", `RUNNING pid=${getPid(services.scheduler.proc)}`);
-  svcUpdate({
-    name: services.scheduler.name,
-    status: "running",
-    pid: getPid(services.scheduler.proc),
-    message: "Started.",
-  });
-  await sleep(5000);
-
-  // 6) Queue
-  svcUpdate({
-    name: services.queue.name,
-    status: "starting",
-    message: "Starting queue:work…",
-  });
-  log("Queue", "Starting queue:work…");
-
-  services.queue.proc = spawnWrapper(
-    "[Queue]",
-    phpPathCli,
-    ["artisan", "queue:work"],
-    {
-      cwd: srcDirectory,
-      baseDir: appDir,
-    },
-  );
-  services.queue.startedByUs = true;
-
-  writeLog("Queue", `RUNNING pid=${getPid(services.queue.proc)}`);
-  svcUpdate({
-    name: services.queue.name,
-    status: "running",
-    pid: getPid(services.queue.proc),
-    message: "Started.",
-  });
-  await sleep(5000);
-
-  // 7) MQTT subscribe
-  svcUpdate({
-    name: services.mqttSub.name,
-    status: "starting",
-    message: "Starting mqtt:subscribe…",
-  });
-  log("MQTT", "Starting mqtt:subscribe…");
-
-  services.mqttSub.proc = spawnWrapper(
-    "[MQTT]",
-    phpPathCli,
-    ["artisan", "mqtt:subscribe"],
-    {
-      cwd: srcDirectory,
-      baseDir: appDir,
-    },
-  );
-  services.mqttSub.startedByUs = true;
-
-  writeLog("MQTT", `RUNNING pid=${getPid(services.mqttSub.proc)}`);
-  svcUpdate({
-    name: services.mqttSub.name,
-    status: "running",
-    pid: getPid(services.mqttSub.proc),
-    message: "Started.",
-  });
-  await sleep(5000);
-
-  // 8) MQTT QR listener
-  svcUpdate({
-    name: services.mqttQr.name,
-    status: "starting",
-    message: "Starting mqtt:qrbackgroundlistener…",
-  });
-  log("MQTT-QR", "Starting mqtt:qrbackgroundlistener…");
-
-  services.mqttQr.proc = spawnWrapper(
-    "[MQTT-QR]",
-    phpPathCli,
-    ["artisan", "mqtt:qrbackgroundlistener"],
-    {
-      cwd: srcDirectory,
-      baseDir: appDir,
-    },
-  );
-  services.mqttQr.startedByUs = true;
-
-  writeLog("MQTT-QR", `RUNNING pid=${getPid(services.mqttQr.proc)}`);
-  svcUpdate({
-    name: services.mqttQr.name,
-    status: "running",
-    pid: getPid(services.mqttQr.proc),
-    message: "Started.",
-  });
-  await sleep(5000);
-
-  // Final readiness
   if (isPortListening(3000)) {
     svcReady("UI is ready on port 3000. Click Open Login (3000).");
   } else {
@@ -890,40 +1155,23 @@ async function startMissingServicesNonInvasive() {
   );
 }
 
-// -------------------- REPORT WINDOW --------------------
-ipcMain.handle("open-report-window", (event, url) => {
-  ensureLogsDir();
-  try {
-    fs.appendFileSync(path.join(ensureLogsDir(), "ips.txt"), `${url}\n`);
-  } catch {}
-
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-
-  const reportWindow = new BrowserWindow({
-    width,
-    height,
-    fullscreen: true,
-    webPreferences: { nodeIntegration: true, contextIsolation: false },
-  });
-
-  reportWindow.loadURL(url);
-});
-
-app.disableHardwareAcceleration();
-
 // -------------------- APP READY --------------------
 app.whenReady().then(async () => {
-  // Ensure data dirs + start config watcher
   ensureBaseDataDir();
   ensureLogsDir();
   startConfigWatcher();
 
-  // IMPORTANT: update cleanup helper to delete from LOG_BASE if needed
-  // If your existing cleanupOldLogs() deletes from appDir/logs, you should modify it to delete from LOG_BASE.
-  // For now, we keep your call (but you should update helper implementation accordingly).
-  cleanupOldLogs(2);
+  try {
+    cleanupOldLogs(2, LOG_BASE);
+  } catch {
+    try {
+      cleanupOldLogs(2);
+    } catch {}
+  }
 
   writeLog("Application", "App starting...");
+  writeLog("Application", `Config: ${CONFIG_PATH}`);
+  writeLog("Application", `Logs: ${LOG_BASE}`);
 
   if (isClockTampered()) {
     writeLog("Application", "System time tamper detected. Exiting.");
@@ -947,12 +1195,21 @@ app.whenReady().then(async () => {
   setImmediate(() => {
     runInstaller(path.join(appDir, "vs_redist.exe"))
       .then(async () => {
+        // 1) FIRST TIME: start everything once (no watchdog yet)
         await startMissingServicesNonInvasive();
-        await startCameraAfterLaravelReady(); // ✅ only after port 8000 is listening
+
+        // 2) AFTER initial startup is done: start watchdog every 5 minutes
+        startServiceWatchdog();
+
+        // 3) camera after laravel ready
+        await startCameraAfterLaravelReady();
       })
       .catch(async (err) => {
         writeLog("Installer", err?.stack || err?.message || String(err));
+
+        // same flow even if installer fails
         await startMissingServicesNonInvasive();
+        startServiceWatchdog();
         await startCameraAfterLaravelReady();
       });
   });
