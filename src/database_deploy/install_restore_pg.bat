@@ -17,7 +17,7 @@ set "PG_SERVICE=postgresql-x64-%PG_MAJOR%"
 
 set "DB_HOST=127.0.0.1"
 set "DB_PORT=5432"
-set "DB_NAME=xtremeguard_parking"
+set "DB_NAME=postgres"
 
 REM NOTE:
 REM - DB_USER is used for psql connection and DB creation/restore.
