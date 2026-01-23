@@ -52,7 +52,14 @@ class CameraLogListenerController extends Controller
     public function CamerasList(Request $request)
     {
 
-        return CamerasList::where("company_id", $request->company_id)->get();
+        $ip = (new ParkingCameraLogsController())->getServerIp();
+
+        return CamerasList::where('company_id', $request->company_id)
+            ->get()
+            ->map(function ($camera) use ($ip) {
+                $camera->node_server_ip = $ip; // runtime-only change
+                return $camera;
+            });
         return [
             "data" => [
 
@@ -158,7 +165,7 @@ class CameraLogListenerController extends Controller
 
         if (! file_exists($imagePath)) {
             $log("Vehicle Background Image Not Found at {$imagePath}");
-            return response()->json(['status' => 'error', 'message' => 'Image not found'], 404);
+            return response()->json(['status' => 'error', 'message' => 'Image not found at ' . $imagePath,], 404);
         }
 
         // ---- OCR stage ------------------------------------------------------
