@@ -140,6 +140,8 @@ export default {
 
       try {
         this.player = new window.JSMpeg.Player(this.wsUrl, {
+          reconnectPeriod: 1000 * 60, // ⬅ auto reconnect every 3 seconds
+
           canvas,
           audio: false,
           pauseWhenHidden: false,

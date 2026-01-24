@@ -7,6 +7,7 @@ use App\Models\AssignedDepartmentEmployee;
 use App\Models\CompanyBranch;
 use App\Models\Role;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -27,6 +28,58 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->first();
+
+
+        //checking LICENCNE Time
+        /*
+        if (!$user->machine_id) {
+            $user->update([
+                'machine_id'  => $request['machine_id'],
+            ]);
+        }
+        if ($request['is_electron']) {
+            // Block login if machine ID doesn't match
+            if ($user->machine_id && $user->machine_id != $request['machine_id']) {
+
+
+
+                throw ValidationException::withMessages([
+                    'email' => ['Licencne is Not Valid.'],
+                ]);
+            }
+        }
+
+        if (!$user->expiry_date) {
+            // First login → start 10-day trial
+            $user->update([
+                'expiry_date' => now()->addDays(10)->toDateString(),
+                'machine_id'  => $request['machine_id'],
+            ]);
+        } else {
+
+            // Check if trial expired
+            $expiry = Carbon::parse($user->expiry_date)->startOfDay();
+            $today  = now()->startOfDay();
+
+            if ($expiry->lt($today)) {
+                // Trial expired → logout and block access
+
+
+                throw ValidationException::withMessages([
+                    'email' => ['Licencne is Expired.'],
+                ]);
+            }
+        }
+*/
+
+
+
+
+
+
+
+
+        //LICENCNE END
         // if ($user->is_master === true) {
         //     $user->user_type = "master";
         // }

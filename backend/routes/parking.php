@@ -67,6 +67,10 @@ Route::post('command_call_device_to_arduino', [DeviceController::class, 'command
 
 Route::get('parking_log_live', [ParkingCameraLogsController::class, 'getLiveVehicleLogs']);
 
+Route::post('parking_members/import-csv/preview', [ParkingMembersController::class, 'preview']);
+Route::post('parking_members/import-csv/create',  [ParkingMembersController::class, 'createFromCSV']);
+
+
 
 
 

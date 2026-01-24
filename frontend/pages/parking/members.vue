@@ -6,6 +6,20 @@
         {{ response }}
       </v-snackbar>
     </div>
+    <v-dialog v-model="DialogImport" max-width="80%">
+      <v-card>
+        <v-card-title dark class="popup_background_noviolet">
+          <span dense> CSV Import</span>
+          <v-spacer></v-spacer>
+          <v-icon @click="DialogImport = false" outlined>
+            mdi mdi-close-circle
+          </v-icon>
+        </v-card-title>
+        <v-card-text>
+          <ImportMembersCsvPopup />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <v-dialog v-model="DialogCredits" max-width="400px">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
@@ -37,7 +51,7 @@
 
 
 
-    <v-dialog v-model="newMemberDialog" max-width="800px">
+    <v-dialog v-model="newMemberDialog" max-width="1200px">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
           <span dense> {{ editId ? "Update" : "New" }} Membership Account</span>
@@ -102,6 +116,17 @@
                 @click="addItem()">
                 <v-icon class="">mdi mdi-plus-circle</v-icon>
               </v-btn>
+
+
+
+            </v-col><v-col style="max-width:40px">
+
+
+              <v-btn v-if="can('operators_create')" title="Change Request" x-small :ripple="false" text
+                @click="DialogImport = true">
+                <v-icon class="">mdi-calendar-export</v-icon>
+              </v-btn>
+
             </v-col>
           </v-row>
 
@@ -242,6 +267,7 @@
 
 <script>
 import EditMembers from '../../components/Parking/EditMembers.vue';
+import ImportMembersCsvPopup from '../../components/Parking/ImportMembersCsvPopup.vue';
 import MemberVehiclesList from '../../components/Parking/MemberVehiclesList.vue';
 import ParkingMemberCredits from '../../components/Parking/ParkingMemberCredits.vue';
 
@@ -252,9 +278,10 @@ import ParkingMemberCredits from '../../components/Parking/ParkingMemberCredits.
 
 export default {
   components: {
-    EditMembers, MemberVehiclesList, ParkingMemberCredits
+    EditMembers, MemberVehiclesList, ParkingMemberCredits, ImportMembersCsvPopup
   },
   data: () => ({
+    DialogImport: false,
     DialogCredits: false,
     memberId: null,
     DialogMemberParkingList: false,

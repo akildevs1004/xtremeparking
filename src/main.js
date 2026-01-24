@@ -274,15 +274,15 @@ function initCameraServicesNonInvasive() {
   const list = [
     {
       logFile: CAMERA_LOG_FILES.cam1,
-      file: "./camera_1_organize_files_by_date",
+      file: "./camera/camera_1_organize_files_by_date",
     },
     {
       logFile: CAMERA_LOG_FILES.cam2,
-      file: "./camera_2_start_camera_live_stream",
+      file: "./camera/camera_2_start_camera_live_stream",
     },
     {
       logFile: CAMERA_LOG_FILES.cam3,
-      file: "./camera_3_watchCameraImages",
+      file: "./camera/camera_3_watchCameraImages",
     },
   ];
 
@@ -672,7 +672,7 @@ async function startMissingServicesNonInvasive() {
   services.mqttSub.proc = spawnWrapper(
     "[MQTT]",
     phpPathCli,
-    ["artisan", "mqtt:subscribe"],
+    ["artisan", "mqtt:listen"],
     { cwd: srcDirectory, baseDir: appDir },
   );
   services.mqttSub.startedByUs = true;

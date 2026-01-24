@@ -11,7 +11,7 @@ export function getMqtt() {
   client = mqtt.connect(BROKER_URL, {
     clientId: "vue-qrcode-" + Math.random().toString(16).slice(2),
     clean: true,
-    reconnectPeriod: 2000,
+    reconnectPeriod: 1000 * 60,
     keepalive: 30,
   });
 

@@ -76,13 +76,36 @@ class MqttService
 
                         echo "\n";
 
-                        $logPath = base_path('../../mqtt-laravel/mqtt-logs/' . date("Y-m-d") . '.log');
-                        File::prepend($logPath, "[" . now() . "] " . $message . "\n");
 
                         Device::where("serial_number", $serialNumber)->update([
                             'status_id' => 1,
                             'last_live_datetime' => date("Y-m-d H:i:s"),
                         ]);
+
+
+                        // $logPath = base_path('../../mqtt-laravel/mqtt-logs/' . date("Y-m-d") . '.log');
+                        // File::prepend($logPath, "[" . now() . "] " . $message . "\n");
+
+                        $base = realpath(base_path('../../mqtt-laravel'));
+
+                        if ($base !== false) {
+
+                            $logDir  = $base . DIRECTORY_SEPARATOR . 'mqtt-logs';
+                            $logPath = $logDir . DIRECTORY_SEPARATOR . date('Y-m-d') . '.log';
+
+                            // Create directory if missing
+                            if (!File::exists($logDir)) {
+                                @File::makeDirectory($logDir, 0777, true);
+                            }
+
+                            // Write log only if directory is writable
+                            if (File::isWritable($logDir)) {
+                                File::append(
+                                    $logPath,
+                                    '[' . now()->format('Y-m-d H:i:s') . '] ' . $message . PHP_EOL
+                                );
+                            }
+                        }
 
                         //get config details
                         /*
@@ -96,9 +119,30 @@ class MqttService
                         }*/
                     } catch (\Throwable $e) {
 
-                        echo "ERROR\n";
-                        $logPath = base_path('../../mqtt-laravel/mqtt-logs/' . date("Y-m-d") . '.log');
-                        File::prepend($logPath, "[" . now() . "] ❌ MQTT heartbeat Exception: " . $e->getMessage() . "\n");
+                        echo "ERROR \n" . $e->getMessage();
+                        // $logPath = base_path('../../mqtt-laravel/mqtt-logs/' . date("Y-m-d") . '.log');
+                        // File::prepend($logPath, "[" . now() . "] ❌ MQTT heartbeat Exception: " . $e->getMessage() . "\n");
+
+                        $base = realpath(base_path('../../mqtt-laravel'));
+
+                        if ($base !== false) {
+
+                            $logDir  = $base . DIRECTORY_SEPARATOR . 'mqtt-logs';
+                            $logPath = $logDir . DIRECTORY_SEPARATOR . date('Y-m-d') . '.log';
+
+                            // Create directory if missing
+                            if (!File::exists($logDir)) {
+                                @File::makeDirectory($logDir, 0777, true);
+                            }
+
+                            // Write log only if directory is writable
+                            if (File::isWritable($logDir)) {
+                                File::append(
+                                    $logPath,
+                                    '[' . now()->format('Y-m-d H:i:s') . '] ' . "[" . now() . "] ❌ MQTT heartbeat Exception: " . $e->getMessage() . "\n" . PHP_EOL
+                                );
+                            }
+                        }
 
                         // Log::error("❌ MQTT heartbeat Exception: " . $e->getMessage());
 
@@ -157,11 +201,11 @@ class MqttService
                     } catch (\Throwable $e) {
 
                         //echo "ERROR\n";
-                        echo $serialNumber . "-Error\n";
+                        echo $serialNumber . "-Error\n" . $e->getMessage();
 
 
-                        $logPath = base_path('../../mqtt-laravel/mqtt-logs/' . date("Y-m-d") . '.log');
-                        File::prepend($logPath, "[" . now() . "] ❌ MQTT config Exception: " . $e->getMessage() . "\n");
+                        // $logPath = base_path('../../mqtt-laravel/mqtt-logs/' . date("Y-m-d") . '.log');
+                        // File::prepend($logPath, "[" . now() . "] ❌ MQTT config Exception: " . $e->getMessage() . "\n");
 
 
 

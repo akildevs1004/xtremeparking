@@ -11,6 +11,11 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Throwable;
+use Illuminate\Support\Facades\Validator;
+
+use Illuminate\Support\Str;
+
 
 class ParkingMembersController extends Controller
 {
@@ -612,5 +617,219 @@ class ParkingMembersController extends Controller
             'event_id' => 'required|integer', //memberid
 
         ]);
+    }
+
+    public function preview(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'company_id' => 'required',
+            'file' => 'required|file|mimes:csv,txt',
+        ]);
+
+        if ($v->fails()) {
+            return response()->json(['message' => $v->errors()->first()], 422);
+        }
+
+        $rows = $this->parseCsv($request->file('file')->getRealPath());
+        $headerMap = [
+            'first name' => 'first_name',
+            'last name' => 'last_name',
+            'flat number' => 'flat_number',
+            'parking floor number' => 'parking_floor_number',
+            'parking number' => 'parking_number',
+            'email id' => 'email_id',
+            'phone' => 'phone',
+            'prefix' => 'prefix',
+            'plate number' => 'plate_number',
+            'vehicle country region' => 'vehicle_country_region',
+            'vehicle plate color' => 'vehicle_plate_color',
+        ];
+        // validate headers/shape (optional strict)
+        $required = ['first_name', 'last_name', 'phone', 'flat_number', 'parking_floor_number', 'parking_number', 'email_id', 'prefix', 'plate_number', 'vehicle_country_region', 'vehicle_plate_color'];
+        $missing = [];
+        if (!empty($rows)) {
+            $keys = array_keys($rows[0]);
+            foreach ($required as $r) {
+                if (!in_array($r, $keys)) $missing[] = $r;
+            }
+        }
+
+        if (!empty($missing)) {
+            return response()->json([
+                'message' => 'Missing required columns: ' . implode(', ', $missing),
+            ], 422);
+        }
+
+        // Return normalized rows
+        return response()->json([
+            'rows' => $rows,
+        ]);
+    }
+
+    public function createFromCSV(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'company_id' => 'required',
+            'file' => 'required|file|mimes:csv,txt',
+        ]);
+
+        if ($v->fails()) {
+            return response()->json(['message' => $v->errors()->first()], 422);
+        }
+
+        $companyId = $request->company_id;
+
+        $rows = $this->parseCsv($request->file('file')->getRealPath());
+
+        $results = [];
+        $success = 0;
+        $fail = 0;
+
+        // IMPORTANT:
+        // Here we call your existing member creation logic.
+        // If you already have a controller method/service, call it here.
+        // Replace createMemberInternal(...) to match your system.
+
+        foreach ($rows as $idx => $row) {
+            $rowNo = $idx + 1;
+
+            try {
+                // Basic row validation
+                $err = $this->validateRow($row);
+                if ($err) {
+                    $fail++;
+                    $results[] = array_merge($row, [
+                        'row_no' => $rowNo,
+                        'status' => 'error',
+                        'message' => $err,
+                    ]);
+                    continue;
+                }
+
+                // Map CSV -> payload
+                $payload = [
+                    'company_id' => $companyId,
+                    'first_name' => trim($row['first_name'] ?? ''),
+                    'last_name' => trim($row['last_name'] ?? ''),
+                    'phone' => trim($row['phone'] ?? ''),
+                    'email' => trim($row['email'] ?? ''),
+                    'plate_number' => trim($row['plate_number'] ?? ''),
+                    'member_type' => trim($row['member_type'] ?? ''),
+                ];
+
+                // Call your existing create member logic
+                // You MUST replace this line to your actual creation function/service
+                $created = $this->createMemberInternal($payload);
+
+                $success++;
+                $results[] = array_merge($row, [
+                    'row_no' => $rowNo,
+                    'status' => 'success',
+                    'message' => 'Created',
+                    'id' => $created['id'] ?? null,
+                ]);
+            } catch (Throwable $e) {
+                $fail++;
+                $results[] = array_merge($row, [
+                    'row_no' => $rowNo,
+                    'status' => 'error',
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success_count' => $success,
+            'fail_count' => $fail,
+            'results' => $results,
+        ]);
+    }
+
+    private function validateRow(array $row): ?string
+    {
+        if (empty(trim($row['first_name'] ?? ''))) return 'first_name is required';
+        if (empty(trim($row['phone'] ?? ''))) return 'phone is required';
+        if (empty(trim($row['plate_number'] ?? ''))) return 'plate_number is required';
+        if (empty(trim($row['member_type'] ?? ''))) return 'member_type is required';
+        return null;
+    }
+
+    private function parseCsv(string $path): array
+    {
+        $handle = fopen($path, 'r');
+        if (!$handle) return [];
+
+        $rows = [];
+        $headers = null;
+
+        // Map your exact CSV header labels -> snake_case keys
+        $headerMap = [
+            'first name' => 'first_name',
+            'last name' => 'last_name',
+            'flat number' => 'flat_number',
+            'parking floor number' => 'parking_floor_number',
+            'parking number' => 'parking_number',
+            'email id' => 'email_id',
+            'phone' => 'phone',
+            'prefix' => 'prefix',
+            'plate number' => 'plate_number',
+            'vehicle country region' => 'vehicle_country_region',
+            'vehicle plate color' => 'vehicle_plate_color',
+        ];
+
+        while (($data = fgetcsv($handle)) !== false) {
+            // Header row
+            if ($headers === null) {
+                $headers = array_map(function ($h) use ($headerMap) {
+                    $h = trim((string)$h);
+                    $key = mb_strtolower($h);
+
+                    // normalize multiple spaces
+                    $key = preg_replace('/\s+/', ' ', $key);
+
+                    // map to expected snake_case if known
+                    if (isset($headerMap[$key])) {
+                        return $headerMap[$key];
+                    }
+
+                    // fallback: basic snake_case normalization
+                    $key = str_replace(['-', '/'], ' ', $key);
+                    $key = preg_replace('/\s+/', '_', $key);
+                    return $key;
+                }, $data);
+
+                continue;
+            }
+
+            if (count($data) === 1 && trim((string)$data[0]) === '') continue;
+
+            $row = [];
+            foreach ($headers as $i => $key) {
+                $row[$key] = isset($data[$i]) ? trim((string)$data[$i]) : '';
+            }
+            $rows[] = $row;
+        }
+
+        fclose($handle);
+        return $rows;
+    }
+
+    /**
+     * Replace this with your actual member create logic.
+     * Example:
+     *   return app(\App\Services\ParkingMemberService::class)->create($payload);
+     */
+    private function createMemberInternal(array $payload): array
+    {
+        // ---- PLACEHOLDER ----
+        // Implement using your existing API/service/model.
+        // For now, throw to remind you to connect it.
+        // Remove this once connected.
+
+        // Example if you have model ParkingMember:
+        // $m = \App\Models\ParkingMember::create($payload);
+        // return ['id' => $m->id];
+
+        throw new \Exception("createMemberInternal() not connected to your existing member creation logic.");
     }
 }
