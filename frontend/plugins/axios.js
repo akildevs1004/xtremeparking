@@ -54,7 +54,7 @@ export default ({ app, $axios, store }, inject) => {
     appURL = process.env.NUXT_ENV_APP_URL || "http://192.168.2.67:3001";
   }
 
-  console.log("backendURL", backendURL);
+  // console.log("backendURL", backendURL);
 
   $axios.onRequest((config) => {
     config.baseURL = backendURL;

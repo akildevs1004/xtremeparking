@@ -43,7 +43,7 @@
               <label class="col-form-label">Gate Auto Close Time(In seconds)</label>
 
               <v-select style="width: 250px" outlined dense small v-model="parking_gate_close_time"
-                :items="[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]">
+                :items="[1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]">
               </v-select>
             </div>
 
@@ -105,7 +105,7 @@ export default {
     parking_count: null,
     guset_vehicles: null,
     guset_vehicles_payment: null,
-    parking_gate_close_time: 10,
+    parking_gate_close_time: 2,
     parking_exit_buffertime: 20,
     errors: null,
 

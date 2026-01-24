@@ -158,7 +158,7 @@ class CameraLogListenerController extends Controller
 
         if (! file_exists($imagePath)) {
             $log("Vehicle Background Image Not Found at {$imagePath}");
-            return response()->json(['status' => 'error', 'message' => 'Image not found'.$imagePath], 404);
+            return response()->json(['status' => 'error', 'message' => 'Image not found' . $imagePath], 404);
         }
 
         // ---- OCR stage ------------------------------------------------------
