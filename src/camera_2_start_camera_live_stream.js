@@ -23,6 +23,7 @@ module.exports.start = function start({ logger, beat, appDir }) {
     const WebSocket = require("ws");
     const axios = require("axios");
     const { spawn } = require("child_process");
+    const path = require("path"); // ✅ added
 
     // ========= CONFIG =========
 
@@ -41,7 +42,8 @@ module.exports.start = function start({ logger, beat, appDir }) {
     const HEALTH_PORT = 7090;
 
     // FFmpeg settings
-    const FFMPEG_PATH = "ffmpeg";
+    // const FFMPEG_PATH = "ffmpeg";
+    const FFMPEG_PATH = path.join(appDir, "ffmpeg", "ffmpeg.exe"); // ✅ use local ffmpeg
     const STREAM_WIDTH = 1280;
     const STREAM_HEIGHT = 720;
     const STREAM_FPS = 25;
@@ -166,10 +168,6 @@ module.exports.start = function start({ logger, beat, appDir }) {
         lastError: null,
       });
 
-      // console.log(
-      //   `[FFMPEG CAM ${cam.id}] Starting → ${pushUrl} (${STREAM_WIDTH}x${STREAM_HEIGHT} @ ${STREAM_FPS}fps)`,
-      // );
-
       const args = [
         "-rtsp_transport",
         "tcp",
@@ -218,9 +216,6 @@ module.exports.start = function start({ logger, beat, appDir }) {
         });
 
         if (code !== 0) {
-          // console.log(
-          //   `[FFMPEG CAM ${cam.id}] Non-zero exit (code=${code}). Will restart in 5 seconds.`,
-          // );
           setCameraStatus(cam.id, { status: "restarting" });
           setTimeout(() => startFFmpeg(cam, httpPort), 5000);
         } else {

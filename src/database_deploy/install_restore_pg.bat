@@ -2,12 +2,6 @@
 setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 
-REM ==================================================
-REM OPTIONAL: If called with --no-pause, BAT never pauses
-REM ==================================================
-set "NO_PAUSE=0"
-if /i "%~1"=="--no-pause" set "NO_PAUSE=1"
-
 REM ===================== CONFIG =====================
 set "PG_MAJOR=16"
 set "PG_INSTALLER=postgresql-16.11-2-windows-x64.exe"
@@ -17,12 +11,7 @@ set "PG_SERVICE=postgresql-x64-%PG_MAJOR%"
 
 set "DB_HOST=127.0.0.1"
 set "DB_PORT=5432"
-set "DB_NAME=postgres"
-
-REM NOTE:
-REM - DB_USER is used for psql connection and DB creation/restore.
-REM - If PostgreSQL is already installed and password differs, this script will fail.
-REM - In that case installer should still continue (handled in NSIS macro below).
+set "DB_NAME=xtremeguard_parking"
 set "DB_USER=postgres"
 set "DB_PASS=test123"
 
@@ -44,7 +33,7 @@ if errorlevel 1 (
   call :log "ERROR: Please run this BAT as Administrator."
   echo.
   echo ERROR: Please run as Administrator.
-  if "%NO_PAUSE%"=="0" pause
+  pause
   exit /b 5
 )
 
@@ -136,7 +125,7 @@ if defined FOUND_PSQL (
     call :log "ERROR: Installer missing and PostgreSQL not installed. Cannot continue."
     echo.
     echo ERROR: Installer missing and PostgreSQL not installed. Cannot continue.
-    if "%NO_PAUSE%"=="0" pause
+    pause
     exit /b 10
   )
 
@@ -159,7 +148,7 @@ if defined FOUND_PSQL (
     call :log "ERROR: PostgreSQL installer failed (code %RC%)."
     echo.
     echo ERROR: PostgreSQL installer failed (code %RC%).
-    if "%NO_PAUSE%"=="0" pause
+    pause
     exit /b 20
   )
 
@@ -180,9 +169,9 @@ if defined FOUND_PSQL (
 call :log "PG_BIN resolved to: %PG_BIN%"
 
 call :log "Step: Validate Tools"
-if not exist "%PG_BIN%\psql.exe" ( call :log "ERROR: Missing psql.exe at %PG_BIN%\psql.exe" & if "%NO_PAUSE%"=="0" pause & exit /b 21 )
-if not exist "%PG_BIN%\pg_restore.exe" ( call :log "ERROR: Missing pg_restore.exe at %PG_BIN%\pg_restore.exe" & if "%NO_PAUSE%"=="0" pause & exit /b 22 )
-if not exist "%PG_BIN%\createdb.exe" ( call :log "ERROR: Missing createdb.exe at %PG_BIN%\createdb.exe" & if "%NO_PAUSE%"=="0" pause & exit /b 23 )
+if not exist "%PG_BIN%\psql.exe" ( call :log "ERROR: Missing psql.exe at %PG_BIN%\psql.exe" & pause & exit /b 21 )
+if not exist "%PG_BIN%\pg_restore.exe" ( call :log "ERROR: Missing pg_restore.exe at %PG_BIN%\pg_restore.exe" & pause & exit /b 22 )
+if not exist "%PG_BIN%\createdb.exe" ( call :log "ERROR: Missing createdb.exe at %PG_BIN%\createdb.exe" & pause & exit /b 23 )
 
 REM ===================== START SERVICE =====================
 call :log "Step: Ensure Service Running"
@@ -191,7 +180,7 @@ if errorlevel 1 (
   call :log "ERROR: PostgreSQL service '%PG_SERVICE%' not found. Cannot continue."
   echo.
   echo ERROR: PostgreSQL service '%PG_SERVICE%' not found. Cannot continue.
-  if "%NO_PAUSE%"=="0" pause
+  pause
   exit /b 24
 )
 
@@ -202,6 +191,7 @@ if errorlevel 1 (
   if not errorlevel 1 (
     call :log "Service already running (OK)."
   ) else (
+    REM Still might be running; do not stop here—port check will decide.
     call :log "INFO: net start returned non-zero; continuing to port check."
   )
 )
@@ -213,15 +203,45 @@ if errorlevel 1 (
   call :log "ERROR: PostgreSQL did not start listening on port %DB_PORT%."
   echo.
   echo ERROR: PostgreSQL did not start listening on port %DB_PORT%.
-  if "%NO_PAUSE%"=="0" pause
+  pause
   exit /b 25
 )
 
 REM ===================== AUTH FOR PSQL =====================
 set "PGPASSWORD=%DB_PASS%"
 
+REM ===================== CHECK DB USER (IDEMPOTENT) =====================
+call :log "Step: Check/Create DB user (skip if exists)"
+
+set "USER_EXISTS=0"
+for /f "usebackq delims=" %%i in (`
+  "%PG_BIN%\psql.exe" -h %DB_HOST% -p %DB_PORT% -U %DB_USER% -d postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='%DB_USER%';"
+`) do (
+  set "line=%%i"
+  set "line=!line: =!"
+  if "!line!"=="1" set "USER_EXISTS=1"
+)
+
+if "%USER_EXISTS%"=="1" (
+  call :log "DB user exists: %DB_USER% (skip)"
+) else (
+  call :log "Creating DB user: %DB_USER%"
+  "%PG_BIN%\psql.exe" -h %DB_HOST% -p %DB_PORT% -U %DB_USER% -d postgres ^
+    -c "CREATE USER %DB_USER% WITH SUPERUSER PASSWORD '%DB_PASS%';" >>"%LOG_FILE%" 2>&1
+
+  REM If user already exists due to race/permission, ignore that specific error and continue
+  if errorlevel 1 (
+    findstr /i /c:"already exists" "%LOG_FILE%" >nul 2>&1
+    if not errorlevel 1 (
+      call :log "User already exists (detected in logs). Continuing."
+    ) else (
+      call :log "WARNING: Create user returned error. Continuing (idempotent mode)."
+    )
+  )
+)
+
 REM ===================== CHECK DB EXISTS (IDEMPOTENT) =====================
-call :log "Step: Check DB exists (if exists, DO NOT interrupt installer)"
+call :log "Step: Check/Create DB (skip if exists)"
 
 set "DB_EXISTS=0"
 for /f "usebackq delims=" %%i in (`
@@ -233,25 +253,21 @@ for /f "usebackq delims=" %%i in (`
 )
 
 if "%DB_EXISTS%"=="1" (
-  call :log "Database already exists: %DB_NAME% (skip create + skip restore) -> EXIT 0"
-  goto :install_done_ok
+  call :log "Database already exists: %DB_NAME% (skip create + skip restore)"
+  goto :install_done
 )
 
-REM ===================== CREATE DB (NEW) =====================
 call :log "Creating database: %DB_NAME%"
 "%PG_BIN%\createdb.exe" -h %DB_HOST% -p %DB_PORT% -U %DB_USER% "%DB_NAME%" >>"%LOG_FILE%" 2>&1
 
+REM createdb may return error if DB exists (race). Do not stop.
 if errorlevel 1 (
   findstr /i /c:"already exists" "%LOG_FILE%" >nul 2>&1
   if not errorlevel 1 (
-    call :log "Database already exists (race). Treat as OK and skip restore."
-    goto :install_done_ok
+    call :log "Database already exists (detected in logs). Continuing."
+    goto :install_done
   ) else (
-    call :log "ERROR: createdb failed."
-    echo.
-    echo ERROR: createdb failed. Check log: %LOG_FILE%
-    if "%NO_PAUSE%"=="0" pause
-    exit /b 30
+    call :log "WARNING: createdb returned error. Continuing (idempotent mode)."
   )
 )
 
@@ -260,7 +276,7 @@ call :log "Step: Restore Backup (only if backup exists and DB was newly created)
 
 if not exist "%BACKUP_FILE%" (
   call :log "WARNING: Backup file missing; skipping restore."
-  goto :install_done_ok
+  goto :install_done
 )
 
 call :log "Restoring: %BACKUP_FILE% into %DB_NAME%"
@@ -271,20 +287,21 @@ call :log "Restoring: %BACKUP_FILE% into %DB_NAME%"
   --clean --if-exists ^
   "%BACKUP_FILE%" >>"%LOG_FILE%" 2>&1
 
+REM If restore fails, this is a real failure for first-time install
 if errorlevel 1 (
   call :log "ERROR: pg_restore failed (code %ERRORLEVEL%)."
   echo.
   echo ERROR: pg_restore failed. Check log: %LOG_FILE%
-  if "%NO_PAUSE%"=="0" pause
+  pause
   exit /b 40
 )
 
-:install_done_ok
-call :log "SUCCESS: DB step completed (installer should continue)."
+:install_done
+call :log "SUCCESS: Installation completed (idempotent checks applied)."
 echo.
-echo SUCCESS: DB step completed.
+echo SUCCESS: Installation completed.
 echo Log: %LOG_FILE%
-if "%NO_PAUSE%"=="0" pause
+pause
 exit /b 0
 
 :log

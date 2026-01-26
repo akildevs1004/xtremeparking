@@ -85,57 +85,58 @@ class ParkingCameraLogsController extends Controller
     public function getLiveVehicleLogs(Request $request)
     {
         $companyId = $request->company_id;
+        $today = now()->toDateString();
 
-        // Base IN logs
-        $inLogs = ParkingCameraLogs::select(
-            'id',
-            'log_vehicle_number',
-            'raw_country_region',
-            DB::raw("'IN' as direction"),
-            'company_id',
-            'membership_id',
-            // full info for detail panel
-            'in_time as log_time_in',
-            'out_time as log_time_out',
-            'in_time as log_time', // for list display
-            'duration_in_minutes',
-            'duration_in_hours',
-            'duration_per_hour_amount',
-            'total_amount',
-            'payment_mode',
-        )
+        $inLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name'])
+            ->select(
+                'id',
+                'log_vehicle_number',
+                'raw_country_region',
+                DB::raw("'IN' as direction"),
+                'company_id',
+                'membership_id',
+                'in_time as log_time_in',
+                'out_time as log_time_out',
+                'in_time as log_time',
+                'duration_in_minutes',
+                'duration_in_hours',
+                'duration_per_hour_amount',
+                'total_amount',
+                'payment_mode'
+            )
             ->where('company_id', $companyId)
-            ->whereDate('in_time', date('Y-m-d'))
-            //->limit(20)
-            ->whereNotNull('in_time');
-
-        // Base OUT logs
-        $outLogs = ParkingCameraLogs::select(
-            'id',
-            'log_vehicle_number',
-            'raw_country_region',
-            DB::raw("'OUT' as direction"),
-            'company_id',
-            'membership_id',
-            'in_time as log_time_in',
-            'out_time as log_time_out',
-            'out_time as log_time', // for list display
-            'duration_in_minutes',
-            'duration_in_hours',
-            'duration_per_hour_amount',
-            'total_amount',
-            'payment_mode',
-        )
-            ->where('company_id', $companyId)
-            ->whereNotNull('out_time');
-
-        $union = $inLogs->unionAll($outLogs);
-
-        $logs = DB::query()
-            ->fromSub($union, 'logs')
-            ->orderBy('log_time', 'desc')
-            ->limit(20)
+            ->whereDate('in_time', $today)
+            ->whereNotNull('in_time')
             ->get();
+
+        $outLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name'])
+            ->select(
+                'id',
+                'log_vehicle_number',
+                'raw_country_region',
+                DB::raw("'OUT' as direction"),
+                'company_id',
+                'membership_id',
+                'in_time as log_time_in',
+                'out_time as log_time_out',
+                'out_time as log_time',
+                'duration_in_minutes',
+                'duration_in_hours',
+                'duration_per_hour_amount',
+                'total_amount',
+                'payment_mode'
+            )
+            ->where('company_id', $companyId)
+            ->whereDate('out_time', $today)
+            ->whereNotNull('out_time')
+            ->get();
+
+        // Merge + sort (latest first)
+        $logs = $inLogs->concat($outLogs)
+            ->sortByDesc('log_time')
+            ->values();
+
+        return response()->json($logs);
 
         return ['data' => $logs];
     }

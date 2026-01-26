@@ -16,8 +16,8 @@
       <!-- Upload + Defaults -->
       <v-row>
         <v-col cols="12" md="7">
-          <v-file-input dense outlined accept=".csv,text/csv" label="Upload CSV (your sample format)" v-model="file"
-            :disabled="busy" append-icon="mdi-file-excel-box" />
+          <v-file-input dense outlined accept=".csv,text/csv" label="Upload CSV  " v-model="file" :disabled="busy"
+            append-icon="mdi-file-excel-box" />
           <!-- <div class="text-caption grey--text mt-1">
             Headers:
             <b>
