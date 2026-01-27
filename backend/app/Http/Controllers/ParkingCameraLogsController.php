@@ -105,8 +105,10 @@ class ParkingCameraLogsController extends Controller
                 'payment_mode'
             )
             ->where('company_id', $companyId)
-            ->whereDate('in_time', $today)
+            // ->whereDate('in_time', $today)
             ->whereNotNull('in_time')
+            ->orderBy('log_time', 'desc')
+            ->limit(20)
             ->get();
 
         $outLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name'])
@@ -127,8 +129,10 @@ class ParkingCameraLogsController extends Controller
                 'payment_mode'
             )
             ->where('company_id', $companyId)
-            ->whereDate('out_time', $today)
+            // ->whereDate('out_time', $today)
             ->whereNotNull('out_time')
+            ->orderBy('log_time', 'desc')
+            ->limit(20)
             ->get();
 
         // Merge + sort (latest first)

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\AssignedDepartmentEmployee;
+use App\Models\Company;
 use App\Models\CompanyBranch;
 use App\Models\Role;
 use App\Models\User;
@@ -55,6 +56,12 @@ class AuthController extends Controller
                 'expiry_date' => now()->addDays(10)->toDateString(),
                 'machine_id'  => $request['machine_id'],
             ]);
+
+            Company::where("id",  ">", 0)->update(
+                [
+                    'expiry' => now()->addDays(10)->toDateString()
+                ],
+            );
         } else {
 
             // Check if trial expired
@@ -68,6 +75,7 @@ class AuthController extends Controller
                 throw ValidationException::withMessages([
                     'email' => ['Licencne is Expired.'],
                     'trialExpired' => true,
+
                 ]);
             }
         }
@@ -105,12 +113,17 @@ class AuthController extends Controller
             'machine_id'  => ['required', 'string'],
             'expiry_date' => ['required', 'string'],
 
-
         ]);
 
         info($data);
 
         User::where("id", ">", 0)->update($data);
+
+        Company::where("id",  ">", 0)->update(
+            [
+                'expiry' => $data["expiry_date"]
+            ],
+        );
 
         // Redirect back to the form page with a success message
         return  $this->response("Success", true, 200);
