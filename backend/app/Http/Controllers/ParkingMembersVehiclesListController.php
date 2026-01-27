@@ -76,8 +76,6 @@ class ParkingMembersVehiclesListController extends Controller
             'guest_company_details' => 'nullable',
             'member_id' => 'nullable',
             'parking_slot' => 'nullable',
-
-
         ]);
 
 

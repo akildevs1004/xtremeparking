@@ -6,6 +6,7 @@ use App\Models\CustomerProductServices;
 use App\Models\Customers\CustomerPayments;
 use App\Models\ParkingCameraLogs;
 use App\Models\ParkingMembers;
+use App\Models\ParkingMembersVehiclesList;
 use App\Models\TaxSlabs;
 use App\Models\User;
 use Carbon\Carbon;
@@ -98,7 +99,7 @@ class ParkingMembersController extends Controller
                 'membership_end' => 'nullable',
                 'parking_slot' => 'nullable',
 
-
+                'address' => 'nullable',
 
 
 
@@ -129,7 +130,7 @@ class ParkingMembersController extends Controller
                 'plate_size' => 'required',
                 'plate_number' => 'required',
 
-                'plate_number' => 'required',
+                'address' => 'nullable',
 
                 'member_type' => 'required',
                 'membership_start' => 'nullable',
@@ -223,62 +224,86 @@ class ParkingMembersController extends Controller
             $isExit = ParkingMembers::where("plate_number", $request->plate_number)->exists();
             if ($isExit == 0) {
 
-                //create user account
-                if ($request->filled('password') && $request->filled('confirm_password')) {
-                    unset($data['password']);
-                    unset($data['confirm_password']);
-                    $isUserExist = User::where('email', '=', $request->email)->first();
-                    if ($isUserExist == null) {
+                $isExitGuest = ParkingMembersVehiclesList::where("vehicle_number", $request->plate_number)->exists();
+                if ($isExitGuest == 0) {
 
-                        $user = User::create([
-                            "user_type" => "member",
-                            'name' => 'null',
-                            'email' => $request->email,
-                            'password' => Hash::make($request->password),
-                            'company_id' => $request->company_id,
-                            'web_login_access' => true,
-                            'can_login' => true,
+                    //create user account
+                    if ($request->filled('password') && $request->filled('confirm_password')) {
+                        unset($data['password']);
+                        unset($data['confirm_password']);
+                        $isUserExist = User::where('email', '=', $request->email)->first();
+                        if ($isUserExist == null) {
 
-                        ]);
+                            $user = User::create([
+                                "user_type" => "member",
+                                'name' => 'null',
+                                'email' => $request->email,
+                                'password' => Hash::make($request->password),
+                                'company_id' => $request->company_id,
+                                'web_login_access' => true,
+                                'can_login' => true,
+
+                            ]);
 
 
-                        $data['user_id'] = $user->id;
-                    } else {
-                        return [
-                            "status" => false,
-                            "errors" => ['email' => ['Email is already Exist']],
-                        ];
+                            $data['user_id'] = $user->id;
+                        }
+                        //email id exist means, this vehicle have to create as guest or sub member list
+                        else {
+
+                            if ($request->filled("is_import_from_csv")) {
+
+
+                                //create Vehicle details in Guest List
+
+
+                                $ParkingMember = Parkingmembers::where('email', '=', $request->email)->first();
+
+                                if ($ParkingMember)
+
+                                    $data =    [
+
+                                        'company_id' => $request->company_id,
+                                        'member_id' => $ParkingMember->id,
+                                        'vehicle_number' =>   $request->plate_number,
+                                        'guest_first_name' => $request->first_name,
+                                        'guest_last_name' => $request->last_name,
+                                        'guest_address' => $request->address,
+                                        'guest_location' => null,
+                                        'guest_company_details' => null,
+
+                                        'parking_slot' => $request->parking_slot,
+                                    ];
+
+                                $record = ParkingMembersVehiclesList::create($data);
+
+                                return $this->response('Parking Member   is created as ' . $ParkingMember->first_name . '  ' . $ParkingMember->last_name . ' Guest/Member List', $record, true);
+                            } else {
+                                return [
+                                    "status" => false,
+                                    "errors" => ['email' => ['Email is already Exist']],
+                                ];
+                            }
+                        }
                     }
+
+                    $record = ParkingMembers::create($data);
+
+                    if (isset($request->attachment) && $request->hasFile('attachment')) {
+                        $file = $request->file('attachment');
+                        $ext = $file->getClientOriginalExtension();
+                        $fileName = $record->id . '.' . $ext;
+
+                        $request->file('attachment')->move(public_path('/parking_members'), $fileName);
+                        $data['picture'] = $fileName;
+
+                        ParkingMembers::where("id", $record->id)->update(["picture" => $fileName]);
+                    }
+
+                    return $this->response('Parking Member   is created.', $record, true);
+                } else {
+                    return $this->response($request->plate_number . ' -  Plate number is already Exist in Guest/Members List', null, false);
                 }
-
-
-
-
-
-
-
-
-
-
-
-                $record = ParkingMembers::create($data);
-
-
-
-
-
-                if (isset($request->attachment) && $request->hasFile('attachment')) {
-                    $file = $request->file('attachment');
-                    $ext = $file->getClientOriginalExtension();
-                    $fileName = $record->id . '.' . $ext;
-
-                    $request->file('attachment')->move(public_path('/parking_members'), $fileName);
-                    $data['picture'] = $fileName;
-
-                    ParkingMembers::where("id", $record->id)->update(["picture" => $fileName]);
-                }
-
-                return $this->response('Parking Member   is created.', $record, true);
             } else {
                 return $this->response($request->plate_number . ' - Plate number is already Exist', null, false);
             }
@@ -332,8 +357,13 @@ class ParkingMembersController extends Controller
         if ($id > 0) {
 
             $model = ParkingMembers::where("id", $id)->first();
-            if (file_exists(public_path('/parking_members') . '/' . $model->picture_raw))
-                unlink(public_path('/parking_members') . '/' . $model->picture_raw);
+            try {
+                if (file_exists(public_path('/parking_members') . '/' . $model->picture_raw))
+                    unlink(public_path('/parking_members') . '/' . $model->picture_raw);
+            } catch (\Exception $e) {
+            }
+
+            $return = User::where("id", $model->user_id)->delete();
             $return = ParkingMembers::where("id", $id)->delete();
             return $this->response('Parking Member is deleted Successfully', null, true);
         }

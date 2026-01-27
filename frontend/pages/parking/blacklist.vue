@@ -192,7 +192,7 @@ export default {
         value: "sno",
       },
       {
-        text: "Plate Number",
+        text: "Vehicle/ Number",
         value: "plate_number",
       },
       {

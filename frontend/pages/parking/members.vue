@@ -16,7 +16,7 @@
           </v-icon>
         </v-card-title>
         <v-card-text>
-          <ImportMembersCsvPopup />
+          <ImportMembersCsvPopup :key="key" />
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -123,7 +123,7 @@
 
 
               <v-btn v-if="can('operators_create')" title="Change Request" x-small :ripple="false" text
-                @click="DialogImport = true">
+                @click="key++; DialogImport = true">
                 <v-icon class="">mdi-calendar-export</v-icon>
               </v-btn>
 
@@ -324,7 +324,7 @@ export default {
         value: "sno",
       },
       {
-        text: "Plate Number",
+        text: "Vehicle/ Number",
         value: "plate_number",
       },
       {

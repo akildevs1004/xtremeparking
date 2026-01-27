@@ -90,8 +90,12 @@
 
     <v-card-actions>
       <v-spacer></v-spacer>
-      <v-btn color="warning" :disabled="busy" @click="reset">Reset</v-btn>
-      <v-btn color="error" :disabled="busy" @click="close">Close</v-btn>
+      <!-- <v-btn color="warning" :disabled="busy" @click="reset">Reset</v-btn> -->
+      <v-btn style="width:100px" color="success" class="mt-2" :disabled="!results.length || busy"
+        @click="importMembers">
+        <v-icon left>mdi-database-import</v-icon>
+        Create
+      </v-btn>
     </v-card-actions>
 
     <v-overlay :value="busy" opacity="0.12">
@@ -144,13 +148,18 @@ export default {
 
       headers: [
         { text: "#", value: "row_no", },
+
+        { text: "Parking Floor Number", value: "parking_floor_number", },
+        { text: "Parking Number", value: "parking_number", },
+
+        { text: "Vehicle Number", value: "plate_number", },
+
         { text: "First Name", value: "first_name", },
         { text: "Last Name", value: "last_name", },
         { text: "Email", value: "email", },
-        { text: "Phone", value: "phone", },
-        { text: "Plate", value: "plate_number", },
-        { text: "Region", value: "vehicle_country_region", },
-        { text: "Plate Color", value: "vehicle_plate_color", },
+        // { text: "Phone", value: "phone", },
+        // { text: "Region", value: "vehicle_country_region", },
+        // { text: "Plate Color", value: "vehicle_plate_color", },
         { text: "Type", value: "member_type", },
         { text: "Status", value: "status", },
         { text: "Message", value: "message" },
@@ -293,7 +302,7 @@ export default {
 
         password: "password",
         confirm_password: "password",
-
+        is_import_from_csv: true,
 
       };
     },
