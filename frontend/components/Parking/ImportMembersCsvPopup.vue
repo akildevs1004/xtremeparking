@@ -278,7 +278,7 @@ export default {
         member_type: "Membership",
         membership_start: membership_start,
         membership_end: membership_end,
-        parking_slot: n.parking_number,
+        parking_slot: n.parking_floor_number + "-" + n.parking_number,
         address: n.flat_number + " - " + n.parking_floor_number,
 
         vehicle_country_region: n.vehicle_country_region,

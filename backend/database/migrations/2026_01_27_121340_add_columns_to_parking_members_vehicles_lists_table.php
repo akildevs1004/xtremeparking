@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('parking_members_vehicles_lists', function (Blueprint $table) {
-            //
+            $table->string("parking_slot")->nullable();
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('parking_members_vehicles_lists', function (Blueprint $table) {
-            //
+            $table->dropColumn("parking_slot");
         });
     }
 };

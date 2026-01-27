@@ -20,6 +20,14 @@
                   }}</span>
                 </v-col>
                 <v-col cols="12" dense>
+                  <v-text-field label="Parking Floor - Parking Number" dense small outlined type="text"
+                    v-model="payload.parking_slot" hide-details :readonly="!editable"
+                    :filled="!editable"></v-text-field>
+                  <span v-if="primary_errors && primary_errors.parking_slot" class="text-danger mt-2">{{
+                    primary_errors.parking_slot[0]
+                  }}</span>
+                </v-col>
+                <v-col cols="12" dense>
                   <v-text-field label="First Name" dense small outlined type="text" v-model="payload.guest_first_name"
                     hide-details :readonly="!editable" :filled="!editable"></v-text-field>
                   <span v-if="primary_errors && primary_errors.guest_first_name" class="text-danger mt-2">{{
@@ -43,7 +51,8 @@
                   <span v-if="primary_errors && primary_errors.guest_location" class="text-danger mt-2">{{
                     primary_errors.guest_location[0]
                   }}</span>
-                </v-col><v-col cols="12" dense>
+                </v-col>
+                <v-col cols="12" dense>
                   <v-text-field label="Company Details" dense small outlined type="text"
                     v-model="payload.guest_company_details" hide-details :readonly="!editable"
                     :filled="!editable"></v-text-field>
@@ -51,6 +60,7 @@
                     primary_errors.guest_company_details[0]
                   }}</span>
                 </v-col>
+
               </v-row>
 
 
@@ -140,6 +150,10 @@ export default {
       this.payload.guest_address = this.item.guest_address;
       this.payload.guest_location = this.item.guest_location;
       this.payload.guest_company_details = this.item.guest_company_details;
+      this.payload.parking_slot = this.item.parking_slot;
+
+
+
 
 
 

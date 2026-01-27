@@ -348,12 +348,14 @@ class CameraLogListenerController extends Controller
 
 
         //is member/tenant guest list vehicle
-        $parkingMemberVehicle = $this->getMemberGuestVehicle($plateNo);
+        $parkingMemberGuestVehicle = $this->getMemberGuestVehicle($plateNo);
         $parking_member_guest_vehicle_id = null;
+        $guest_parking_slot_number = null;
 
-        if (!is_null($parkingMemberVehicle)) {
-            $parkingMember = $parkingMemberVehicle->ParkingMember;
-            $parking_member_guest_vehicle_id =  $parkingMemberVehicle->id;
+        if (!is_null($parkingMemberGuestVehicle)) {
+            $parkingMember = $parkingMemberGuestVehicle->ParkingMember;
+            $parking_member_guest_vehicle_id =  $parkingMemberGuestVehicle->id;
+            $guest_parking_slot_number = $parkingMemberGuestVehicle->parking_slot;
         }
 
 
@@ -406,7 +408,11 @@ class CameraLogListenerController extends Controller
                         $new_Extradata["membership_id"] = $parkingMember->id;
                         $new_Extradata["membership_status"] = "Active";
 
-                        if (!is_null($parking_member_guest_vehicle_id) && $parkingMember->guest_parking_hours_count < 0) {
+                        //allow guest who has parking_slot is not null meeans family members //guest_parking_slot_number
+
+
+
+                        if (!is_null($parking_member_guest_vehicle_id) && $parkingMember->guest_parking_hours_count < 0 && is_null($guest_parking_slot_number)) {
                             $log("{$parkingMember->first_name} {$parkingMember->last_name} Membership has No balance  .  {$plateNo} is Not Allowed");
                             $vehicleRecord = [
                                 "image" =>  env("BASE_URL") . '/api/parking_camera_logs' . '/' . $companyId  . '/' . $fileName,
@@ -659,7 +665,7 @@ class CameraLogListenerController extends Controller
 
                         //check is vehicle is belongs to Member Guest List
 
-                        if (!is_null($parking_member_guest_vehicle_id)) {
+                        if (!is_null($parking_member_guest_vehicle_id) && is_null($guest_parking_slot_number)) {
 
                             // debit balance from Parking member account
                             ParkingMembers::where("id", $parkingMember->id)->update(["guest_parking_hours_count" => $parkingMember->guest_parking_hours_count - $open->total_amount]);

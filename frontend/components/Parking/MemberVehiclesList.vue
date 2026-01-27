@@ -10,7 +10,7 @@
     <v-dialog v-model="newProductDialog" max-width="400px">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
-          <span dense> {{ editId ? editable ? "Update" : "View" : "New" }} Guest Vehicle </span>
+          <span dense> {{ editId ? editable ? "Update" : "View" : "New" }} Guest/Member Vehicle </span>
           <v-spacer></v-spacer>
           <v-icon @click="newProductDialog = false" outlined>
             mdi mdi-close-circle
@@ -158,10 +158,13 @@ export default {
         value: "sno",
       },
       {
-        text: "Number",
+        text: "Vehicle Number",
         value: "vehicle_number",
       },
-
+      {
+        text: "Parking Floor/Number",
+        value: "parking_slot",
+      },
       {
         text: "Name",
         value: "guest_first_name",
