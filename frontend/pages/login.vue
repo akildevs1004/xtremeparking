@@ -104,7 +104,7 @@
               <span style="font-size: 14px"> Parking Control Panel </span>
             </h3> -->
           </div>
-          <div style="color: #fff; text-align: left" class="pt-8">
+          <div style="color: #fff; text-align: left" class="pt-8" v-if="!trialExpired">
             <v-form :style="'padding: 20px;' + bgcolor" ref="form" method="post" v-model="valid" lazy-validation
               autocomplete="off">
               <div class="form-outline">
@@ -166,6 +166,10 @@
               </v-col>
             </v-row>
           </div>
+          <div v-else>
+            <!-- License Activation -->
+            <LicenseActivationForm @openloginpage="openloginpage()" key="1" :machine-id="machineId" />
+          </div>
           <!-- <div class="text-center">Don't Have an Account? Contact Admin</div> -->
 
           <!-- <v-row class="text-center" style="font-size: 13px">
@@ -199,6 +203,7 @@
 </template>
 
 <script>
+import LicenseActivationForm from "../components/Auth/LicenseActivationForm.vue";
 import ForgotPassword from "../components/ForgotPassword.vue";
 
 export default {
@@ -206,8 +211,10 @@ export default {
     dark: false, // 👈 Default dark mode
   },
   layout: "login",
-  components: { ForgotPassword },
+  components: { ForgotPassword, LicenseActivationForm },
   data: () => ({
+    trialExpired: null,
+    machineId: null,
     bgcolor: "",
     dialogForgotPassword: false,
     maskMobileNumber: "",
@@ -249,7 +256,15 @@ export default {
     this.$store.dispatch("dashboard/resetState");
     this.$store.dispatch("resetState");
   },
-  mounted() {
+  async mounted() {
+    const isElectron =
+      typeof window !== 'undefined' &&
+      window.process?.type === 'renderer'
+
+    if (!isElectron) return
+
+    const { ipcRenderer } = window.require('electron')
+    this.machineId = await ipcRenderer.invoke('get-machine-id')
     try {
       const userType = this.$auth.user?.user_type;
       if (userType) {
@@ -294,6 +309,12 @@ export default {
     },
     openForgotPassword() {
       this.dialogForgotPassword = true;
+    },
+
+    openloginpage() {
+
+      this.trialExpired = false;
+      this.msg = "Licence Activaed. Login Now";
     },
     login() {
       this.$store.dispatch("dashboard/resetState");
@@ -352,8 +373,15 @@ export default {
             if (!response) {
               return false;
             }
-            let { status, data, statusText } = response;
+            let { status, data, statusText, licence } = response;
             this.msg = status == 422 ? data.message : statusText;
+            console.log("data", data.errors?.trialExpired[0]);
+
+
+            if (data.errors?.trialExpired[0] == true)
+              this.trialExpired = true;
+            else
+              this.trialExpired = false;
             setTimeout(() => (this.loading = false), 2000);
             if (statusText == "") {
               this.snackbar = true;

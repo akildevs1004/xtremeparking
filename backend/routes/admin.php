@@ -33,6 +33,8 @@ Route::post('/check_otp/{key}', [AuthController::class, 'verifyOTP']);
 
 
 Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
+Route::post('/updateLicenseInfo', [AuthController::class, 'updateLicenseInfo']);
+
 Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 // reset password

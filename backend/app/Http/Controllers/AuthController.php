@@ -31,7 +31,7 @@ class AuthController extends Controller
 
 
         //checking LICENCNE Time
-        /*
+
         if (!$user->machine_id) {
             $user->update([
                 'machine_id'  => $request['machine_id'],
@@ -67,10 +67,11 @@ class AuthController extends Controller
 
                 throw ValidationException::withMessages([
                     'email' => ['Licencne is Expired.'],
+                    'trialExpired' => true,
                 ]);
             }
         }
-*/
+
 
 
 
@@ -94,6 +95,26 @@ class AuthController extends Controller
         ];
     }
 
+    public function updateLicenseInfo(Request $request)
+    {
+
+
+
+        $data = $request->validate([
+            'license_key' => ['required', 'string'],
+            'machine_id'  => ['required', 'string'],
+            'expiry_date' => ['required', 'string'],
+
+
+        ]);
+
+        info($data);
+
+        User::where("id", ">", 0)->update($data);
+
+        // Redirect back to the form page with a success message
+        return  $this->response("Success", true, 200);
+    }
     public function me(Request $request)
     {
         $user = $request->user();

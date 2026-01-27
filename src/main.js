@@ -1,28 +1,38 @@
-const { app, BrowserWindow, screen, ipcMain, dialog } = require('electron');
-const fs = require('fs');
-const path = require('path');
-const { logger, spawnWrapper, spawnPhpCgiWorker, runInstaller, ipv4Address, setMenu, stopServices, getCachedMachineId, isClockTampered } = require('./helpers');
-const { liveStreamHelper } = require('./camera_live_stream_helper');
-const { startOrganizer } = require('./camera_organize_files_by_date_helper');
-const { startWatcher } = require('./camera_event_watch_helper');
+const { app, BrowserWindow, screen, ipcMain, dialog } = require("electron");
+const fs = require("fs");
+const path = require("path");
+const {
+  logger,
+  spawnWrapper,
+  spawnPhpCgiWorker,
+  runInstaller,
+  ipv4Address,
+  setMenu,
+  stopServices,
+  getCachedMachineId,
+  isClockTampered,
+} = require("./helpers");
+const { liveStreamHelper } = require("./camera_live_stream_helper");
+const { startOrganizer } = require("./camera_organize_files_by_date_helper");
+const { startWatcher } = require("./camera_event_watch_helper");
 
-app.setName('XtremeGuard Parking');
-app.setAppUserModelId('XtremeGuard Parking');
+app.setName("XtremeGuard Parking");
+app.setAppUserModelId("XtremeGuard Parking");
 
 let isQuitting = false;
 
 const isDev = !app.isPackaged;
 const appDir = isDev ? process.cwd() : process.resourcesPath;
 
-const srcDirectory = path.join(appDir, 'www');
+const srcDirectory = path.join(appDir, "www");
 
-const nginxPath = path.join(appDir, 'nginx.exe');
-const phpPath = path.join(srcDirectory, 'php');
-const phpPathCli = path.join(phpPath, 'php.exe');
-const phpCGi = path.join(phpPath, 'php-cgi.exe');
+const nginxPath = path.join(appDir, "nginx.exe");
+const phpPath = path.join(srcDirectory, "php");
+const phpPathCli = path.join(phpPath, "php.exe");
+const phpCGi = path.join(phpPath, "php-cgi.exe");
 
-const mqttPath = path.join(appDir, 'mosquitto', 'mosquitto.exe');
-const mqttConfigPath = path.join(appDir, 'mosquitto', 'mosquitto.conf');
+const mqttPath = path.join(appDir, "mosquitto", "mosquitto.exe");
+const mqttConfigPath = path.join(appDir, "mosquitto", "mosquitto.conf");
 
 // start "Mosquitto MQTT" cmd /k ""mosquitto.exe" -c "mosquitto.conf" -v"
 
@@ -38,40 +48,54 @@ let mqttListernPID = null;
 let qrcodeisternPID = null;
 let mqttServerPID = null;
 
-
-
-
-
 function startServices() {
-
   nginxPID = spawnWrapper("[Nginx]", nginxPath, { cwd: appDir });
 
-
   // Spawn PHP workers
-  [9000].forEach(port => {
+  [9000].forEach((port) => {
     serverPID = spawnPhpCgiWorker(phpCGi, port);
   });
 
-  schedulePID = spawnWrapper("[Application]", phpPathCli, ['artisan', 'schedule:work'], { cwd: srcDirectory });
-  queuePID = spawnWrapper("[Application]", phpPathCli, ['artisan', 'queue:work'], { cwd: srcDirectory });
+  schedulePID = spawnWrapper(
+    "[Application]",
+    phpPathCli,
+    ["artisan", "schedule:work"],
+    { cwd: srcDirectory },
+  );
+  queuePID = spawnWrapper(
+    "[Application]",
+    phpPathCli,
+    ["artisan", "queue:work"],
+    { cwd: srcDirectory },
+  );
 
+  mqttServerPID = spawnWrapper(
+    "[Mosquitto]",
+    mqttPath,
+    ["-c", mqttConfigPath, "-v"],
+    {
+      cwd: appDir,
+    },
+  );
 
-  mqttServerPID = spawnWrapper("[Mosquitto]", mqttPath, ['-c', mqttConfigPath, '-v'], {
-    cwd: appDir
-  });
+  mqttListernPID = spawnWrapper(
+    "[MQTT]",
+    phpPathCli,
+    ["artisan", "mqtt:subscribe"],
+    { cwd: srcDirectory },
+  );
+  qrcodeisternPID = spawnWrapper(
+    "[MQTT]",
+    phpPathCli,
+    ["artisan", "mqtt:qrbackgroundlistener"],
+    { cwd: srcDirectory },
+  );
 
-  mqttListernPID = spawnWrapper("[MQTT]", phpPathCli, ['artisan', 'mqtt:subscribe'], { cwd: srcDirectory });
-  qrcodeisternPID = spawnWrapper("[MQTT]", phpPathCli, ['artisan', 'mqtt:qrbackgroundlistener'], { cwd: srcDirectory });
-
-  logger('Application', `Application started at http://${ipv4Address}:3000`);
-
-
-
+  logger("Application", `Application started at http://${ipv4Address}:3000`);
 }
 
-ipcMain.handle('open-report-window', (event, url) => {
-
-  fs.appendFileSync(path.join(appDir, "logs", 'ips.txt'), `${url}\n`);
+ipcMain.handle("open-report-window", (event, url) => {
+  fs.appendFileSync(path.join(appDir, "logs", "ips.txt"), `${url}\n`);
 
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
@@ -97,35 +121,36 @@ function createNginxWindow() {
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
-    }
+      contextIsolation: false,
+    },
   });
 
   nginxWindow.loadURL(`http://${ipv4Address}:3000`);
   nginxWindow.maximize();
 
-  nginxWindow.on('closed', () => {
+  nginxWindow.on("closed", () => {
     nginxWindow = null;
   });
 
   startServices();
+
+  nginxWindow.webContents.on("context-menu", (event, params) => {
+    nginxWindow.webContents.inspectElement(params.x, params.y);
+  });
 }
 
-
-
 app.whenReady().then(async () => {
-
   if (isClockTampered()) {
     dialog.showErrorBox(
-      'System Time Error',
-      'System date/time appears to have been changed.\n\nPlease correct your system clock and restart the application.'
+      "System Time Error",
+      "System date/time appears to have been changed.\n\nPlease correct your system clock and restart the application.",
     );
     app.exit(1);
     return;
   }
 
   MACHINE_ID = await getCachedMachineId();
-  ipcMain.handle('get-machine-id', () => MACHINE_ID);
+  ipcMain.handle("get-machine-id", () => MACHINE_ID);
 
   setMenu();
 
@@ -134,28 +159,30 @@ app.whenReady().then(async () => {
 
   // ⏳ Heavy tasks AFTER UI
   setImmediate(() => {
-    runInstaller(path.join(appDir, 'vs_redist.exe'))
+    runInstaller(path.join(appDir, "vs_redist.exe"))
       .then(() => {
         startServices();
         liveStreamHelper();
         startOrganizer();
         startWatcher();
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err.message);
-
       });
   });
 });
 
 // Ensure app quits cleanly and stops services
-app.on('before-quit', async e => {
+app.on("before-quit", async (e) => {
   if (isQuitting) return;
 
   e.preventDefault();
   isQuitting = true;
 
-  fs.appendFileSync(path.join(appDir, "logs", 'SMARTQUEUE_SHUTDOWN.txt'), 'before-quit fired\n');
+  fs.appendFileSync(
+    path.join(appDir, "logs", "SMARTQUEUE_SHUTDOWN.txt"),
+    "before-quit fired\n",
+  );
 
   await stopServices(nginxPID);
   await stopServices(schedulePID);
@@ -169,9 +196,11 @@ app.on('before-quit', async e => {
   app.exit(0);
 });
 
-
-app.on('will-quit', async () => {
-  fs.appendFileSync(path.join(appDir, "logs", 'SMARTQUEUE_SHUTDOWN.txt'), 'will-quit fired\n');
+app.on("will-quit", async () => {
+  fs.appendFileSync(
+    path.join(appDir, "logs", "SMARTQUEUE_SHUTDOWN.txt"),
+    "will-quit fired\n",
+  );
   await stopServices(nginxPID);
   await stopServices(schedulePID);
   await stopServices(queuePID);

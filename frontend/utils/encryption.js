@@ -1,13 +1,21 @@
-// utils/encryption.js
-import CryptoJS from 'crypto-js';
+import CryptoJS from "crypto-js";
 
-const SECRET_KEY = "KeepMeSecret"; // Use the environment variable
+/**
+ * Decrypt AES-encrypted license data
+ * @param {string} encryptedData - Encrypted string
+ * @param {string} secretKey - AES secret key
+ * @returns {Object|null}
+ */
+export const decryptData = (encryptedData, secretKey) => {
+  try {
+    const bytes = CryptoJS.AES.decrypt(encryptedData, secretKey);
+    const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
 
-export const encryptData = (data) => {
-  return CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString();
-};
+    if (!decryptedText) return null;
 
-export const decryptData = (encryptedData) => {
-  const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY);
-  return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    return JSON.parse(decryptedText);
+  } catch (error) {
+    console.error("License decryption failed:", error);
+    return null;
+  }
 };
