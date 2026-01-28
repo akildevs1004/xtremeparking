@@ -46,6 +46,12 @@ export default ({ app, $axios, store }, inject) => {
       backendURL = `${protocol}//${hostname}:8000/api`;
       appURL = `${protocol}//${hostname}:3001`;
     }
+
+    // if (hostname.includes("192.168.2.67")) {
+    //   backendURL = "http://192.168.2.27:8000/api";
+
+    //   appURL = "http://192.168.2.27:3001";
+    // }
   } else {
     // === SSR / Build-time fallback ===
     backendURL =

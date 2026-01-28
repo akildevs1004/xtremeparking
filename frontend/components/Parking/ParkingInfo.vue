@@ -70,7 +70,7 @@
                   <v-col>Vehicle Number</v-col>
                   <v-col class="text-right font-weight-medium">{{ this.parking?.log_vehicle_number ||
                     '---'
-                  }}</v-col>
+                    }}</v-col>
                 </v-row>
 
                 <v-row class="py-1111 align-center border-b" style="border-bottom: 1px solid #353538;  ">
@@ -81,7 +81,7 @@
                   <v-col class="text-right"> {{ this.parking ?
                     $dateFormat.formatDateTime(this.parking?.out_time) :
                     '---'
-                  }} </v-col>
+                    }} </v-col>
                 </v-row>
 
                 <v-row class="py-1111 align-center border-b" style="border-bottom: 1px solid #353538;  ">
@@ -92,7 +92,7 @@
                   <v-col class="text-right"> {{ this.parking ?
                     $dateFormat.formatDateTime(this.parking.in_time) :
                     '---'
-                  }} </v-col>
+                    }} </v-col>
                 </v-row>
 
                 <v-row class="py-1111 align-center border-b" style="border-bottom: 1px solid #353538;  ">
@@ -395,10 +395,20 @@
                     <div v-if="this.parking?.membership_id">
                       {{ $utils.caps(parking.parking_members.member_type) }} -
 
-                      <span> {{ parking.parking_members.is_active ? "Active" : "In-Active" }}</span>
+                      <span> {{ parking.parking_members.is_active ? "Active" : "In-Active/Blocked" }}</span>
                     </div>
 
-                    <div v-else>No</div>
+                    <div v-else>
+                      <div v-if="this.parking?.parking_member_id">
+                        {{ $utils.caps(parking.parking_members.member_type) }} -
+
+                        <span> {{ parking.parking_members.is_active ? "Active" : "In-Active/Blocked" }}</span>
+                      </div>
+
+                      <div v-else>No</div>
+                    </div>
+
+
                   </v-col>
                 </v-row>
               </v-col>

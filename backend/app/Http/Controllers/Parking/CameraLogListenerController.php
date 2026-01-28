@@ -8,6 +8,7 @@ use App\Http\Controllers\ParkingDeviceController;
 use App\Models\CamerasList;
 use App\Models\Company;
 use App\Models\Device;
+use App\Models\ParkingBlockedLogs;
 use App\Models\ParkingCameraLogs;
 use App\Models\ParkingMembers;
 use App\Models\ParkingMembersTransactions;
@@ -369,13 +370,42 @@ class CameraLogListenerController extends Controller
             if ($parkingMember) {
                 if (!$parkingMember->is_active) {
 
-                    $log(" Vehicle {$plateNo} is in  Block List");
+                    $log(" Vehicle {$plateNo} is in  Blocked List");
 
                     $vehicleRecord = [
                         // "image" =>  url(env("PARKING_CAMERA_PUBLIC_FOLDER") . '/' . $companyId) . '/' . $fileName,
                         "image" =>  env("BASE_URL") . '/api/parking_camera_logs' . '/' . $companyId  . '/' . $fileName,
-                        "message" => "{$plateNo} is in  Block List"
+                        "message" => "{$plateNo} is in  Blocked List"
                     ];
+
+                    $rawDump = [
+                        'raw_device_no'        => $imageText['device_no']        ?? null,
+                        // 'raw_capture_time'     => $imageText['capture_time']     ?? null,
+                        'raw_plate_no'         => $imageText['plate_no']         ?? null,
+                        'raw_vehicle_color'    => $imageText['vehicle_color']    ?? null,
+                        'raw_vehicle_type'     => $imageText['vehicle_type']     ?? null,
+                        'raw_vehicle_brand'    => $imageText['vehicle_brand']   ?? null,
+                        'raw_moving_direction' => $imageText['moving_direction'] ?? null,
+                        'raw_validity'         => $imageText['validity']         ?? null,
+                        'raw_country_region'   => $imageText['country_region']   ?? null,
+                        'raw_plate_color'      => $imageText['plate_color']      ?? null,
+                        'raw_plate_size'       => $imageText['plate_size']       ?? null,
+                        'raw_plate_type'       => $imageText['plate_type']       ?? null,
+                        'raw_province'         => $imageText['province']         ?? null,
+                        'raw_camera_no'        => $imageText['camera_no']        ?? null,
+                    ];
+
+
+
+                    ParkingBlockedLogs::create(array_merge([
+                        'created_datetime'        => $formattedLogTime,
+                        'company_id'        => $companyId,
+                        'parking_member_id' => $parkingMember?->id,
+                        'plate_number'      => $plateNo,
+                        'action'            => 'blocked',
+                        'reason'            => $parkingMember->blocked_reason,
+                        'in_background_file_name' => $fileName,
+                    ], $rawDump));
 
                     return $this->response("Entry", $vehicleRecord, false);
                 }

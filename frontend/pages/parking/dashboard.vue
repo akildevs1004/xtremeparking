@@ -72,7 +72,9 @@
         <v-card elevation="2" style="height: 130px; border-radius: 0.5rem"
           class="blue-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="blue-text" style="font-size: 40px">{{ statisstics ? statisstics.total_parking_count : 0 }}
+                <div class="blue-text" :key="statsKey" :mqttNewMessage="mqttNewMessage" style="font-size: 40px">{{
+                  statisstics ?
+                    statisstics.total_parking_count : 0 }}
                 </div>
                 <br />
                 <div style="font-size: 16px">Total Parking</div>
@@ -88,7 +90,9 @@
         <v-card elevation="2" style="height: 130px; border-radius: 0.5rem"
           class="red-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="red-text" style="font-size: 40px">{{ statisstics ? statisstics.total_parked : 0 }}</div>
+                <div class="red-text" :key="statsKey" :mqttNewMessage="mqttNewMessage" style="font-size: 40px">{{
+                  statisstics ? statisstics.total_parked
+                    : 0 }}</div>
                 <br />
                 <div style="font-size: 16px">Occupied</div>
               </v-col>
@@ -103,7 +107,9 @@
         <v-card elevation="2" style="height: 130px; border-radius: 0.5rem"
           class="green-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="green-text" style="font-size: 40px">{{ statisstics ? statisstics.total_available : 0 }}
+                <div class="green-text" :key="statsKey" :mqttNewMessage="mqttNewMessage" style="font-size: 40px">{{
+                  statisstics ?
+                    statisstics.total_available : 0 }}
                 </div>
                 <br />
                 <div style="font-size: 16px">Available</div>
@@ -119,7 +125,9 @@
         <v-card elevation="2" style="height: 130px; border-radius: 0.5rem"
           class="yellow-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="yellow-text" style="font-size: 40px">{{ statisstics ? statisstics.vehicle_count_today : 0 }}
+                <div class="yellow-text" :key="statsKey" :mqttNewMessage="mqttNewMessage" style="font-size: 40px">{{
+                  statisstics ?
+                    statisstics.vehicle_count_today : 0 }}
                 </div>
                 <br />
                 <div style="font-size: 16px">Today Vehicles Count</div>
@@ -135,7 +143,9 @@
         <v-card elevation="2" style="height: 130px; border-radius: 0.5rem"
           class="darkgreen-border-bottom custom-card"><v-card-text><v-row style="height: 130px">
               <v-col class="d-flex1 justify-center" style="margin: auto; line-height: 20px; text-align: center">
-                <div class="darkgreen-text" style="font-size: 40px">{{ statisstics ? statisstics.total_payments : 0
+                <div class="darkgreen-text" :key="statsKey" :mqttNewMessage="mqttNewMessage" style="font-size: 40px">{{
+                  statisstics ?
+                    statisstics.total_payments : 0
                 }}</div>
                 <br />
                 <div style="font-size: 16px">Total Amount</div>
@@ -421,6 +431,8 @@ export default {
   },
   data: () => ({
     loadingKey: 1,
+    statsKey: 1,
+
     vehicle_notification_status: "",
     dialogParkingFull: false,
     gatePassStatus: false,
@@ -610,7 +622,7 @@ export default {
       console.log("this.$env", this.$env);
 
 
-      if (this.$env.settings) {
+      if (this.$env?.settings) {
         // Example: ws://test.mosquitto.org:8080
         const options = {
           clientId: "xtremeparking_" + Math.random().toString(16).substr(2, 8),
@@ -674,6 +686,8 @@ export default {
             this.snackbar = false;
 
             this.mqttNewMessage = JSON.parse(this.message);
+
+            this.statsKey++;
 
             // this.mqttNewMessage.response.record.image_background =
             //   this.mqttNewMessage.response.record.public_image_url + "/" +
@@ -782,7 +796,7 @@ export default {
 
           }
 
-          /////this.getStatistics();
+          this.getStatistics();
 
           setTimeout(() => {
             this.mqttLoading = false;
@@ -831,6 +845,9 @@ export default {
         // Update data
         if (data) {
           this.statisstics = data;
+
+          Object.assign(this.statisstics, data);
+
         }
 
         if (this.statisstics.total_available <= 0) {

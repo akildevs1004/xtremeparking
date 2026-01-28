@@ -24,5 +24,21 @@
     "to": "/settings/products",
     "module": "settings",
     "top_menu_name": "settings"
+  },
+  {
+    "icon": "mdi-account-cancel",
+    "title": "Blocked List",
+    "open_menu": false,
+    "to": "/parking/blacklist",
+    "module": "settings",
+    "top_menu_name": "settings"
+  },
+  {
+    "icon": "mdi-cancel",
+    "title": "Blocked Logs",
+    "open_menu": false,
+    "to": "/parking/blacklistlogs",
+    "module": "settings",
+    "top_menu_name": "settings"
   }
 ]

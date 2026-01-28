@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\Parking\CameraLogListenerController;
+use App\Http\Controllers\ParkingBlockedLogsController;
 use App\Http\Controllers\ParkingCameraLogsController;
 use App\Http\Controllers\ParkingDeviceController;
 use App\Http\Controllers\ParkingMembersController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\Reports\PDFController;
 use App\Http\Controllers\Reports\PDFTestController;
 use App\Http\Controllers\Reports\WeeklyMimoController;
 use App\Http\Controllers\StripeController;
+use App\Models\ParkingBlockedLogs;
 use App\Models\ParkingCameraLogs;
 use App\Models\ParkingMembers;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -47,6 +49,13 @@ Route::post('parking_payment_process', [ParkingCameraLogsController::class, 'par
 
 
 Route::resource('parking_members', ParkingMembersController::class);
+Route::resource('parking_blocked_logs', ParkingBlockedLogsController::class);
+
+
+
+
+
+
 Route::get('members_all', [ParkingMembersController::class, "membersAll"]);
 
 Route::post('parking_member_product_invoice_submition',  [ParkingMembersController::class, 'MemberProductInvoiceSubmition']);

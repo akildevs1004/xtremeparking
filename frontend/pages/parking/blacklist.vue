@@ -36,9 +36,9 @@
             @input="getDataFromApi()" v-model="commonSearch" label="Search (min 3)" dense outlined type="text"
             append-icon="mdi-magnify" clearable hide-details></v-text-field></span>
 
-        <v-btn v-if="can('operators_create')" title="Change Request" x-small :ripple="false" text @click="addItem()">
+        <!-- <v-btn v-if="can('operators_create')" title="Change Request" x-small :ripple="false" text @click="addItem()">
           <v-icon class="">mdi mdi-plus-circle</v-icon>
-        </v-btn>
+        </v-btn> -->
       </v-toolbar>
 
       <v-snackbar v-model="snack" :timeout="3000" :color="snackColor">
@@ -390,6 +390,7 @@ export default {
           per_page: itemsPerPage,
           company_id: this.$auth.user.company_id,
           common_search: this.commonSearch,
+          filterMemberStatus: false,
           // branch_id: this.branch_id,
           ...this.payload,
         },

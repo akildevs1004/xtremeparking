@@ -6,11 +6,10 @@ use App\Http\Controllers\ParkingCameraLogsController;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ParkingCameraLogs extends Model
+class ParkingBlockedLogs extends Model
 {
     use HasFactory;
     protected $guarded = [];
-
     protected $appends = ['parking_image_path'];
 
 
@@ -23,12 +22,12 @@ class ParkingCameraLogs extends Model
         // return url(env("PARKING_CAMERA_PUBLIC_FOLDER") . '/' . $this->attributes['company_id']);
         $ip = (new ParkingCameraLogsController())->getServerIp();
 
-        return   "http://{$ip}:8000" .  '/api' . '/parking_camera_logs' . '/' . $this->attributes['company_id'] . '';
+        return   "http://{$ip}:8000" . '/api' . '/parking_camera_logs' . '/' . $this->attributes['company_id'] . '';
     }
 
     public function ParkingMembers()
     {
-        return $this->belongsTo(ParkingMembers::class, "membership_id");
+        return $this->belongsTo(ParkingMembers::class, "parking_member_id");
     }
 
     public function ParkingMembersGuest()
