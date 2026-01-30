@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Http\Controllers\Alarm\Api\ApiAlarmControlController;
+use App\Http\Controllers\ParkingCameraLogsController;
 use PhpMqtt\Client\MqttClient;
 use PhpMqtt\Client\ConnectionSettings;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +22,10 @@ class MqttService
 
     public function __construct()
     {
-        $host = env('MQTT_HOST');
+        $ip = (new ParkingCameraLogsController())->getServerIp();
+
+
+        $host = $ip; //env('MQTT_HOST');
         $port = env('MQTT_PORT', 1883);
         $this->clientId = 'laravel-client-xtparking-' . uniqid(); //env('MQTT_CLIENT_ID', 'laravel-client-xtparking-' . uniqid());
         $this->mqttDeviceClientId = env('MQTT_DEVICE_CLIENTID');
@@ -45,7 +49,10 @@ class MqttService
     public function publish($topic, $message, $serial_number)
     {
         $clientId = 'laravel-client-xtparking-' . uniqid(); //env('MQTT_CLIENT_ID', 'laravel-client-xtparking-' . uniqid());
-        $host =  env('MQTT_HOST'); //env('MQTT_HOST', '165.22.222.17');
+        $ip = (new ParkingCameraLogsController())->getServerIp();
+
+
+        $host = $ip; // env('MQTT_HOST'); //env('MQTT_HOST', '165.22.222.17');
         $port = env('MQTT_PORT', 1883);
 
         $mqtt = new MqttClient($host, $port, $clientId);
@@ -240,7 +247,10 @@ class MqttService
 
     protected function reconnect()
     {
-        $host = env('MQTT_HOST', '165.22.222.17');
+        $ip = (new ParkingCameraLogsController())->getServerIp();
+
+
+        $host = $ip; //env('MQTT_HOST', '165.22.222.17');
         $port = env('MQTT_PORT', 1883);
         $this->clientId = env('MQTT_CLIENT_ID', 'laravel-client-xtparking-' . uniqid());
 
