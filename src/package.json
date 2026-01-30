@@ -75,6 +75,10 @@
       {
         "from": "ffmpeg",
         "to": "ffmpeg"
+      },
+      {
+        "from": "database_deploy",
+        "to": "database_deploy"
       }
     ],
     "productName": "XtremeGuardParking",

@@ -652,10 +652,18 @@ export default {
 
         const host = this.$env.settings.MQTT_SOCKET_HOST;
 
-        if (host.includes("192.168.") || host.includes("localhost") || host.includes("127.0.0.1")) {
+        // if (host.includes("192.168.") || host.includes("localhost") || host.includes("127.0.0.1")) {
 
+        // }
+        // else {
+        //   options.protocol = 'wss';
+        // }
+
+
+        if (this.$env.settings.MQTT_SSL && this.$env.settings.MQTT_SSL == true) {
+          options.protocol = 'wss';
         }
-        else {
+        if (this.$env.settings.MQTT_SOCKET_HOST == "165.22.222.17") {
           options.protocol = 'wss';
         }
         // this.client = mqtt.connect(host, options);

@@ -129,10 +129,10 @@
                         <h3> {{ this.mqttNewMessage ?
                           $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.in_time) :
                           '---'
-                        }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                          }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                             $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.in_time) :
                             ' '
-                          }}</span></h3>
+                            }}</span></h3>
 
                         <div class="grey--text">Entry</div>
                       </v-card>
@@ -143,10 +143,10 @@
                         <h3> {{ this.mqttNewMessage ?
                           $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.out_time) :
                           '---'
-                        }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
+                          }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
                             $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.out_time) :
                             ' '
-                          }}</span></h3>
+                            }}</span></h3>
 
                         <div class="red--text">Exit</div>
                       </v-card>
@@ -515,10 +515,16 @@ export default {
       const host = this.$env.settings.MQTT_SOCKET_HOST; //this.$env.settings.MQTT_SOCKET_HOST
       ;
 
-      if (host.includes("192.168.") || host.includes("localhost") || host.includes("127.0.0.1")) {
+      // if (host.includes("192.168.") || host.includes("localhost") || host.includes("127.0.0.1")) {
 
+      // }
+      // else {
+      //   options.protocol = 'wss';
+      // }
+      if (this.$env.settings.MQTT_SSL && this.$env.settings.MQTT_SSL == true) {
+        options.protocol = 'wss';
       }
-      else {
+      if (this.$env.settings.MQTT_SOCKET_HOST == "165.22.222.17") {
         options.protocol = 'wss';
       }
       // this.client = mqtt.connect(host, options);

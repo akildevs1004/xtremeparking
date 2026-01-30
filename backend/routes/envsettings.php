@@ -35,6 +35,7 @@ Route::get('/envsettings',  function (Request $request) {
 
     if ($serverAddr === '165.22.222.17') {
         return [
+            "MQTT_SSL" => true,
             "MQTT_SOCKET_HOST" => "wss://mqtt.xtremeguard.org:8084",
             "MQTT_DEVICE_CLIENTID" => "xtremesos",
             "TV_COMPANY_ID" => "8",
@@ -65,6 +66,7 @@ Route::get('/envsettings',  function (Request $request) {
 
     return [
         "MQTT_SOCKET_HOST" => "mqtt://{$ip}:8083",
+        "MQTT_SSL" => false,
         "MQTT_DEVICE_CLIENTID" => "xtremesos",
         "TV_COMPANY_ID" => "8",
         "BACKEND_URL2" => "http://{$ip}:8000",
