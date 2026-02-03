@@ -10,17 +10,17 @@
 
     <v-card-text>
       <v-row>
-        <v-col cols="12" md="7">
+        <v-col cols="12" md="5">
           <v-file-input dense outlined accept=".csv,text/csv" label="Upload CSV" v-model="file" :disabled="busy"
             append-icon="mdi-file-excel-box" />
         </v-col>
 
-        <v-col cols="12" md="5">
+        <v-col cols="12" md="5" style="margin-top:-7px">
           <v-btn style="width:100px" color="primary" class="mt-2" :disabled="!file || busy" @click="previewCsv">
             <v-icon left>mdi-eye</v-icon> Preview
           </v-btn>
 
-          <v-btn style="width:100px" color="success" class="mt-2" :disabled="!results.length || busy"
+          <v-btn style="width:100px;margin-left:30px" color="success" class="mt-2" :disabled="!results.length || busy"
             @click="importMembers">
             <v-icon left>mdi-database-import</v-icon> Create
           </v-btn>
