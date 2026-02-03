@@ -27,16 +27,89 @@ if (isDev) {
 
 const networkInterfaces = os.networkInterfaces();
 
+// let ipv4Address = "localhost";
+
+// Object.keys(networkInterfaces).forEach((interfaceName) => {
+//   networkInterfaces[interfaceName].forEach((networkInterface) => {
+//     // Only consider IPv4 addresses, ignore internal and loopback addresses
+//     if (networkInterface.family === "IPv4" && !networkInterface.internal) {
+//       ipv4Address = networkInterface.address;
+//     }
+//   });
+// });
+
 let ipv4Address = "localhost";
 
-Object.keys(networkInterfaces).forEach((interfaceName) => {
-  networkInterfaces[interfaceName].forEach((networkInterface) => {
-    // Only consider IPv4 addresses, ignore internal and loopback addresses
-    if (networkInterface.family === "IPv4" && !networkInterface.internal) {
-      ipv4Address = networkInterface.address;
-    }
+async function getPreferredIPv4() {
+  return new Promise((resolve) => {
+    const ifaces = os.networkInterfaces();
+
+    const isVirtual = (name) => {
+      const n = name.toLowerCase();
+      return (
+        n.includes("docker") ||
+        n.includes("vm") ||
+        n.includes("virtual") ||
+        n.includes("vbox") ||
+        n.includes("hyper-v") ||
+        n.includes("loopback") ||
+        n.includes("bluetooth") ||
+        n.includes("tap") ||
+        n.includes("tun") ||
+        n.includes("vpn")
+      );
+    };
+
+    const isEthernet = (name) => {
+      const n = name.toLowerCase();
+      // Windows: "Ethernet", "Ethernet 2"
+      // Linux: "eth0"
+      // macOS: "en0" (often wifi/ethernet varies, but ok)
+      return n.includes("ethernet") || n.startsWith("eth");
+    };
+
+    const isWifi = (name) => {
+      const n = name.toLowerCase();
+      // Windows: "Wi-Fi"
+      // Linux: "wlan0"
+      return n.includes("wi-fi") || n.includes("wifi") || n.startsWith("wlan");
+    };
+
+    const pickIPv4 = (filterFn) => {
+      for (const [name, nets] of Object.entries(ifaces)) {
+        if (isVirtual(name)) continue;
+        if (!filterFn(name)) continue;
+
+        for (const net of nets) {
+          if (net.family === "IPv4" && !net.internal) {
+            return net.address;
+          }
+        }
+      }
+      return null;
+    };
+
+    // 1) Ethernet first
+    const ethIp = pickIPv4(isEthernet);
+    if (ethIp) return resolve(ethIp);
+
+    // 2) If no Ethernet, fallback to Wi-Fi
+    const wifiIp = pickIPv4(isWifi);
+    if (wifiIp) return resolve(wifiIp);
+
+    // 3) Fallback
+    resolve("127.0.0.1");
   });
-});
+}
+
+(async function initNetwork() {
+  ipv4Address = await getPreferredIPv4();
+  logger("1 Application", `IP address found at ${ipv4Address}`);
+})();
+
+console.log("2 Application", `IP address found at ${ipv4Address}`);
+
+logger("3 Application", `IP address found at ${ipv4Address}`);
 
 // -------------------- NEW HELPERS (FOR DATE FOLDER LOGS) --------------------
 function sanitizeServiceName(name) {

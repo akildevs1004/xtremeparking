@@ -54,7 +54,8 @@ class AuthController extends Controller
             // First login → start 10-day trial
             $user->update([
                 'expiry_date' => now()->addDays(10)->toDateString(),
-                'machine_id'  => $request['machine_id'],
+                'machine_id'  => $request['machine_id'] ?  $request['machine_id'] : null,
+
             ]);
 
             Company::where("id",  ">", 0)->update(

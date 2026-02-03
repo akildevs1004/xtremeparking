@@ -89,10 +89,10 @@ class ParkingMembersController extends Controller
                 'company_id' => 'required|integer',
                 'editId' => 'required',
                 'first_name' => 'required',
-                'last_name' => 'required',
+                'last_name' => 'nullable',
                 'email' => 'required',
-                'phone' => 'required',
-                'plate_size' => 'required',
+                'phone' => 'nullable',
+                'plate_size' => 'nullable',
                 'plate_number' => 'required',
                 'member_type' => 'required',
                 'membership_start' => 'nullable',
@@ -100,14 +100,15 @@ class ParkingMembersController extends Controller
                 'parking_slot' => 'nullable',
 
                 'address' => 'nullable',
+                'remarks' => 'nullable',
 
 
 
 
 
-                'vehicle_country_region' => 'required',
-                'vehicle_plate_type' => 'required',
-                'vehicle_plate_color' => 'required',
+                'vehicle_country_region' => 'nullable',
+                'vehicle_plate_type' => 'nullable',
+                'vehicle_plate_color' => 'nullable',
                 'plate_size' => 'nullable',
                 'vehicle_type' => 'nullable',
                 'vehicle_color' => 'nullable',
@@ -124,22 +125,22 @@ class ParkingMembersController extends Controller
                 'company_id' => 'required|integer',
                 'editId' => 'nullable',
                 'first_name' => 'required',
-                'last_name' => 'required',
+                'last_name' => 'nullable',
                 'email' => 'required',
-                'phone' => 'required',
-                'plate_size' => 'required',
-                'plate_number' => 'required',
+                'phone' => 'nullable',
+                'plate_size' => 'nullable',
+                'plate_number' => 'nullable',
 
                 'address' => 'nullable',
-
+                'remarks' => 'nullable',
                 'member_type' => 'required',
                 'membership_start' => 'nullable',
                 'membership_end' => 'nullable',
                 'parking_slot' => 'nullable',
 
-                'vehicle_country_region' => 'required',
-                'vehicle_plate_type' => 'required',
-                'vehicle_plate_color' => 'required',
+                'vehicle_country_region' => 'nullable',
+                'vehicle_plate_type' => 'nullable',
+                'vehicle_plate_color' => 'nullable',
                 'plate_size' => 'nullable',
                 'vehicle_type' => 'nullable',
                 'vehicle_color' => 'nullable',
@@ -165,6 +166,7 @@ class ParkingMembersController extends Controller
 
         $data =  $request->all();
 
+        unset($data['is_import_from_csv']);
         unset($data['attachment']);
         unset($data['editId']);
 
@@ -221,14 +223,16 @@ class ParkingMembersController extends Controller
             }
         } else {
 
+            //create new
+
             $isExit = ParkingMembers::where("plate_number", $request->plate_number)->exists();
             if ($isExit == 0) {
 
                 $isExitGuest = ParkingMembersVehiclesList::where("vehicle_number", $request->plate_number)->exists();
-                if ($isExitGuest == 0) {
+                if ($isExitGuest == 0) { //guest not exist
 
                     //create user account
-                    if ($request->filled('password') && $request->filled('confirm_password')) {
+                    if (($request->filled('password') && $request->filled('confirm_password')) || $request->filled("is_import_from_csv")) {
                         unset($data['password']);
                         unset($data['confirm_password']);
                         $isUserExist = User::where('email', '=', $request->email)->first();
@@ -238,7 +242,7 @@ class ParkingMembersController extends Controller
                                 "user_type" => "member",
                                 'name' => 'null',
                                 'email' => $request->email,
-                                'password' => Hash::make($request->password),
+                                'password' =>  Hash::make($request->password),
                                 'company_id' => $request->company_id,
                                 'web_login_access' => true,
                                 'can_login' => true,
@@ -259,9 +263,9 @@ class ParkingMembersController extends Controller
 
                                 $ParkingMember = Parkingmembers::where('email', '=', $request->email)->first();
 
-                                if ($ParkingMember)
+                                if ($ParkingMember) {
 
-                                    $data =    [
+                                    $Guestdata =    [
 
                                         'company_id' => $request->company_id,
                                         'member_id' => $ParkingMember->id,
@@ -275,9 +279,10 @@ class ParkingMembersController extends Controller
                                         'parking_slot' => $request->parking_slot,
                                     ];
 
-                                $record = ParkingMembersVehiclesList::create($data);
+                                    $record = ParkingMembersVehiclesList::create($Guestdata);
 
-                                return $this->response('Parking Member   is created as ' . $ParkingMember->first_name . '  ' . $ParkingMember->last_name . ' Guest/Member List', $record, true);
+                                    return $this->response('Parking Member   is created as ' . $ParkingMember->first_name . '  ' . $ParkingMember->last_name . ' Guest/Member List', $record, true);
+                                }
                             } else {
                                 return [
                                     "status" => false,
@@ -286,7 +291,7 @@ class ParkingMembersController extends Controller
                             }
                         }
                     }
-
+                    if (!isset($data['last_name'])) $data['last_name'] = "";
                     $record = ParkingMembers::create($data);
 
                     if (isset($request->attachment) && $request->hasFile('attachment')) {
@@ -649,6 +654,52 @@ class ParkingMembersController extends Controller
         ]);
     }
 
+    // public function preview(Request $request)
+    // {
+    //     $v = Validator::make($request->all(), [
+    //         'company_id' => 'required',
+    //         'file' => 'required|file|mimes:csv,txt',
+    //     ]);
+
+    //     if ($v->fails()) {
+    //         return response()->json(['message' => $v->errors()->first()], 422);
+    //     }
+
+    //     $rows = $this->parseCsv($request->file('file')->getRealPath());
+    //     $headerMap = [
+    //         'first name' => 'first_name',
+    //         'last name' => 'last_name',
+    //         'flat number' => 'flat_number',
+    //         'parking floor number' => 'parking_floor_number',
+    //         'parking number' => 'parking_number',
+    //         'email id' => 'email_id',
+    //         'phone' => 'phone',
+    //         'prefix' => 'prefix',
+    //         'plate number' => 'plate_number',
+    //         'vehicle country region' => 'vehicle_country_region',
+    //         'vehicle plate color' => 'vehicle_plate_color',
+    //     ];
+    //     // validate headers/shape (optional strict)
+    //     $required = ['first_name', 'last_name', 'phone', 'flat_number', 'parking_floor_number', 'parking_number', 'email_id', 'prefix', 'plate_number', 'vehicle_country_region', 'vehicle_plate_color'];
+    //     $missing = [];
+    //     if (!empty($rows)) {
+    //         $keys = array_keys($rows[0]);
+    //         foreach ($required as $r) {
+    //             if (!in_array($r, $keys)) $missing[] = $r;
+    //         }
+    //     }
+
+    //     if (!empty($missing)) {
+    //         return response()->json([
+    //             'message' => 'Missing required columns: ' . implode(', ', $missing),
+    //         ], 422);
+    //     }
+
+    //     // Return normalized rows
+    //     return response()->json([
+    //         'rows' => $rows,
+    //     ]);
+    // }
     public function preview(Request $request)
     {
         $v = Validator::make($request->all(), [
@@ -657,42 +708,41 @@ class ParkingMembersController extends Controller
         ]);
 
         if ($v->fails()) {
-            return response()->json(['message' => $v->errors()->first()], 422);
-        }
-
-        $rows = $this->parseCsv($request->file('file')->getRealPath());
-        $headerMap = [
-            'first name' => 'first_name',
-            'last name' => 'last_name',
-            'flat number' => 'flat_number',
-            'parking floor number' => 'parking_floor_number',
-            'parking number' => 'parking_number',
-            'email id' => 'email_id',
-            'phone' => 'phone',
-            'prefix' => 'prefix',
-            'plate number' => 'plate_number',
-            'vehicle country region' => 'vehicle_country_region',
-            'vehicle plate color' => 'vehicle_plate_color',
-        ];
-        // validate headers/shape (optional strict)
-        $required = ['first_name', 'last_name', 'phone', 'flat_number', 'parking_floor_number', 'parking_number', 'email_id', 'prefix', 'plate_number', 'vehicle_country_region', 'vehicle_plate_color'];
-        $missing = [];
-        if (!empty($rows)) {
-            $keys = array_keys($rows[0]);
-            foreach ($required as $r) {
-                if (!in_array($r, $keys)) $missing[] = $r;
-            }
-        }
-
-        if (!empty($missing)) {
             return response()->json([
-                'message' => 'Missing required columns: ' . implode(', ', $missing),
+                'message' => $v->errors()->first()
             ], 422);
         }
 
-        // Return normalized rows
+        // Parse CSV
+        $rows = $this->parseCsv($request->file('file')->getRealPath());
+
+
+
+        if (empty($rows)) {
+            return response()->json([
+                'rows' => [],
+                'message' => 'Empty file'
+            ]);
+        }
+
+        /*
+     |--------------------------------------------------------------------------
+     | Normalize headers (keep human Excel headers working)
+     |--------------------------------------------------------------------------
+     */
+        $normalized = [];
+
+        foreach ($rows as $row) {
+            $clean = [];
+            foreach ($row as $key => $value) {
+                $cleanKey = trim(strtolower($key));
+                $clean[$cleanKey] = is_string($value) ? trim($value) : $value;
+            }
+            $normalized[] = $clean;
+        }
+
         return response()->json([
-            'rows' => $rows,
+            'rows' => $normalized
         ]);
     }
 
@@ -780,10 +830,9 @@ class ParkingMembersController extends Controller
         if (empty(trim($row['first_name'] ?? ''))) return 'first_name is required';
         if (empty(trim($row['phone'] ?? ''))) return 'phone is required';
         if (empty(trim($row['plate_number'] ?? ''))) return 'plate_number is required';
-        if (empty(trim($row['member_type'] ?? ''))) return 'member_type is required';
+        // if (empty(trim($row['member_type'] ?? ''))) return 'member_type is required';
         return null;
     }
-
     private function parseCsv(string $path): array
     {
         $handle = fopen($path, 'r');
@@ -791,58 +840,113 @@ class ParkingMembersController extends Controller
 
         $rows = [];
         $headers = null;
-
-        // Map your exact CSV header labels -> snake_case keys
-        $headerMap = [
-            'first name' => 'first_name',
-            'last name' => 'last_name',
-            'flat number' => 'flat_number',
-            'parking floor number' => 'parking_floor_number',
-            'parking number' => 'parking_number',
-            'email id' => 'email_id',
-            'phone' => 'phone',
-            'prefix' => 'prefix',
-            'plate number' => 'plate_number',
-            'vehicle country region' => 'vehicle_country_region',
-            'vehicle plate color' => 'vehicle_plate_color',
-        ];
+        $rowCount = 0;
 
         while (($data = fgetcsv($handle)) !== false) {
+            $rowCount++;
+
+            // Trim + UTF-8 encode each cell
+            $data = array_map(function ($v) {
+                return mb_convert_encoding(trim((string)$v), 'UTF-8', 'UTF-8');
+            }, $data);
+
+            // Skip empty rows
+            $nonEmptyCount = count(array_filter($data, fn($v) => $v !== ''));
+            if ($nonEmptyCount === 0) continue;
+
+            // Skip title row
+            if ($rowCount === 1) continue;
+
             // Header row
-            if ($headers === null) {
-                $headers = array_map(function ($h) use ($headerMap) {
-                    $h = trim((string)$h);
-                    $key = mb_strtolower($h);
+            if ($rowCount === 2) {
+                // Remove BOM from first header
+                $data[0] = preg_replace('/^\x{FEFF}/u', '', $data[0]);
 
-                    // normalize multiple spaces
-                    $key = preg_replace('/\s+/', ' ', $key);
-
-                    // map to expected snake_case if known
-                    if (isset($headerMap[$key])) {
-                        return $headerMap[$key];
-                    }
-
-                    // fallback: basic snake_case normalization
-                    $key = str_replace(['-', '/'], ' ', $key);
-                    $key = preg_replace('/\s+/', '_', $key);
-                    return $key;
-                }, $data);
-
+                // Normalize headers
+                $headers = array_map(fn($h) => strtolower(preg_replace('/\s+/', ' ', $h)), $data);
                 continue;
             }
 
-            if (count($data) === 1 && trim((string)$data[0]) === '') continue;
-
+            // Data rows
             $row = [];
             foreach ($headers as $i => $key) {
-                $row[$key] = isset($data[$i]) ? trim((string)$data[$i]) : '';
+                if ($key === null) continue;
+                $row[$key] = $data[$i] ?? '';
             }
+
+            // Skip all-empty rows
+            if (count(array_filter($row, fn($v) => $v !== '')) === 0) continue;
+
             $rows[] = $row;
         }
 
         fclose($handle);
         return $rows;
     }
+
+
+
+
+
+    // private function parseCsv(string $path): array
+    // {
+    //     $handle = fopen($path, 'r');
+    //     if (!$handle) return [];
+
+    //     $rows = [];
+    //     $headers = null;
+
+    //     // Map your exact CSV header labels -> snake_case keys
+    //     $headerMap = [
+    //         'first name' => 'first_name',
+    //         'last name' => 'last_name',
+    //         'flat number' => 'flat_number',
+    //         'parking floor number' => 'parking_floor_number',
+    //         'parking number' => 'parking_number',
+    //         'email id' => 'email_id',
+    //         'phone' => 'phone',
+    //         'prefix' => 'prefix',
+    //         'plate number' => 'plate_number',
+    //         'vehicle country region' => 'vehicle_country_region',
+    //         'vehicle plate color' => 'vehicle_plate_color',
+    //     ];
+
+    //     while (($data = fgetcsv($handle)) !== false) {
+    //         // Header row
+    //         if ($headers === null) {
+    //             $headers = array_map(function ($h) use ($headerMap) {
+    //                 $h = trim((string)$h);
+    //                 $key = mb_strtolower($h);
+
+    //                 // normalize multiple spaces
+    //                 $key = preg_replace('/\s+/', ' ', $key);
+
+    //                 // map to expected snake_case if known
+    //                 if (isset($headerMap[$key])) {
+    //                     return $headerMap[$key];
+    //                 }
+
+    //                 // fallback: basic snake_case normalization
+    //                 $key = str_replace(['-', '/'], ' ', $key);
+    //                 $key = preg_replace('/\s+/', '_', $key);
+    //                 return $key;
+    //             }, $data);
+
+    //             continue;
+    //         }
+
+    //         if (count($data) === 1 && trim((string)$data[0]) === '') continue;
+
+    //         $row = [];
+    //         foreach ($headers as $i => $key) {
+    //             $row[$key] = isset($data[$i]) ? trim((string)$data[$i]) : '';
+    //         }
+    //         $rows[] = $row;
+    //     }
+
+    //     fclose($handle);
+    //     return $rows;
+    // }
 
     /**
      * Replace this with your actual member create logic.

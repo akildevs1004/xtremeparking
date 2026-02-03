@@ -1,4 +1,3 @@
-
 // put your existing code here
 // XtremeParking - Unified Camera Live Stream Server
 // ------------------------------------------------------------------
@@ -10,11 +9,10 @@
 // - Node stays up; FFmpeg auto-restarts on failure
 // - Camera Health JSON API on HEALTH_PORT (/health)
 // ------------------------------------------------------------------
-const { app } = require('electron');
+const { app } = require("electron");
 
 const isDev = !app.isPackaged;
 const appDir = isDev ? process.cwd() : process.resourcesPath;
-
 
 const http = require("http");
 const WebSocket = require("ws");
@@ -117,7 +115,8 @@ async function fetchCameras() {
   const cameras = response?.data || [];
 
   if (!Array.isArray(cameras) || cameras.length === 0) {
-    throw new Error("Laravel API returned no cameras.");
+    //throw new Error("Laravel API returned no cameras.");
+    console.log("Laravel API returned no cameras.");
   }
 
   console.log(`Received ${cameras.length} cameras:\n`);
@@ -201,9 +200,7 @@ function startFFmpeg(cam, httpPort) {
   });
 
   ffmpeg.on("close", (code, signal) => {
-    console.log(
-      `[FFMPEG CAM ${cam.id}] Exit code: ${code}, signal: ${signal}`,
-    );
+    console.log(`[FFMPEG CAM ${cam.id}] Exit code: ${code}, signal: ${signal}`);
 
     setCameraStatus(cam.id, {
       status: "stopped",
@@ -306,9 +303,7 @@ function startCameraServers(cam, index) {
   httpServer.keepAliveTimeout = 0; // explicit for long single request
 
   httpServer.listen(httpPort, "0.0.0.0", () => {
-    console.log(
-      `[CAM ${cam.id}] HTTP ingest listening on port ${httpPort}`,
-    );
+    console.log(`[CAM ${cam.id}] HTTP ingest listening on port ${httpPort}`);
   });
 
   // Start FFmpeg for this camera
@@ -353,9 +348,7 @@ function startHealthApiServer() {
 // MAIN EXECUTION
 // -----------------------------------------------
 async function liveStreamHelper() {
-
-console.log(appDir);
-
+  console.log(appDir);
 
   try {
     // 1) Load BASE_HTTP_PORT / BASE_WS_PORT from Laravel config API
@@ -376,6 +369,5 @@ console.log(appDir);
     //process.exit(1);
   }
 }
-
 
 module.exports = { liveStreamHelper };
