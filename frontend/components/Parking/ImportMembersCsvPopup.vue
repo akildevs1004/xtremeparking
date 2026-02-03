@@ -1,67 +1,77 @@
 <template>
-  <v-card>
-    <v-card-title class="popup_background_noviolet">
-      <v-spacer></v-spacer>
+  <div>
+    <div class="text-center ma-2">
+      <v-snackbar v-model="snackbar" top="top" elevation="24">
+        {{ response }}
+      </v-snackbar>
+    </div>
+    <v-card>
 
-      <v-btn x-small text :disabled="busy" @click="downloadTemplate">
-        <v-icon small class="mr-1">mdi-download</v-icon> Template
-      </v-btn>
-    </v-card-title>
+      <v-card-title class="popup_background_noviolet">
+        <v-spacer></v-spacer>
 
-    <v-card-text>
-      <v-row>
-        <v-col cols="12" md="5">
-          <v-file-input dense outlined accept=".csv,text/csv" label="Upload CSV" v-model="file" :disabled="busy"
-            append-icon="mdi-file-excel-box" />
-        </v-col>
+        <v-btn x-small text :disabled="busy" @click="downloadTemplate">
+          <v-icon small class="mr-1">mdi-download</v-icon> Template
+        </v-btn>
+      </v-card-title>
 
-        <v-col cols="12" md="5" style="margin-top:-7px">
-          <v-btn style="width:100px" color="primary" class="mt-2" :disabled="!file || busy" @click="previewCsv">
-            <v-icon left>mdi-eye</v-icon> Preview
-          </v-btn>
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" md="5">
+            <v-file-input dense outlined accept=".csv,text/csv" label="Upload CSV" v-model="file" :disabled="busy"
+              append-icon="mdi-file-excel-box" />
+          </v-col>
 
-          <v-btn style="width:100px;margin-left:30px" color="success" class="mt-2" :disabled="!results.length || busy"
-            @click="importMembers">
-            <v-icon left>mdi-database-import</v-icon> Create
-          </v-btn>
-        </v-col>
-      </v-row>
+          <v-col cols="12" md="5" style="margin-top:-7px">
+            <v-btn style="width:100px" color="primary" class="mt-2" :disabled="!file || busy" @click="previewCsv">
+              <v-icon left>mdi-eye</v-icon> Preview
+            </v-btn>
 
-      <v-alert v-if="results.length" type="info" dense outlined class="mt-2">
-        Rows: <b>{{ results.length }}</b> |
-        Success: <b>{{ summary.success }}</b> |
-        Failed: <b>{{ summary.failed }}</b> |
-        Pending: <b>{{ summary.pending }}</b>
-      </v-alert>
+            <v-btn style="width:100px;margin-left:30px" color="success" class="mt-2" :disabled="!results.length || busy"
+              @click="importMembers">
+              <v-icon left>mdi-database-import</v-icon> Create
+            </v-btn>
+          </v-col>
+        </v-row>
 
-      <v-data-table dense fixed-header height="450" :headers="headers" :items="results" :items-per-page="50"
-        class="elevation-0 mt-2">
-        <template v-slot:item.status="{ item }">
-          <v-chip x-small :color="statusColor(item.status)" text-color="white">
-            {{ item.status }}
-          </v-chip>
-        </template>
-        <template v-slot:item.parking_floor_number="{ item }">
+        <v-alert v-if="results.length" type="info" dense outlined class="mt-2">
+          Rows: <b>{{ results.length }}</b> |
+          Success: <b>{{ summary.success }}</b> |
+          Failed: <b>{{ summary.failed }}</b> |
+          Pending: <b>{{ summary.pending }}</b>
+        </v-alert>
 
-          {{ item.parking_floor_number }}-{{ item.parking_number }}
+        <v-data-table dense fixed-header height="450" :headers="headers" :items="results" :items-per-page="50"
+          class="elevation-0 mt-2">
+          <template v-slot:item.status="{ item }">
+            <v-chip x-small :color="statusColor(item.status)" text-color="white">
+              {{ item.status }}
+            </v-chip>
+          </template>
+          <template v-slot:item.parking_floor_number="{ item }">
 
-        </template>
+            {{ item.parking_floor_number }}-{{ item.parking_number }}
+
+          </template>
 
 
 
-      </v-data-table>
-    </v-card-text>
+        </v-data-table>
+      </v-card-text>
 
-    <v-overlay :value="busy" opacity="0.12">
-      <v-progress-circular indeterminate size="44" />
-    </v-overlay>
-  </v-card>
+      <v-overlay :value="busy" opacity="0.12">
+        <v-progress-circular indeterminate size="44" />
+      </v-overlay>
+    </v-card>
+  </div>
 </template>
 <script>export default {
   name: "ImportMembersCsvPopup",
 
   data() {
     return {
+      snackbar: false,
+      response: '',
       file: null,
       results: [],
       busy: false,
@@ -310,7 +320,11 @@
           }
         }
 
+
+        this.$emit("refreshdata");
         this.toast("success", "Import completed");
+        this.response = "Import completed";
+        this.snackbar = true;
       } finally {
         this.busy = false;
       }

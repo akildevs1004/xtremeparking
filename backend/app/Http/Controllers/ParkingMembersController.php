@@ -292,6 +292,19 @@ class ParkingMembersController extends Controller
                         }
                     }
                     if (!isset($data['last_name'])) $data['last_name'] = "";
+
+                    if ($request->filled("is_import_from_csv")) {
+                        $start_date = Carbon::parse(date("Y-m-d"));
+
+                        $end_date = (clone $start_date)->addDays(
+                            364
+                        );
+
+                        $data['membership_start'] = $start_date;
+                        $data['membership_end'] = $end_date;
+                    }
+
+
                     $record = ParkingMembers::create($data);
 
                     if (isset($request->attachment) && $request->hasFile('attachment')) {

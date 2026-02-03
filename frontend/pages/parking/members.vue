@@ -16,7 +16,7 @@
           </v-icon>
         </v-card-title>
         <v-card-text>
-          <ImportMembersCsvPopup :key="key" />
+          <ImportMembersCsvPopup @refreshdata="getDataFromApi()" :key="key" />
         </v-card-text>
       </v-card>
     </v-dialog>
