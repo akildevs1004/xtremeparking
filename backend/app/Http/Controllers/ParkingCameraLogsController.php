@@ -87,7 +87,7 @@ class ParkingCameraLogsController extends Controller
         $companyId = $request->company_id;
         $today = now()->toDateString();
 
-        $inLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name'])
+        $inLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot'])
             ->select(
                 'id',
                 'log_vehicle_number',
@@ -111,7 +111,7 @@ class ParkingCameraLogsController extends Controller
             ->limit(20)
             ->get();
 
-        $outLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name'])
+        $outLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot'])
             ->select(
                 'id',
                 'log_vehicle_number',

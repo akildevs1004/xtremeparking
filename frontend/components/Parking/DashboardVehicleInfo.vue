@@ -56,26 +56,32 @@
               </div>
 
               <div class="log-right">
-                <v-icon style="padding-top:5px;" color="red" x-small
+
+                <span style="font-size:10px;width:50px;">{{ log.parking_members?.parking_slot }}</span>
+                <!-- <v-icon style="padding-top:5px;" color="red" x-small
                   v-if="log.direction == 'OUT' && log.total_amount > 0 && !log.payment_mode">
                   mdi-cash
-                </v-icon>
-
-                <div :class="['direction-pill', log.direction === 'OUT' ? 'out' : 'in']">
-                  <span style="width: 20px;">
-                    <v-icon x-small class="mr-1" v-if="log.direction === 'IN'">
+                </v-icon> -->
+                <div :class="['direction-pill', log.direction === 'OUT' ? 'out' : 'in']" style="width:50px;">
+                  <span style="width: 20px;" v-if="log.direction === 'IN'">
+                    <v-icon x-small class="mr-1 pr-1" style="padding-left:5px;;">
                       mdi-arrow-left-bold-outline
                     </v-icon>
+
                   </span>
 
-                  <span>{{ log.direction === 'OUT' ? 'Out' : 'In' }}</span>
+                  <span :style="log.direction === 'OUT' ? 'padding-left:10px' : 'padding-left:0px'">{{ log.direction ===
+                    'OUT' ? 'Out' : 'In' }}</span>
 
-                  <span style="width: 20px;">
-                    <v-icon x-small class="mr-1" v-if="log.direction === 'OUT'">
+                  <span style="width: 20px;" v-if="log.direction === 'OUT'">
+                    <v-icon x-small class="mr-0">
                       mdi-arrow-right-bold-outline
                     </v-icon>
                   </span>
+
                 </div>
+
+
               </div>
             </div>
           </v-list-item-content>
@@ -99,8 +105,9 @@
             {{ $utils.caps(selectedLog.parking_members?.member_type || selectedLog.member_type) }}
             -
             <span>
-              Member
-              {{ selectedLog.parking_members?.is_active ? "Active" : "In-Active" }}
+
+              {{ selectedLog.parking_members?.parking_slot }}
+              <!-- {{ selectedLog.parking_members?.is_active ? "Active" : "In-Active" }} -->
             </span>
           </span>
           <span v-else class="guest-badge"> | GUEST</span>
@@ -639,7 +646,7 @@ export default {
 
 /* Direction pill */
 .direction-pill {
-  padding: 3px 12px;
+  padding: 3px 0px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
