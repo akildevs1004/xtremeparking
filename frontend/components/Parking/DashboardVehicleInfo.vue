@@ -9,7 +9,7 @@
 
         <v-spacer />
 
-        <span :style="`color:${snackbarColor == 'red' ? '#fd3b3b' : 'green'}`">
+        <span v-html="response" :style="`color:${snackbarColor == 'red' ? '#fd3b3b' : 'green'}`">
           {{ snackbar ? (response ? response : "") : "" }}
         </span>
 

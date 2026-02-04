@@ -145,7 +145,7 @@
                     <v-data-table :height="tableHeight" :name="'table' + index" v-if="showTable" :headers="headers"
                       :items="items" :server-items-length="totalRowsCount" :loading="loading" :options.sync="options"
                       :footer-props="{
-                        itemsPerPageOptions: [10, 50, 100, 500, 1000],
+                        itemsPerPageOptions: [20, 50, 100, 500, 1000],
                       }" class="elevation-0 table-header-color">
 
                       <template v-slot:item.sno="{ item, index }">
@@ -283,7 +283,7 @@ export default {
     return {
 
 
-      perPage: 10,
+      perPage: 20,
       cumulativeIndex: 1,
       currentPage: 1,
 
@@ -324,9 +324,9 @@ export default {
       date_to: "",
       loading: false,
       commonSearch: "",
-      options: { perPage: 10 },
+      options: { perPage: 20 },
       cumulativeIndex: 1,
-      perPage: 10,
+      perPage: 20,
       currentPage: 1,
       totalRowsCount: 0,
       headers: [
@@ -679,7 +679,7 @@ export default {
       if (this.loading && this.commonSearch == null) return false;
 
       // Reset pagination if asked
-      if (custompage === 0) this.options = { perPage: 10, page: 1 };
+      if (custompage === 0) this.options = { perPage: 20, page: 1 };
 
       let { sortBy, sortDesc, page, itemsPerPage } = this.options;
       const sortedBy = Array.isArray(sortBy) ? sortBy[0] : "";

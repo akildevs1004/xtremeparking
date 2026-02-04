@@ -377,119 +377,172 @@
 
               </v-col>
 
-              <v-col cols="6">
+            </v-row>
+          </v-card-text>
+        </v-card>
+        <v-card class="mt-4" v-if="this.parking?.parking_members">
+          <v-card-text>
+            <v-row>
+
+
+              <v-row>
+                <!-- Left column -->
+                <v-col>
+                  <div>Member</div>
+
+                </v-col>
+
+
+              </v-row>
+              <v-card>
+                <v-card-text>
+                  <v-row>
+
+                    <v-col cols="6">
 
 
 
 
 
-                <v-row class="py-1111 align-center border-b"
-                  style="border-left:0px solid #353538; border-bottom: 1px solid #353538;">
-                  <v-col class="shrink">
-                    <v-icon color="yellow">mdi-information-slab-circle</v-icon>
-                  </v-col>
-                  <v-col>Membership </v-col>
-                  <v-col class="text-right font-weight-bold">
+                      <v-row class="py-1111 align-center border-b"
+                        style="border-left:0px solid #353538; border-bottom: 1px solid #353538;">
+                        <v-col class="shrink">
+                          <v-icon color="yellow">mdi-information-slab-circle</v-icon>
+                        </v-col>
+                        <v-col>Membership </v-col>
+                        <v-col class="text-right font-weight-bold">
 
 
-                    <div v-if="this.parking?.membership_id">
-                      {{ $utils.caps(parking.parking_members.member_type) }} -
+                          <div v-if="this.parking?.membership_id">
+                            {{ $utils.caps(parking.parking_members.member_type) }} -
 
-                      <span> {{ parking.parking_members.is_active ? "Active" : "In-Active/Blocked" }}</span>
-                    </div>
+                            <span> {{ parking.parking_members.is_active ? "Active" : "In-Active/Blocked" }}</span>
+                          </div>
 
-                    <div v-else>
-                      <div v-if="this.parking?.parking_member_id">
-                        {{ $utils.caps(parking.parking_members.member_type) }} -
+                          <div v-else>
+                            <div v-if="this.parking?.parking_member_id">
+                              {{ $utils.caps(parking.parking_members.member_type) }} -
 
-                        <span> {{ parking.parking_members.is_active ? "Active" : "In-Active/Blocked" }}</span>
-                      </div>
+                              <span> {{ parking.parking_members.is_active ? "Active" : "In-Active/Blocked" }}</span>
+                            </div>
 
-                      <div v-else>No</div>
-                    </div>
-
-
-                  </v-col>
-                </v-row>
-              </v-col>
-              <v-col cols="6">
+                            <div v-else>No</div>
+                          </div>
 
 
-
-
-
-                <v-row class="py-1111 align-center border-b"
-                  style="border-left:1px solid #353538; border-bottom: 1px solid #353538;"
-                  v-if="this.parking?.membership_id">
-                  <v-col class="shrink">
-                    <v-icon color="yellow">mdi-information-slab-circle</v-icon>
-                  </v-col>
-                  <v-col>Membership Name </v-col>
-                  <v-col class="text-right font-weight-bold">
-
-
-                    <div>
-
-                      {{ parking.parking_members.first_name }}
-                      {{ parking.parking_members.last_name }}
-                    </div>
-
-
-                  </v-col>
-                </v-row>
-              </v-col>
-              <v-col cols="6">
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                    <v-col cols="6">
 
 
 
 
 
-                <v-row class="py-1111 align-center border-b"
-                  style="border-left:0px solid #353538; border-bottom: 1px solid #353538;">
-                  <v-col class="shrink">
-                    <v-icon color="yellow">mdi-information-slab-circle</v-icon>
-                  </v-col>
-                  <v-col>Membership Duration </v-col>
-                  <v-col class="text-right font-weight-bold">
+                      <v-row class="py-1111 align-center border-b"
+                        style="border-left:0px solid #353538; border-bottom: 1px solid #353538;">
+                        <v-col class="shrink">
+                          <v-icon color="yellow">mdi-information-slab-circle</v-icon>
+                        </v-col>
+                        <v-col>Member Name </v-col>
+                        <v-col class="text-right font-weight-bold">
 
 
-                    <div v-if="this.parking?.membership_id">
-                      {{ parking.parking_members.membership_start }} To
-                      {{ parking.parking_members.membership_end }}
-                    </div>
-
-                    <div v-else>---</div>
-                  </v-col>
-                </v-row>
-              </v-col><v-col cols="6">
+                          <div>
+                            {{ parking.parking_members.first_name }}
+                            {{ parking.parking_members.last_name }}
+                          </div>
 
 
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                    <v-col cols="6">
+                      <v-row class="py-1111 align-center border-b"
+                        style="border-left:1px solid #353538; border-bottom: 1px solid #353538;"
+                        v-if="this.parking?.parking_members">
+                        <v-col class="shrink">
+                          <v-icon color="yellow">mdi-information-slab-circle</v-icon>
+                        </v-col>
+                        <v-col>Parking Slot </v-col>
+                        <v-col class="text-right font-weight-bold">
+                          <div>
+                            {{ parking.parking_members.parking_slot }}
+                          </div>
+
+
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                    <v-col cols="6">
 
 
 
-                <v-row class="py-1111 align-center border-b"
-                  style="border-left:1px solid #353538; border-bottom: 1px solid #353538;">
-                  <v-col class="shrink">
-                    <v-icon color="yellow">mdi-information-slab-circle</v-icon>
-                  </v-col>
-                  <v-col>Membership Duration </v-col>
-                  <v-col class="text-right font-weight-bold">
 
 
-                    <div v-if="this.parking?.membership_id">
-                      {{ parking.parking_members.membership_start }} To
-                      {{ parking.parking_members.membership_end }}
-                    </div>
+                      <v-row class="py-1111 align-center border-b"
+                        style="border-left:0px solid #353538; border-bottom: 1px solid #353538;">
+                        <v-col class="shrink">
+                          <v-icon color="yellow">mdi-information-slab-circle</v-icon>
+                        </v-col>
+                        <v-col>Membership Duration </v-col>
+                        <v-col class="text-right font-weight-bold">
 
-                    <div v-else>---</div>
-                  </v-col>
-                </v-row>
-              </v-col>
+
+                          <div v-if="this.parking?.membership_id">
+                            {{ parking.parking_members.membership_start }} To
+                            {{ parking.parking_members.membership_end }}
+                          </div>
+
+                          <div v-else>---</div>
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                    <v-col cols="6">
+                      <v-row class="py-1111 align-center border-b"
+                        style="border-left:1px solid #353538; border-bottom: 1px solid #353538;">
+                        <v-col class="shrink">
+                          <v-icon color="yellow">mdi-information-slab-circle</v-icon>
+                        </v-col>
+                        <v-col>Remarks </v-col>
+                        <v-col class="text-right font-weight-bold">
+
+
+                          <div v-if="this.parking?.parking_members?.remarks">
+                            {{ parking.parking_members.remarks }}
+                          </div>
+
+                          <div v-else>---</div>
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                    <v-col cols="6" v-if="parking.parking_members.blocked_reason">
+                      <v-row class="py-1111 align-center border-b"
+                        style="border-left:1px solid #353538; border-bottom: 1px solid #353538;">
+                        <v-col class="shrink">
+                          <v-icon color="yellow">mdi-information-slab-circle</v-icon>
+                        </v-col>
+                        <v-col>Blocked Reason </v-col>
+                        <v-col class="text-right font-weight-bold">
+
+
+                          <div v-if="this.parking?.parking_members?.blocked_reason">
+                            {{ parking.parking_members.blocked_reason }}
+                          </div>
+
+                          <div v-else>---</div>
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-card>
+
             </v-row>
           </v-card-text>
         </v-card>
 
-        <v-row>
+        <v-row v-if="this.parking?.parking_members_guest">
           <!-- Left column -->
           <v-col>
             <div>Membership Guest Information</div>

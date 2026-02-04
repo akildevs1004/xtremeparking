@@ -15,7 +15,7 @@ class ParkingBlockedLogsController extends Controller
     public function index(Request $request)
     {
 
-        $perPage = $request->get('per_page', 10);
+        $perPage = $request->get('per_page', 20);
 
         // $logs = ParkingBlockedLogs::query()
         //     ->where('company_id', $request->company_id)
@@ -26,7 +26,7 @@ class ParkingBlockedLogsController extends Controller
 
 
 
-        $perPage = $request->get('per_page', 10);
+        $perPage = $request->get('perPage', 20);
 
         $model = ParkingBlockedLogs::with(["ParkingMembers"])
             ->where('company_id', $request->company_id);

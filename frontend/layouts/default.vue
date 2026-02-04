@@ -654,6 +654,10 @@ export default {
           elevation: 0,
           selected: "",
         },
+        parking_blocked: {
+          elevation: 0,
+          selected: "",
+        },
         parking_invoices: {
           elevation: 0,
           selected: "",

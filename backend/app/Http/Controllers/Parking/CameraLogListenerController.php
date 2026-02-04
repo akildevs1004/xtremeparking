@@ -377,7 +377,7 @@ class CameraLogListenerController extends Controller
                     $vehicleRecord = [
                         // "image" =>  url(env("PARKING_CAMERA_PUBLIC_FOLDER") . '/' . $companyId) . '/' . $fileName,
                         "image" =>  $envSettings["BACKEND_URL2"] . '/api/parking_camera_logs' . '/' . $companyId  . '/' . $fileName,
-                        "message" => "{$plateNo} is in  Blocked List",
+                        "message" => "{$parkingMember->parking_slot} - {$plateNo} is in  Blocked List. Reason " . $parkingMember->blocked_reason,
                         "blocked" => true,
                         "status" => false,
                     ];

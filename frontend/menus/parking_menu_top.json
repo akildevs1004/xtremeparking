@@ -23,9 +23,9 @@
   },
   {
     "icon": "mdi mdi-calendar-star-four-points",
-    "title": "Payments",
-    "to": "/parking/invoices",
-    "menu": "parking_invoices",
+    "title": "Blocked",
+    "to": "/parking/blacklistlogs",
+    "menu": "parking_blocked",
     "module": "topmenu"
   },
 
@@ -36,13 +36,7 @@
     "menu": "devices_devices",
     "module": "topmenu"
   },
-  {
-    "icon": "mdi-bell",
-    "title": "Cameras",
-    "to": "/parking/cameras",
-    "menu": "parking_cameras",
-    "module": "topmenu"
-  },
+
   {
     "icon": "mdi-bell",
     "title": "Settings",

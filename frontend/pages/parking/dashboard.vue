@@ -11,7 +11,7 @@
 
       </v-snackbar>
     </div> -->
-    <v-dialog v-model="dialogBlocked" max-width="700px">
+    <v-dialog v-model="dialogBlocked" max-width="700px" persistent>
       <v-card>
         <v-card-title dense class="popup_background"
           :style="vehicleStatusEntryExit == 'exit' ? 'background-color: red!important;' : ''">
@@ -34,7 +34,7 @@
           <div>
 
             <!-- <v-img v-if="vehicleGustNoEntryImage" :src="vehicleGustNoEntryImage" cover width="500px;"></v-img> -->
-            <v-img :src="dialogImageUrl"></v-img>
+            <v-img :src="dialogImageUrl" cover width="100%;"></v-img>
           </div>
 
         </v-card-text></v-card>
@@ -612,6 +612,14 @@ export default {
                 this.dialogImageUrl = vehicleGustNoEntryImage;
 
                 console.log("Blocked vehicle image url:", this.dialogImageUrl);
+
+
+
+                //                 this.response += `
+                //   - <a href="/parking/blacklistlogs" style="color:#1976d2;text-decoration:underline">
+                //     Reports
+                //   </a>
+                // `;
               }
 
               else this.dialogBlocked = false;

@@ -40,5 +40,21 @@
     "to": "/parking/blacklistlogs",
     "module": "settings",
     "top_menu_name": "settings"
+  },
+  {
+    "icon": "mdi-video-outline",
+    "title": "Cameras",
+    "open_menu": false,
+    "to": "/parking/cameras",
+    "module": "settings",
+    "top_menu_name": "settings"
+  },
+  {
+    "icon": "mdi mdi-calendar-star-four-points",
+    "title": "Payments",
+    "open_menu": false,
+    "to": "/parking/invoices",
+    "module": "settings",
+    "top_menu_name": "settings"
   }
 ]

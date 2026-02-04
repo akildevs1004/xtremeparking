@@ -86,7 +86,7 @@
                   <v-card-text style="padding: 0px">
                     <v-data-table :height="tableHeight" v-if="showTable" :headers="headers" :items="items"
                       :server-items-length="totalRowsCount" :loading="loading" :options.sync="options"
-                      :footer-props="{ itemsPerPageOptions: [10, 50, 100, 500, 1000] }"
+                      :footer-props="{ itemsPerPageOptions: [20, 50, 100, 500, 1000] }"
                       class="elevation-0 table-header-color">
                       <!-- Serial No -->
                       <template v-slot:item.sno="{ index }">
@@ -98,6 +98,13 @@
                         <div v-if="item.plate_number">{{ item.plate_number }}</div>
                         <div v-else>---</div>
                       </template>
+                      <template v-slot:item.parking_slot="{ item }">
+                        <div v-if="item.parking_members"> {{
+                          item.parking_members.parking_slot }}</div>
+                        <div v-else>---</div>
+                      </template>
+
+
 
                       <!-- Capture Time -->
                       <template v-slot:item.raw_capture_time="{ item }">
@@ -220,10 +227,10 @@ export default {
       ],
 
       // Server pagination
-      options: { page: 1, itemsPerPage: 10, sortBy: [], sortDesc: [] },
+      options: { page: 1, itemsPerPage: 20, sortBy: [], sortDesc: [] },
       totalRowsCount: 0,
       items: [],
-      perPage: 10,
+      perPage: 20,
       currentPage: 1,
 
       // request control
@@ -234,9 +241,9 @@ export default {
       // Table headers (ALL RAW DUMP fields)
       headers: [
         { text: "S.No", value: "sno", sortable: false },
-
+        { text: "Parking Slot", value: "parking_slot", sortable: false },
         // Primary fields
-        { text: "Plate No", value: "plate_number", sortable: false },
+        { text: "Vehicle No", value: "plate_number", sortable: false },
         { text: "Action", value: "action", sortable: false },
         { text: "Reason", value: "reason", sortable: false },
 
@@ -280,19 +287,19 @@ export default {
     // filter triggers
     commonSearch() {
       clearTimeout(this.searchTimer);
-      this.searchTimer = setTimeout(() => {
-        this.getDataFromApi(0);
-      }, 500);
+      // this.searchTimer = setTimeout(() => {
+      //   this.getDataFromApi(0);
+      // }, 500);
     },
-    filterAction() {
-      this.getDataFromApi(0);
-    },
-    date_from() {
-      this.getDataFromApi(0);
-    },
-    date_to() {
-      this.getDataFromApi(0);
-    },
+    // filterAction() {
+    //   this.getDataFromApi(0);
+    // },
+    // date_from() {
+    //   this.getDataFromApi(0);
+    // },
+    // date_to() {
+    //   this.getDataFromApi(0);
+    // },
   },
 
   mounted() {
@@ -309,7 +316,7 @@ export default {
     // Serial number for server pagination
     getSno(localIndex) {
       const page = Number(this.currentPage || 1);
-      const per = Number(this.perPage || 10);
+      const per = Number(this.perPage || 20);
       return (page - 1) * per + (localIndex + 1);
     },
 
@@ -330,7 +337,7 @@ export default {
 
     async getDataFromApi(custompage = 1) {
       // Reset pagination if asked
-      if (custompage === 0) this.options = { ...this.options, page: 1, itemsPerPage: this.options.itemsPerPage || 10 };
+      if (custompage === 0) this.options = { ...this.options, page: 1, itemsPerPage: this.options.itemsPerPage || 20 };
 
       let { sortBy, sortDesc, page, itemsPerPage } = this.options;
       const sortedBy = Array.isArray(sortBy) ? sortBy[0] : "";
