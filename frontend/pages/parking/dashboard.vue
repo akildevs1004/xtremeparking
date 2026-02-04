@@ -13,8 +13,7 @@
     </div> -->
     <v-dialog v-model="dialogBlocked" max-width="700px" persistent>
       <v-card>
-        <v-card-title dense class="popup_background"
-          :style="vehicleStatusEntryExit == 'exit' ? 'background-color: red!important;' : ''">
+        <v-card-title dense class="popup_background" style="background-color: red!important">
           Information - {{ $utils.caps(vehicleStatusEntryExit) }} - blocked vehicle
           <v-spacer></v-spacer>
           <v-btn icon @click=" dialogBlocked = false">
