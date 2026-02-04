@@ -372,10 +372,14 @@ class CameraLogListenerController extends Controller
 
                     $log(" Vehicle {$plateNo} is in  Blocked List");
 
+                    $envSettings = (new ParkingCameraLogsController())->getEnvSettings($request);
+
                     $vehicleRecord = [
                         // "image" =>  url(env("PARKING_CAMERA_PUBLIC_FOLDER") . '/' . $companyId) . '/' . $fileName,
-                        "image" =>  env("BASE_URL") . '/api/parking_camera_logs' . '/' . $companyId  . '/' . $fileName,
-                        "message" => "{$plateNo} is in  Blocked List"
+                        "image" =>  $envSettings["BACKEND_URL2"] . '/api/parking_camera_logs' . '/' . $companyId  . '/' . $fileName,
+                        "message" => "{$plateNo} is in  Blocked List",
+                        "blocked" => true,
+                        "status" => false,
                     ];
 
                     $rawDump = [
@@ -459,7 +463,7 @@ class CameraLogListenerController extends Controller
                         $log("{$parkingMember->first_name} {$parkingMember->last_name} Membership is expired on {$parkingMember->membership_end} .  {$plateNo} is Not Allowed");
                         $vehicleRecord = [
                             "image" =>  env("BASE_URL") . '/api/parking_camera_logs' . '/' . $companyId  . '/' . $fileName,
-                            "message" => "{$parkingMember->first_name} {$parkingMember->last_name} Membership is expired on {$parkingMember->membership_end} .  {$plateNo} is Not Allowed"
+                            "message" => "{$plateNo} - {$parkingMember->first_name} {$parkingMember->last_name} Membership is expired on {$parkingMember->membership_end}"
                         ];
                         return $this->response("Entry", $vehicleRecord, false);
                     }

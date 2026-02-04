@@ -203,7 +203,7 @@ class ParkingCameraLogsController extends Controller
         $model->orderBy("updated_at", "DESC");
 
         if (request()->has('perPage') || request()->has('page') || $perpage) {
-            return   $model->paginate($request->per_page ?? 10);
+            return   $model->paginate($request->perPage ?? 20);
         } else {
             return $model->get();
         }
@@ -560,5 +560,76 @@ class ParkingCameraLogsController extends Controller
             }
         }
         return '127.0.0.1';
+    }
+
+    public function getEnvSettings(Request $request)
+    {
+        // The IP/domain the client used to reach THIS backend (server public IP)
+        $serverAddr = $request->server('SERVER_ADDR');          // often the server IP
+        $serverName = $request->server('SERVER_NAME');          // domain (if any)
+
+
+        if ($serverAddr === '165.22.222.17') {
+            return [
+                "MQTT_SSL" => true,
+                "MQTT_SOCKET_HOST" => "wss://mqtt.xtremeguard.org:8084",
+                "MQTT_DEVICE_CLIENTID" => "xtremesos",
+                "TV_COMPANY_ID" => "8",
+                "BACKEND_URL2" => "https://{$serverAddr}:8000",
+
+                "MQTT_QRCODE_PAYMENT" => "mqtt://xtremeguard.org",
+                "host" => "mqtts://{$serverAddr}:8083",
+                // "WATCH_DIR" => "D:\\projects\\vehicleparkingbills\\parking_camera_logs\\data",
+                "WATCH_DIR" => env('PARKING_CAMERA_STORAGE_PATH'), //realpath(base_path('../../parking_camera_logs/data')) ?: base_path('../../parking_camera_logs/data'),
+
+                "COMPANY_ID" =>  "8",
+                "API_URL" =>  "https://{$serverAddr}:8000/api/camera_log_listner",
+                "API_KEY" =>  "",
+                "MQTT_SERVER" =>  "wss://{$serverAddr}:8083",
+                "MQTT_FRONTEND" =>  "mqtts://{$serverAddr}:8083",
+
+                //live camera
+                "BASE_HTTP_PORT" =>  "7081",
+                "BASE_WS_PORT" =>  "9991",
+
+                "SECRET_PASS_PHRASE" =>  "CatchMeIfYouCan",
+
+            ];
+        }
+
+        // Default (dynamic from controller)
+        $ip = (new ParkingCameraLogsController())->getServerIp();
+
+        return [
+            "MQTT_SOCKET_HOST" => "mqtt://{$ip}:8083",
+            "MQTT_SSL" => false,
+            "MQTT_DEVICE_CLIENTID" => "xtremesos",
+            "TV_COMPANY_ID" => "8",
+            "BACKEND_URL2" => "http://{$ip}:8000",
+
+
+            "MQTT_QRCODE_PAYMENT" => "mqtt://xtremeguard.org",
+            "host" => "mqtt://{$ip}:8083",
+            // "WATCH_DIR" => "D:\\projects\\vehicleparkingbills\\parking_camera_logs\\data",
+            "WATCH_DIR" =>    env('PARKING_CAMERA_STORAGE_PATH'), //     realpath(base_path('../../../parking_camera_logs/data')) ?: base_path('../../../parking_camera_logs/data'),
+
+
+            "COMPANY_ID" =>  "8",
+            "API_URL" =>  "http://{$ip}:8000/api/camera_log_listner",
+            "API_KEY" =>  "",
+            "MQTT_SERVER" =>  "ws://{$ip}:8083",
+            "MQTT_FRONTEND" =>  "mqtt://{$ip}:8083",
+
+            //live camera
+            "BASE_HTTP_PORT" =>  "7081",
+            "BASE_WS_PORT" =>  "9991",
+            "SECRET_PASS_PHRASE" =>  "CatchMeIfYouCan",
+
+
+
+
+
+
+        ];
     }
 }

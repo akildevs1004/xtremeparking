@@ -1,5 +1,3 @@
-
-
 // Watch *_BACKGROUND files → parse → POST to API (one by one) → publish MQTT → log daily
 
 const mqtt = require("mqtt");
@@ -11,7 +9,7 @@ const axios = require("axios");
 const { logger } = require("./helpers");
 require("dotenv").config(); // fallback ONLY
 
-const { app } = require('electron');
+const { app } = require("electron");
 const isDev = !app.isPackaged;
 const appDir = isDev ? process.cwd() : process.resourcesPath;
 
@@ -31,13 +29,18 @@ const CONFIG_ENDPOINT = "http://127.0.0.1:8000/api/envsettings";
 const logDir = path.resolve(appDir, "logs");
 if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
 
+// const logFile = path.join(
+//   logDir,
+//   `${new Date().toISOString().slice(0, 10)}.log`,
+// );
+
 const logFile = path.join(
   logDir,
-  `${new Date().toISOString().slice(0, 10)}.log`,
+  `${new Date().toLocaleDateString("en-CA").replace(/-/g, "")}.log`,
 );
 
 function logLine(...args) {
-  const timestamp = new Date().toISOString();
+  const timestamp = new Date().toLocaleTimeString();
   const text = args
     .map((a) => (typeof a === "object" ? JSON.stringify(a) : a))
     .join(" ");
@@ -104,10 +107,7 @@ function markAsProcessed(name) {
 // ============================================================================
 async function loadConfig() {
   try {
-    logLine(
-      "🔄 Loading ALL environment variables from API:",
-      CONFIG_ENDPOINT,
-    );
+    logLine("🔄 Loading ALL environment variables from API:", CONFIG_ENDPOINT);
 
     const res = await axios.get(CONFIG_ENDPOINT, { timeout: 5000 });
     const cfg = res.data || {};
@@ -143,13 +143,9 @@ async function loadConfig() {
     logLine("✅ Config loaded from API");
   } catch (err) {
     //logLine("❌ Failed API config load. Using .env fallback.", err.message);
-
     // COMPANY_ID = (process.env.COMPANY_ID ?? "").toString().trim();
-
     // const envWatch = (process.env.WATCH_DIR ?? "./inbox").toString().trim();
-
     // WATCH_DIR = COMPANY_ID ? path.join(envWatch, COMPANY_ID) : envWatch;
-
     // MQTT_SERVER = (process.env.MQTT_SERVER ?? "").toString().trim();
     // API_URL = (process.env.API_URL ?? "").toString().trim();
     // API_KEY = (process.env.API_KEY ?? "").toString().trim();
@@ -210,10 +206,7 @@ async function postWithRetry(payload, tries = 1) {
       });
     } catch (err) {
       lastErr = err;
-      logLine(
-        `⚠️ POST attempt ${i} failed:`,
-        err.response?.status || err.code,
-      );
+      logLine(`⚠️ POST attempt ${i} failed:`, err.response?.status || err.code);
       if (i < tries) await new Promise((r) => setTimeout(r, 500 * i));
     }
   }
@@ -403,9 +396,7 @@ async function processQueue() {
 async function scanExistingFiles() {
   try {
     const files = await fsp.readdir(WATCH_DIR);
-    logLine(
-      `🔍 Scanning existing files in WATCH_DIR (${files.length} found).`,
-    );
+    logLine(`🔍 Scanning existing files in WATCH_DIR (${files.length} found).`);
 
     // Only relevant + not already processed
     const backlog = files
@@ -438,10 +429,7 @@ async function startWatcher() {
   }
 
   // Now that COMPANY_ID is known, set the processed store path
-  processedStorePath = path.join(
-    logDir,
-    `processed_files_${COMPANY_ID}.json`,
-  );
+  processedStorePath = path.join(logDir, `processed_files_${COMPANY_ID}.json`);
 
   await loadProcessedFromDisk();
   await scanExistingFiles(); // handle backlog on restart (enqueued, then processed one by one)
@@ -473,9 +461,7 @@ async function startWatcher() {
       if (processedStorePath) {
         const arr = Array.from(processed);
         await fsp.writeFile(processedStorePath, JSON.stringify(arr), "utf8");
-        logLine(
-          `💾 Final save of processed-file store (${arr.length} files).`,
-        );
+        logLine(`💾 Final save of processed-file store (${arr.length} files).`);
       }
     } catch (err) {
       logLine("❌ Error during final save:", err.message);
@@ -493,8 +479,6 @@ async function startWatcher() {
   });
 }
 
-
-
 module.exports = {
-  startWatcher
+  startWatcher,
 };

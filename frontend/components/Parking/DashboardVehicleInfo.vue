@@ -1,5 +1,7 @@
 <template>
   <div class="vehicle-right-panel" :class="{ 'has-info': showInfo && selectedLog }">
+
+
     <!-- ========== VEHICLE IN/OUT LOG ========== -->
     <v-card class="panel-card mb-1 log-panel" flat>
       <v-card-title class="panel-title d-flex align-center">
@@ -7,7 +9,7 @@
 
         <v-spacer />
 
-        <span style="color:green">
+        <span :style="`color:${snackbarColor == 'red' ? '#fd3b3b' : 'green'}`">
           {{ snackbar ? (response ? response : "") : "" }}
         </span>
 
@@ -210,10 +212,13 @@ export default {
     mqttNewMessage: { type: Object, default: null },
     response: { type: String, default: "" },
     snackbar: { type: Boolean, default: false },
+    snackbarColor: { type: String, default: "green" },
   },
 
   data() {
     return {
+      dialogBlocked: false,
+      dialogImageUrl: "",
       items: [],
 
       selectedLog: null,

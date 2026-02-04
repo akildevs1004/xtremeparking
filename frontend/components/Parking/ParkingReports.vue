@@ -169,13 +169,13 @@
                         <div v-else>----</div>
                       </template>
                       <template v-slot:item.membership_id="{ item }">
-                        <v-chip @click="viewParkinginfo(item)" style="min-width: 80px; " v-if="item.membership_id"
-                          color="green" label>{{
+                        <v-chip @click="viewParkinginfo(item)" style="min-width: 80px; "
+                          v-if="item.membership_id && item.parking_members" color="green" label>{{
                             $utils.caps(item.parking_members.member_type)
 
                           }}
                           {{ item.member_guest_vehicle_id ? ' - Guest'
-                            : '' }}
+                            : '--' }}
 
 
                         </v-chip>

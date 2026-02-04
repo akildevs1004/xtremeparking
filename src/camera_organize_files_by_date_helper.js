@@ -72,7 +72,7 @@ function cleanupOldFoldersIfOverLimit() {
     let rootSize = getDirectorySize(ROOT_DIR);
     console.log(
       new Date().toLocaleString(),
-      `📦 WATCH_DIR size: ${(rootSize / (1024 * 1024 * 1024)).toFixed(2)} GB`
+      `📦 WATCH_DIR size: ${(rootSize / (1024 * 1024 * 1024)).toFixed(2)} GB`,
     );
 
     if (rootSize <= MAX_ROOT_SIZE_BYTES) {
@@ -80,13 +80,13 @@ function cleanupOldFoldersIfOverLimit() {
     }
 
     console.log(
-      "⚠️ WATCH_DIR exceeds 20GB. Starting cleanup of old date folders from baseDir..."
+      "⚠️ WATCH_DIR exceeds 20GB. Starting cleanup of old date folders from baseDir...",
     );
 
     if (!fs.existsSync(baseDir)) {
       console.warn(
         "⚠️ baseDir does not exist, no date folders to clean:",
-        baseDir
+        baseDir,
       );
       return;
     }
@@ -118,7 +118,7 @@ function cleanupOldFoldersIfOverLimit() {
         `➡️ Deleting old folder ${folder.name}, size: ${(
           folderSize /
           (1024 * 1024 * 1024)
-        ).toFixed(3)} GB`
+        ).toFixed(3)} GB`,
       );
 
       deleteDirectoryRecursive(folder.fullPath);
@@ -128,13 +128,13 @@ function cleanupOldFoldersIfOverLimit() {
         `📉 New WATCH_DIR size estimate: ${(
           rootSize /
           (1024 * 1024 * 1024)
-        ).toFixed(2)} GB`
+        ).toFixed(2)} GB`,
       );
     }
 
     if (rootSize > MAX_ROOT_SIZE_BYTES) {
       console.warn(
-        "⚠️ Cleanup finished but WATCH_DIR still above limit (maybe other non-date folders are large)."
+        "⚠️ Cleanup finished but WATCH_DIR still above limit (maybe other non-date folders are large).",
       );
     } else {
       console.log("✅ Cleanup done. WATCH_DIR is within 20GB limit.");
@@ -159,12 +159,14 @@ function organizeFiles() {
       console.warn(
         new Date().toLocaleString(),
         "⚠️ baseDir does not exist, skipping11:",
-        baseDir
+        baseDir,
       );
       return;
     }
 
-    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    // const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const todayStr = new Date().toLocaleDateString("en-CA").replace(/-/g, "");
+
     const files = fs.readdirSync(baseDir);
 
     for (const file of files) {
@@ -190,7 +192,7 @@ function organizeFiles() {
 
     console.log(
       new Date().toLocaleString(),
-      "✅ Organized files (skipped today's files)."
+      "✅ Organized files (skipped today's files).",
     );
 
     // After organizing, check WATCH_DIR size and clean if needed
@@ -199,14 +201,14 @@ function organizeFiles() {
     console.error(
       new Date().toLocaleString(),
       "❌ Error organizing files:",
-      err.message
+      err.message,
     );
   }
 }
 async function loadConfig() {
   try {
     console.log(
-      "🔄 Loading config from API http://127.0.0.1:8000/api/envsettings ..."
+      "🔄 Loading config from API http://127.0.0.1:8000/api/envsettings ...",
     );
 
     const res = await axios.get("http://127.0.0.1:8000/api/envsettings", {
@@ -219,7 +221,7 @@ async function loadConfig() {
     COMPANY_ID = String(cfg.COMPANY_ID ?? process.env.COMPANY_ID ?? "").trim();
 
     ROOT_DIR = String(
-      cfg.WATCH_DIR ?? process.env.WATCH_DIR ?? "./inbox"
+      cfg.WATCH_DIR ?? process.env.WATCH_DIR ?? "./inbox",
     ).trim();
 
     // optional: host if you need later
@@ -235,7 +237,7 @@ async function loadConfig() {
   } catch (e) {
     console.error(
       "❌ Failed to load config from API, using .env instead:",
-      e.message
+      e.message,
     );
 
     COMPANY_ID = String(process.env.COMPANY_ID ?? "").trim();

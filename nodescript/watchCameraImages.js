@@ -29,7 +29,7 @@ if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
 
 const logFile = path.join(
   logDir,
-  `${new Date().toISOString().slice(0, 10)}.log`
+  `${new Date().toISOString().slice(0, 10)}.log`,
 );
 
 function logLine(...args) {
@@ -42,7 +42,7 @@ function logLine(...args) {
   fs.appendFile(
     logFile,
     msg,
-    (err) => err && console.error("LOG WRITE ERROR:", err)
+    (err) => err && console.error("LOG WRITE ERROR:", err),
   );
   console.log(text);
 }
@@ -178,7 +178,7 @@ async function waitForStableFile(filePath, tries = 5, delayMs = 400) {
       logLine(
         "⚠️ stat() failed while waiting for stable file:",
         filePath,
-        err.message
+        err.message,
       );
       return false;
     }
@@ -236,8 +236,8 @@ function initMqtt() {
 function mqttPublish(topic, message, options = { qos: 1, retain: false }) {
   return new Promise((resolve, reject) =>
     client.publish(topic, message, options, (err) =>
-      err ? reject(err) : resolve()
-    )
+      err ? reject(err) : resolve(),
+    ),
   );
 }
 
@@ -311,6 +311,7 @@ async function handleBackgroundFile(filePath) {
     logLine("↩️ Already processed, skipping:", name);
     return;
   }
+  logLine("-------------------------------------------------");
 
   logLine("📥 New file:", name);
 

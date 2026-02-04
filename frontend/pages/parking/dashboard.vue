@@ -11,6 +11,48 @@
 
       </v-snackbar>
     </div> -->
+    <v-dialog v-model="dialogBlocked" max-width="700px">
+      <v-card>
+        <v-card-title dense class="popup_background"
+          :style="vehicleStatusEntryExit == 'exit' ? 'background-color: red!important;' : ''">
+          Information - {{ $utils.caps(vehicleStatusEntryExit) }} - blocked vehicle
+          <v-spacer></v-spacer>
+          <v-btn icon @click=" dialogBlocked = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-card-text style="margin:auto">
+          <div class="pa-2">
+
+
+
+            <v-icon color="green" v-if="gatePassStatus">mdi-check-circle</v-icon>
+            <v-icon color="red" v-else>mdi-alpha-x-circle</v-icon>
+
+            {{ response }}
+          </div>
+          <div>
+
+            <!-- <v-img v-if="vehicleGustNoEntryImage" :src="vehicleGustNoEntryImage" cover width="500px;"></v-img> -->
+            <v-img :src="dialogImageUrl"></v-img>
+          </div>
+
+        </v-card-text></v-card>
+
+    </v-dialog>
+    <!-- <v-dialog v-model="dialogBlocked" width="800px" persistent>
+      <v-card style="padding:0px!important">
+        <v-card-title dense class="popup_background" style="background-color: red!important;padding:0px!important">
+          Blocked Vehicle
+          <v-spacer></v-spacer>
+          <v-btn icon @click="dialogBlocked = false">
+            <v-img :src="dialogImageUrl"></v-img>
+          </v-btn>
+        </v-card-title>
+        <v-card-text>
+          <v-img src="/parking-full.png" cover></v-img> </v-card-text></v-card>
+
+    </v-dialog> -->
     <v-dialog v-model="dialogParkingFull" width="500px">
       <v-card style="padding:0px!important">
         <v-card-title dense class="popup_background" style="background-color: red!important;padding:0px!important">
@@ -221,177 +263,10 @@
 
       <v-col cols="3" class="pt-0 mt-0">
         <DashboardVehicleInfo @paymentProcess="paymentProcess" :mqttNewMessage="mqttNewMessage"
-          :gatePassStatus="gatePassStatus" @openGate="openGate()" :snackbar="snackbar" :response="response" />
-
-        <!--
-        <v-card class="pa-4" style="background:#111; color:#fff; border-radius:15px;">
-          <v-card-text>
-
-            <v-card flat class="d-flex1  justify-center align-center mb-4 pa-5"
-              style="background:#222; border-radius:10px;text-align: center;">
-              <div style="color:#777777;  " v-if="mqttNewMessage">
-
-                {{
-                  mqttNewMessage ? mqttNewMessage.response.record.out_time == null ? ' Entry' : ' Exit ' :
-                    '---'
-                }} Vehicle Number
-              </div>
-
-              <div>
-                <h2 style="color:#6cf; text-shadow:0 0 8px #6cf;font-size: 40px;"> {{
-                  mqttNewMessage?.response.record.log_vehicle_number || '---' }}</h2>
-              </div>
-
-            </v-card>
+          :gatePassStatus="gatePassStatus" @openGate="openGate()" :snackbarColor="snackbarColor" :snackbar="snackbar"
+          :response="response" />
 
 
-            <v-row class=" ">
-              <v-col>
-                <v-card flat class="pa-3 text-center" style="background:#222;">
-
-
-                  <h3> {{ this.mqttNewMessage ?
-                    $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.in_time) :
-                    '---'
-                  }} <span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
-                      $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.in_time) :
-                      ' '
-                    }}</span></h3>
-
-                  <div class="grey--text">Entry</div>
-                </v-card>
-              </v-col>
-              <v-col>
-                <v-card flat class="pa-3 text-center" style="background:#222;">
-
-                  <h3> {{ this.mqttNewMessage ?
-                    $dateFormat.formatTimeAMPM(this.mqttNewMessage.response.record.out_time) :
-                    '---'
-                  }}<span class="grey--text" style="font-size: 12px;"> {{ this.mqttNewMessage ?
-                      $dateFormat.formatDateDayYear(this.mqttNewMessage.response.record.out_time) :
-                      ' '
-                    }}</span></h3>
-
-                  <div class="red--text">Exit</div>
-                </v-card>
-              </v-col>
-            </v-row>
-
-
-            <v-row class="mb-2">
-              <v-col>
-                <v-card flat class="pa-3 text-center" style="background:#222;">
-
-                  <h3> {{ this.mqttNewMessage && this.mqttNewMessage.response.record.out_time ?
-                    $dateFormat.minutesToHHMM(this.mqttNewMessage.response.record.duration_in_minutes) : '---' }}</h3>
-                  <div class="grey--text">Duration</div>
-                </v-card>
-              </v-col>
-              <v-col>
-                <v-card flat class="pa-3 text-center" style="background:#222;">
-
-                  <h3>{{ this.mqttNewMessage ?
-                    this.mqttNewMessage.response.record.duration_in_hours ?
-                      this.mqttNewMessage.response.record.duration_in_hours + ' hour(s)' :
-                      '---' : '---'
-                  }}</h3>
-                  <div class="grey--text">Billing Hours</div>
-                </v-card>
-              </v-col>
-            </v-row>
-
-
-            <v-card flat class="pa-3 text-center mb-4" style="background:#1e2b40; border-radius:10px; color:#55CEE3;">
-              <div v-if="this.mqttNewMessage?.response.record.membership_id">
-
-                <strong>{{ this.mqttNewMessage?.response.record.member_type }}</strong>
-                <strong>Tenant/Member - {{ this.mqttNewMessage?.response.record.membership_status }}</strong>
-                <div class="green--text"> <v-icon size="20"
-                    :color="this.mqttNewMessage?.response.record.parking_allowed_status ? 'green' : 'red'">
-                    mdi-calendar-check</v-icon> {{
-                      $dateFormat.formatDateDayYear(this.mqttNewMessage?.response.record.membership_start_date) }} - {{
-                    $dateFormat.formatDateDayYear(this.mqttNewMessage?.response.record.membership_end_date) }}</div>
-
-              </div>
-              <div v-else> <strong>GUEST</strong>
-              </div>
-            </v-card>
-
-            <v-card flat class="pa-3 text-center mb-4" style="background:#222;">
-
-              <v-row v-if="this.mqttNewMessage?.response.record.total_amount">
-                <v-col cols="6">
-                  <div class="grey--text text-left" style="color:#FFF;font-size: 30px;">Total</div>
-                </v-col>
-                <v-col cols="6" class="text-right">
-                  <h3 style="color:#FFF;font-size: 30px;">{{ this.mqttNewMessage?.response.record.total_amount }} AED
-                  </h3>
-                  <small class="grey--text">{{ this.mqttNewMessage?.response.record.duration_in_hours
-                  }}H × {{ this.mqttNewMessage?.response.record.duration_per_hour_amount
-                    }}Dhr</small>
-                </v-col>
-              </v-row>
-              <div v-else-if="this.mqttNewMessage?.response.record.total_amount == 0">
-                Membership Pass / Guest FREE
-              </div>
-              <div v-else>---</div>
-
-            </v-card>
-
-            <v-card class="mt-1" elevation="2" style="height: 160px; " v-if="mqttNewMessage">
-              <v-card-text>
-                <div>
-                  <div v-if="mqttNewMessage.response.record.out_time">
-                    <v-row style="font-size: 20px;" v-if="this.mqttNewMessage?.response.record.total_amount > 0">
-                      <v-col cols="6">
-                        <v-btn @click="paymentProcess('cash', mqttNewMessage?.response.record.id)" height="60px"
-                          elevation="2"> <v-icon size="30">mdi-cash-100</v-icon> Cash
-                          Payment
-                        </v-btn>
-                      </v-col>
-                      <v-col cols="6">
-                        <v-btn @click="paymentProcess('card', mqttNewMessage?.response.record.id)" height="60px"
-                          elevation="2"> <v-icon size="30">mdi-credit-card</v-icon>
-                          Card
-                          Payment
-                        </v-btn>
-                      </v-col>
-                    </v-row>
-                    <v-row class="mt-2">
-                      <v-col>
-
-                        <v-btn :disabled="!gatePassStatus" @click="openGate" width="100%" height="50px" elevation="2"
-                          color="red" style="font-size: 25px;"> <v-icon size="40">mdi-boom-gate-arrow-up</v-icon> Open
-                          Gate </v-btn>
-                      </v-col>
-                    </v-row>
-                  </div>
-                  <div v-else-if="!mqttNewMessage.response.record.out_time"
-                    style="margin:auto; display:flex; justify-content:center; align-items:center; height:100px; text-align:center;">
-
-                    Entry vehicle Recorded
-
-                  </div>
-
-                </div>
-
-
-
-
-              </v-card-text>
-            </v-card>
-            <v-card v-else class="mt-1" elevation="2" style="height: 240px; ">
-              <v-card-text>
-                <div
-                  style="margin:auto; display:flex; justify-content:center; align-items:center;   text-align:center;">
-                  Waiting for Next Vehicle .........
-                </div>
-              </v-card-text>
-            </v-card>
-
-          </v-card-text>
-        </v-card>
-        -->
 
       </v-col>
 
@@ -430,6 +305,8 @@ export default {
     ParkingReports, AudioSoundPlay, RtspLiveCamera, RtspLiveCamerasList, NewVehiclePopupMqTT, DashboardVehicleInfo
   },
   data: () => ({
+    dialogBlocked: false,
+    snackbarColor: "green",
     loadingKey: 1,
     statsKey: 1,
 
@@ -599,6 +476,8 @@ export default {
       }).then((response) => {
         // console.log(response);
         this.snackbar = true;
+        this.snackbarColor = "green";
+
         this.response = "Gate open command is sent successfully.";
 
         setTimeout(() => {
@@ -609,6 +488,7 @@ export default {
       }).catch((error) => {
         this.snackbar = true;
         // this.response = error.message;
+        this.snackbarColor = "red";
         this.response = "Error occurred while sending open gate command.";
 
       });
@@ -706,14 +586,35 @@ export default {
             if (!this.mqttNewMessage.response.status) //error
             {
               this.snackbar = true;
+              this.snackbarColor = "red";
+
               this.vehicle_notification_status = this.mqttNewMessage.response.message;
               this.response = this.mqttNewMessage.response.record.message;
 
               this.vehicleStatusEntryExit = "entry";
 
-              this.vehicleGustNoEntryImage =
+              let vehicleGustNoEntryImage =
 
                 this.mqttNewMessage.response.record.image.replace("_BACKGROUND", "_VEHICLE");
+
+              console.log("this.mqttNewMessage.response", this.mqttNewMessage.response.record);
+
+
+
+              let LiveImagePath = "http://" + this.$env.settings.BACKEND_URL2 + "/api/parking_camera_logs/" + this.$auth.user.company_id + "/";
+
+              LiveImagePath =
+                LiveImagePath.replace("_BACKGROUND", "_VEHICLE");
+
+
+              if (this.mqttNewMessage.response.record.blocked == true) {
+                this.dialogBlocked = true;
+                this.dialogImageUrl = vehicleGustNoEntryImage;
+
+                console.log("Blocked vehicle image url:", this.dialogImageUrl);
+              }
+
+              else this.dialogBlocked = false;
 
             }
 
@@ -737,6 +638,8 @@ export default {
               this.vehicleStatusEntryExit = "exit";
               // console.log(this.mqttNewMessage.response);
               this.snackbar = true;
+              this.snackbarColor = "yellow";
+
               this.response = "Exit vehicle - Payment Pending";
 
               if (this.mqttNewMessage.response.record.out_background_file_name) {
@@ -752,6 +655,8 @@ export default {
               setTimeout(() => {
 
                 this.snackbar = false;
+                this.snackbarColor = "green";
+
                 this.response = "";
 
               }, 1000 * 10);
@@ -761,6 +666,7 @@ export default {
 
             if (this.mqttNewMessage?.response.record.membership_status == 'Membership Expired') {
               this.snackbar = true;
+              this.snackbarColor = "red";
               this.response = "Membership Expired. Please pay the parking fee.";
             }
 
@@ -769,6 +675,7 @@ export default {
               setTimeout(() => {
 
                 this.snackbar = true;
+                this.snackbarColor = "green";
                 this.response = this.mqttNewMessage?.response.record.gate_open_automatically;
 
                 this.gatePassStatus = true;
@@ -779,6 +686,7 @@ export default {
               }, 1000 * 3);
 
               setTimeout(() => {
+                this.snackbarColor = "green";
 
                 this.snackbar = false;
                 this.response = "";
@@ -799,6 +707,8 @@ export default {
 
             this.mqttNewMessage = null;
             this.snackbar = true;
+            this.snackbarColor = "red";
+
             this.response = `Error: ${ex.message || "Error occurred while processing MQTT message."}`;
 
 
@@ -866,6 +776,8 @@ export default {
       } catch (error) {
         this.snackbar = true;
         // this.response = error.message;
+        this.snackbarColor = "red";
+
         this.response = "Error occurred while processing statistics.";
 
       }
@@ -893,6 +805,7 @@ export default {
           // Update data
           if (data.status) {
             this.snackbar = true;
+            this.snackbarColor = "green";
             this.response = "Payment is updated successfully And Gate is Open Now";
 
             this.gatePassStatus = true;
@@ -908,6 +821,7 @@ export default {
 
         } catch (error) {
           this.snackbar = true;
+          this.snackbarColor = "red";
           // this.response = error.message;
           this.response = "Error occurred while processing payment.";
 

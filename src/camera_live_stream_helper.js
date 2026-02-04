@@ -59,7 +59,7 @@ const cameraHealth = {}; // key: cam.id → status object
 
 // Helper to get timestamp string
 function nowIso() {
-  return new Date().toISOString();
+  return new Date().toLocaleDateString("en-CA");
 }
 
 // -----------------------------------------------
