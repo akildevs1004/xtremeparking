@@ -171,7 +171,7 @@
                     statisstics.vehicle_count_today : 0 }}
                 </div>
                 <br />
-                <div style="font-size: 16px">Today Vehicles Count</div>
+                <div style="font-size: 16px">Today Count</div>
               </v-col>
               <v-col class="d-flex justify-right" style="max-width: 150px">
                 <div style="" class="image-box yellow-border">
@@ -760,7 +760,7 @@ export default {
             company_id: this.$auth.user.company_id,
 
           },
-
+          timeout: 1000 * 10 //10 seconds
         };
 
         const { data } = await this.$axios.get(`/parking_dashboard_statistics`, options);

@@ -247,6 +247,13 @@ function startCameraServers(cam, index) {
     console.error(
       `[ERROR] Could not open WS port ${wsPort}. Already in use?\n${error.message}`,
     );
+
+    console.error(`[ERROR] Could not open WS port ${wsPort}: ${error.message}`);
+    setCameraStatus(cam.id, {
+      status: "error",
+      lastError: `WS port ${wsPort} in use`,
+    });
+    return; // ✅ IMPORTANT
     // process.exit(1);
   }
 

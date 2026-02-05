@@ -16,6 +16,15 @@ const { liveStreamHelper } = require("./camera_live_stream_helper");
 const { startOrganizer } = require("./camera_organize_files_by_date_helper");
 const { startWatcher } = require("./camera_event_watch_helper");
 
+//control GPU
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch("disable-gpu");
+app.commandLine.appendSwitch("disable-gpu-compositing");
+// optional: helps some drivers
+app.commandLine.appendSwitch("disable-features", "UseSkiaRenderer");
+
+///GPU blacklist (for older Windows 10 versions with buggy drivers)
+
 app.setName("XtremeGuard Parking");
 app.setAppUserModelId("XtremeGuard Parking");
 
@@ -161,10 +170,26 @@ app.whenReady().then(async () => {
   setImmediate(() => {
     runInstaller(path.join(appDir, "vs_redist.exe"))
       .then(() => {
-        startServices();
-        liveStreamHelper();
-        startOrganizer();
-        startWatcher();
+        try {
+          startServices();
+        } catch (e) {
+          console.error("Failed to Main startServices1:", e.message);
+        }
+        try {
+          liveStreamHelper();
+        } catch (e) {
+          console.error("Failed to start Main liveStreamHelper:", e.message);
+        }
+        try {
+          startOrganizer();
+        } catch (e) {
+          console.error("Failed to start Main startOrganizer:", e.message);
+        }
+        try {
+          startWatcher();
+        } catch (e) {
+          console.error("Failed to start Main startWatcher:", e.message);
+        }
       })
       .catch((err) => {
         console.log(err.message);

@@ -451,6 +451,7 @@ export default {
         const options = {
           params,
           cancelToken: this.cancelTokenSource.token,
+          timeout: 1000 * 10 //10 seconds
         };
 
         const { data } = await this.$axios.get("parking_log_live", options);
