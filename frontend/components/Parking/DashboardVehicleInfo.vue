@@ -52,7 +52,7 @@
                 </div>
 
                 <v-chip x-small label class="blocked-chip">
-                  No Permission
+                  Blocked
                 </v-chip>
               </div>
 
@@ -80,12 +80,11 @@
 
                 <!-- RIGHT -->
                 <div class="right-col">
-                  <div class="warn-line" style="display: flex;color:#353538">
+                  <div class="warn-line" style=" color:#353538;text-align: center;">
                     {{ log.parking_members?.blocked_reason || 'No Permission' }}
                   </div>
 
-                  <v-btn style="width:100%" small color="primary" class="details-btn"
-                    @click.stop="!loading && selectLog(log, index)">
+                  <v-btn style="width:100%" small color="primary" @click=gotoBlockedpage()>
                     <v-icon left small>mdi-eye</v-icon>
                     VIEW DETAILS
                   </v-btn>
@@ -364,6 +363,9 @@ export default {
   },
 
   methods: {
+    gotoBlockedpage() {
+      this.$router.push("/parking/blacklistlogs");
+    },
     getCameraImageUrl(log) {
       let path =
         log.parking_image_path + "/" +
@@ -1175,10 +1177,10 @@ export default {
   ;
   border-radius: 5px;
   ;
-  display: grid;
+  display: grid !important;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 12px;
   /* font-weight: 800; */
   opacity: .78;
   white-space: nowrap;
@@ -1253,7 +1255,7 @@ export default {
   max-height: 42px;
   /* prevents card jump */
   overflow: hidden;
-  display: -webkit-box;
+
   -webkit-line-clamp: 2;
   /* 2 lines max */
   -webkit-box-orient: vertical;
