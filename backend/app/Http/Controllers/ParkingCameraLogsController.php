@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\ParkingReports;
 use App\Models\Company;
 use App\Models\Device;
+use App\Models\ParkingBlockedLogs;
 use App\Models\ParkingCameraLogs;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -87,8 +88,38 @@ class ParkingCameraLogsController extends Controller
         $companyId = $request->company_id;
         $today = now()->toDateString();
 
-        $inLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot'])
+        $blockedLogs = ParkingBlockedLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot,blocked_reason', 'Device:id,name,location'])
             ->select(
+                'in_background_file_name',
+                DB::raw("true as blocked"),
+
+                'id',
+                'plate_number as log_vehicle_number',
+                'raw_country_region',
+                DB::raw("'IN' as direction"),
+                'company_id',
+                'parking_member_id',
+                'created_datetime as log_time_in',
+                DB::raw("null as log_time_out"),
+                'created_datetime as log_time',
+                DB::raw("null as duration_in_minutes"),
+                DB::raw("null as duration_in_hours"),
+                DB::raw("null as duration_per_hour_amount"),
+                DB::raw("null as total_amount"),
+                DB::raw("null as payment_mode"),
+                DB::raw("null as device_id_in"),
+
+            )
+            ->where('company_id', $companyId)
+            // ->whereDate('in_time', $today)
+
+            ->orderBy('created_datetime', 'desc')
+            ->limit(20)
+            ->get();
+
+        $inLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot', 'DeviceIn:id,name,location'])
+            ->select(
+                DB::raw("false as blocked"),
                 'id',
                 'log_vehicle_number',
                 'raw_country_region',
@@ -102,7 +133,8 @@ class ParkingCameraLogsController extends Controller
                 'duration_in_hours',
                 'duration_per_hour_amount',
                 'total_amount',
-                'payment_mode'
+                'payment_mode',
+                'device_id_in'
             )
             ->where('company_id', $companyId)
             // ->whereDate('in_time', $today)
@@ -111,8 +143,9 @@ class ParkingCameraLogsController extends Controller
             ->limit(20)
             ->get();
 
-        $outLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot'])
+        $outLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot', 'DeviceOut:id,name,location'])
             ->select(
+                DB::raw("false as blocked"),
                 'id',
                 'log_vehicle_number',
                 'raw_country_region',
@@ -126,7 +159,8 @@ class ParkingCameraLogsController extends Controller
                 'duration_in_hours',
                 'duration_per_hour_amount',
                 'total_amount',
-                'payment_mode'
+                'payment_mode',
+                'device_id_out'
             )
             ->where('company_id', $companyId)
             // ->whereDate('out_time', $today)
@@ -140,13 +174,17 @@ class ParkingCameraLogsController extends Controller
             ->sortByDesc('log_time')
             ->values();
 
+        $logs = $logs->concat($blockedLogs)
+            ->sortByDesc('log_time')
+            ->values();
+
         return response()->json($logs);
 
         return ['data' => $logs];
     }
     public function getRecords(Request $request, $perpage = null)
     {
-        $model = ParkingCameraLogs::with(["ParkingMembers", "ParkingMembersGuest"])->where('company_id', $request->company_id);;
+        $model = ParkingCameraLogs::with(["ParkingMembers", "ParkingMembersGuest", "DeviceIn", "DeviceOut"])->where('company_id', $request->company_id);;
 
         $model->when($request->filled('member_id'), function ($q) use ($request) {
             $q->where('membership_id', $request->member_id);

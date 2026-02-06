@@ -175,13 +175,20 @@
 
                           }}
                           {{ item.member_guest_vehicle_id ? ' - Guest'
-                            : '--' }}
+                            : '' }}
 
 
                         </v-chip>
                         <div v-else><v-chip style="min-width: 80px; " v-if="!item.membership_id" color="red"
                             label>GUEST</v-chip></div>
                       </template>
+                      <template v-slot:item.parking_slot="{ item }">
+                        <div v-if="item.parking_members && item.parking_members.parking_slot">{{
+                          item.parking_members.parking_slot }}</div>
+
+                        <div v-else>----</div>
+                      </template>
+
                       <template v-slot:item.payment_mode="{ item }">
                         <div v-if="item.payment_mode && item.out_time"> <v-chip style="min-width: 80px; "
                             v-if="item.payment_mode" color="green" label>{{
@@ -331,18 +338,19 @@ export default {
       totalRowsCount: 0,
       headers: [
         { text: "Event #", value: "sno", sortable: false },
+        { text: "Parking Slot", value: "parking_slot", sortable: false },
         { text: "Number", value: "log_vehicle_number", sortable: false },
 
 
         { text: "Entry Time", value: "in_time", sortable: false },
         { text: "Exit Time", value: "out_time", sortable: false },
-        { text: "Hours", value: "duration_in_hours", sortable: false, },
+
         { text: "State", value: "raw_country_region", sortable: false },
         { text: "Payment", value: "total_amount", sortable: false },
         { text: "Member", value: "membership_id", sortable: false },
 
 
-
+        { text: "Hours", value: "duration_in_hours", sortable: false, },
         { text: "Payment Status", value: "payment_mode", sortable: false },
 
         // { text: "Plate", value: "raw_plate_no", sortable: false },

@@ -834,6 +834,14 @@ export default {
       }
     } catch (ex) {
       console.error("Error loading menus:", ex);
+
+      // parking menus
+      const left = await import("../menus/parking_menu_left.json");
+      const top = await import("../menus/parking_menu_top.json");
+      console.log("parking mode enabled");
+
+      this.company_menus = left.default;
+      this.controlpanel_top_menu = top.default;
     }
 
     this.handleResize();

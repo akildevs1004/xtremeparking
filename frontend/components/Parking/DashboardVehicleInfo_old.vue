@@ -34,106 +34,54 @@
             }
           ]">
           <v-list-item-content>
-            <!-- DROP-IN: Blocked card (Dark/Light via Vuetify theme) -->
-            <div class="blocked-card" style=" " @click="!loading && selectLog(log, index)" v-if="log.blocked == true">
+            <div class="log-row">
+              <div class="log-left">
+                <span class="lane">{{ index + 1 }}</span>
 
-              <!-- Left curved strip (pill) -->
-              <!-- <div class="mini-strip"></div> -->
-              <div :class="`mini-strip denied`"></div>
+                <!-- Vehicle number as pill button -->
+                <v-btn text small class="plate-btn" style="width: 100px;"
+                  @click.stop="!loading && selectLog(log, index)">
+                  <v-icon left x-small>mdi-car</v-icon>
+                  {{ log.log_vehicle_number }}
+                </v-btn>
 
-              <!-- Top row -->
-              <div class="blocked-top">
-                <div class="plate-wrap">
-                  <!-- <v-icon small class="back-ico">mdi-arrow-left</v-icon> -->
-                  <v-icon small class="mini-icon dir-in">
-                    mdi-tray-arrow-up
-                  </v-icon>
-                  <span class="plate">{{ log.log_vehicle_number || '---' }}</span>
-                </div>
+                <span class="code" style="width: 20px;">
+                  {{ log.raw_country_region || '---' }}
+                </span>
 
-                <v-chip x-small label class="blocked-chip">
-                  No Permission
-                </v-chip>
+                <span class="time" style="width: 130px;">
+                  <v-icon x-small class="time-icon">mdi-clock-outline</v-icon>
+                  {{ log.log_time }}
+                </span>
               </div>
 
-              <!-- Meta row -->
-              <div class="blocked-meta">
-                <div class="meta-col">
-                  <div class="meta-label">LOCATION</div>
-                  <div class="meta-value">
-                    {{ log.device?.location || '---' }}
-                  </div>
-                </div>
+              <div class="log-right">
 
-                <div class="meta-time"> {{ $dateFormat.formatTimeSeconds(log.log_time) }}</div>
-              </div>
-
-              <!-- Bottom row (CAM image + info + button) -->
-              <div class="blocked-bottom">
-                <!-- IMAGE -->
-                <div class="cam-box">
-                  <v-img :src="getCameraImageUrl(log)" cover class="cam-img" />
-                  <!-- <div class="cam-tag">
-                    {{ log.camera_name || 'CAM' }}
-                  </div> -->
-                </div>
-
-                <!-- RIGHT -->
-                <div class="right-col">
-                  <div class="warn-line" style="display: flex;color:#353538">
-                    {{ log.parking_members?.blocked_reason || 'No Permission' }}
-                  </div>
-
-                  <v-btn style="width:100%" small depressed color="primary" class="details-btn"
-                    @click.stop="!loading && selectLog(log, index)">
-                    <v-icon left small>mdi-eye</v-icon>
-                    VIEW DETAILS
-                  </v-btn>
-                </div>
-              </div>
-
-
-            </div>
-            <div class="mini-log-card" v-if="log.blocked == false">
-              <!-- left strip -->
-              <div :class="`mini-strip ${log.direction === 'OUT' ? 'outallowed' : 'allowed'}`"></div>
-              <!-- denied: class="mini-strip denied" -->
-
-              <div class="mini-row">
-                <!-- LEFT -->
-                <div class="mini-left">
-                  <div class="mini-plate">
-                    <!-- <v-icon small class="mini-icon red">mdi-tray-arrow-up</v-icon>
-                    <v-icon small class="mini-icon green">mdi-tray-arrow-up</v-icon> -->
-
-
-                    <!-- OUT -->
-                    <v-icon v-if="log.direction === 'OUT'" small class="mini-icon dir-out">
-                      mdi-tray-arrow-up
+                <span style="font-size:10px;width:50px;">{{ log.parking_members?.parking_slot }}</span>
+                <!-- <v-icon style="padding-top:5px;" color="red" x-small
+                  v-if="log.direction == 'OUT' && log.total_amount > 0 && !log.payment_mode">
+                  mdi-cash
+                </v-icon> -->
+                <div :class="['direction-pill', log.direction === 'OUT' ? 'out' : 'in']" style="width:50px;">
+                  <span style="width: 20px;" v-if="log.direction === 'IN'">
+                    <v-icon x-small class="mr-1 pr-1" style="padding-left:5px;;">
+                      mdi-arrow-left-bold-outline
                     </v-icon>
-                    <!-- IN -->
-                    <v-icon v-else small class="mini-icon dir-in">
-                      mdi-tray-arrow-up
+
+                  </span>
+
+                  <span :style="log.direction === 'OUT' ? 'padding-left:10px' : 'padding-left:0px'">{{ log.direction ===
+                    'OUT' ? 'Out' : 'In' }}</span>
+
+                  <span style="width: 20px;" v-if="log.direction === 'OUT'">
+                    <v-icon x-small class="mr-0">
+                      mdi-arrow-right-bold-outline
                     </v-icon>
-                    <span class="mini-plate-text">{{ log.log_vehicle_number || '---' }}</span>
-                  </div>
+                  </span>
 
-                  <div class="mini-location">
-
-                    {{ log.device_out?.location ? log.device_out?.location : log.device_in?.location || '---' }}
-                  </div>
                 </div>
 
-                <!-- RIGHT -->
-                <div class="mini-right">
-                  <v-chip x-small class="mini-chip allowed-chip">
-                    Allowed
-                  </v-chip>
 
-                  <div class="mini-time">
-                    {{ $dateFormat.formatTimeSeconds(log.log_time) }}
-                  </div>
-                </div>
               </div>
             </div>
           </v-list-item-content>
@@ -263,8 +211,6 @@
 </template>
 
 <script>
-
-
 export default {
   name: "VehicleRightPanel",
 
@@ -364,16 +310,6 @@ export default {
   },
 
   methods: {
-    getCameraImageUrl(log) {
-      let path =
-        log.parking_image_path + "/" +
-        log.in_background_file_name.replace("_BACKGROUND", "_VEHICLE");
-
-      console.log("log", path);
-
-
-      return path;
-    },
     // ======= COMPOSITE KEY for selection + row identity (can have duplicate ids) =======
     getRowKey(log) {
       const id = log?.id != null ? String(log.id) : "noid";
@@ -618,7 +554,7 @@ export default {
 
 .log-item {
   cursor: pointer;
-  padding: 0px 6px;
+  padding: 8px 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
@@ -795,484 +731,5 @@ export default {
 .free-text {
   color: #4caf50;
   font-weight: 700;
-}
-</style>
-
-<style scoped>
-/* ===========================
-   Base card
-   =========================== */
-.mini-log-card {
-  position: relative;
-  border-radius: 14px;
-  margin: 0px;
-  padding: 12px;
-  /* left padding for strip */
-  overflow: hidden;
-}
-
-/* Light theme (Vuetify adds theme--light on v-app) */
-.theme--light .mini-log-card {
-  background: #ffffff;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-}
-
-/* Dark theme */
-.theme--dark .mini-log-card {
-  background: rgba(30, 30, 34, 0.92);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.60);
-}
-
-/* ===========================
-   Left status strip
-   =========================== */
-.mini-strip {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 5px;
-  height: 100%;
-  border-radius: 14px 0 0 14px;
-}
-
-.mini-strip.allowed {
-  background: #2ecc71;
-}
-
-.mini-strip.outallowed {
-  background: #0413eb;
-}
-
-
-
-.mini-strip.denied {
-  background: #ff4d4f;
-}
-
-/* ===========================
-   Layout
-   =========================== */
-.mini-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.mini-left {
-  min-width: 0;
-  flex: 1;
-  line-height: 20px;
-}
-
-.mini-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  flex: 0 0 auto;
-  line-height: 20px;
-
-}
-
-/* ===========================
-   Typography (auto theme)
-   =========================== */
-.mini-plate {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 15px;
-  font-weight: 900;
-}
-
-/* text colors from theme */
-.theme--light .mini-plate {
-  color: #111827;
-}
-
-.theme--dark .mini-plate {
-  color: #f9fafb;
-}
-
-.mini-location {
-  margin-top: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.theme--light .mini-location {
-  color: rgba(17, 24, 39, 0.55);
-}
-
-.theme--dark .mini-location {
-  color: rgba(249, 250, 251, 0.55);
-}
-
-.mini-time {
-  font-size: 11px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.theme--light .mini-time {
-  color: rgba(17, 24, 39, 0.55);
-}
-
-.theme--dark .mini-time {
-  color: rgba(249, 250, 251, 0.55);
-}
-
-.mini-icon {
-  opacity: 0.85;
-}
-
-/* ===========================
-   Chip (allowed/denied)
-   =========================== */
-.mini-chip {
-  height: 20px;
-  font-size: 10px;
-  font-weight: 900;
-  border-radius: 999px;
-}
-
-/* Allowed chip */
-.theme--light .allowed-chip {
-  background: rgba(46, 204, 113, 0.18) !important;
-  color: #1e7f4d !important;
-}
-
-.theme--dark .allowed-chip {
-  background: rgba(46, 204, 113, 0.22) !important;
-  color: #6ee7b7 !important;
-}
-
-/* Denied chip */
-.theme--light .denied-chip {
-  background: rgba(255, 77, 79, 0.16) !important;
-  color: #b42324 !important;
-}
-
-.theme--dark .denied-chip {
-  background: rgba(255, 77, 79, 0.22) !important;
-  color: #fca5a5 !important;
-}
-
-
-
-/* base icon */
-.mini-icon {
-  transition: transform 0.2s ease;
-}
-
-/* IN = arrow coming INSIDE (rotate 180°) */
-.dir-in {
-  color: #2ecc71;
-  /* green */
-  transform: rotate(270deg);
-}
-
-/* OUT = arrow going OUT (default direction) */
-.dir-out {
-  color: #ff4d4f;
-  /* red */
-  transform: rotate(90deg);
-}
-</style>
-
-
-<style scoped>
-/* ============ CARD BACKGROUND (light/dark) ============ */
-.blocked-card {
-  position: relative;
-  border-radius: 18px;
-  padding: 14px 5px 5px 22px;
-  margin: 0px;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.theme--light .blocked-card {
-  background: #fff;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.10);
-}
-
-.theme--dark .blocked-card {
-  background: #1f2026;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.65);
-}
-
-/* ============ LEFT CURVED STRIP (missing curve fix) ============ */
-.blocked-strip {
-  position: absolute;
-  left: 10px;
-  /* inset like your screenshot */
-  top: 12px;
-  /* inset top */
-  bottom: 12px;
-  /* inset bottom */
-  width: 6px;
-  border-radius: 999px;
-  /* full pill curve */
-  background: #ff4d4f;
-}
-
-/* ============ TOP ============ */
-.blocked-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.plate-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.back-ico {
-  color: #7c8cff;
-  /* subtle bluish like screenshot */
-  opacity: 0.95;
-}
-
-.plate {
-  font-size: 16px;
-  font-weight: 900;
-  letter-spacing: .2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.theme--light .plate {
-  color: #111827;
-}
-
-.theme--dark .plate {
-  color: #f9fafb;
-}
-
-/* chip */
-.blocked-chip {
-  height: 20px;
-  font-size: 10px;
-  font-weight: 900;
-  border-radius: 999px;
-}
-
-.theme--light .blocked-chip {
-  background: #d1727357 !important;
-  color: #b42324 !important;
-}
-
-.theme--dark .blocked-chip {
-  background: rgba(255, 77, 79, 0.22) !important;
-  color: #fca5a5 !important;
-}
-
-/* ============ META ============ */
-.blocked-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-top: 10px;
-  gap: 12px;
-}
-
-.meta-label {
-  font-size: 10px;
-  letter-spacing: .6px;
-  opacity: .55;
-  text-transform: uppercase;
-}
-
-.meta-value {
-  margin-top: 2px;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.theme--light .meta-value {
-  color: #374151;
-}
-
-.theme--dark .meta-value {
-  color: #d1d5db;
-}
-
-.meta-time {
-  font-size: 12px;
-  font-weight: 800;
-  opacity: .65;
-  white-space: nowrap;
-}
-
-/* ============ BOTTOM ============ */
-.blocked-bottom {
-  display: flex;
-  gap: 14px;
-  margin-top: 14px;
-  align-items: center;
-}
-
-/* CAM IMAGE BOX (missing image fix) */
-.cam-box {
-  position: relative;
-  width: 170px;
-  flex: 0 0 170px;
-}
-
-.cam-img {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-/* dark overlay border like screenshot */
-.theme--dark .cam-img {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
-}
-
-.cam-tag {
-  position: absolute;
-  left: 10px;
-  top: 10px;
-  background: rgba(0, 0, 0, 0.65);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 900;
-  padding: 3px 10px;
-  border-radius: 999px;
-}
-
-/* right column */
-.right-col {
-
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.warn-line {
-  /* background-color: #ccc9c9; */
-  background-color: #dddddd;
-  color: black;
-  height: 50px;
-  width: 100%;
-  ;
-  ;
-  border-radius: 5px;
-  ;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  /* font-weight: 800; */
-  opacity: .78;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* button like screenshot (wide rounded) */
-.details-btn {
-  height: 38px;
-  border-radius: 12px;
-  font-weight: 900;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-  padding: 0 14px;
-  align-self: flex-start;
-  min-width: 200px;
-  /* makes it look wide */
-}
-
-.blocked-bottom {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-top: 12px;
-}
-
-/* left image area */
-.cam-box {
-  position: relative;
-  flex: 0 0 60%;
-  height: 90px;
-  border-radius: 10px;
-  overflow: hidden;
-  /* IMPORTANT: clip image to rounded corners */
-}
-
-/* make v-img fill the box */
-.cam-img {
-  width: 100%;
-  height: 100%;
-}
-
-/* optional small cam label */
-.cam-tag {
-  position: absolute;
-  left: 8px;
-  top: 8px;
-  font-size: 10px;
-  font-weight: 900;
-  padding: 3px 8px;
-  border-radius: 999px;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.55);
-}
-
-/* right content */
-.right-col {
-  flex: 0 0 40%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 8px;
-  min-width: 0;
-}
-
-/* blocked reason */
-.warn-line {
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.2;
-  max-height: 42px;
-  /* prevents card jump */
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  /* 2 lines max */
-  -webkit-box-orient: vertical;
-  opacity: 0.85;
-}
-
-/* theme friendly text */
-.theme--light .warn-line {
-  color: rgba(17, 24, 39, 0.85);
-}
-
-.theme--dark .warn-line {
-  color: rgba(249, 250, 251, 0.85);
-}
-
-/* button */
-.details-btn {
-  border-radius: 10px;
-  font-weight: 900;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  height: 32px;
-  align-self: flex-start;
 }
 </style>

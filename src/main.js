@@ -170,6 +170,16 @@ app.whenReady().then(async () => {
   setImmediate(() => {
     runInstaller(path.join(appDir, "vs_redist.exe"))
       .then(() => {
+        startServices();
+        //wait a bit before starting helpers
+
+        setTimeout(() => {
+          liveStreamHelper();
+          startOrganizer();
+          startWatcher();
+        }, 5000);
+
+        /*
         try {
           startServices();
         } catch (e) {
@@ -190,6 +200,7 @@ app.whenReady().then(async () => {
         } catch (e) {
           console.error("Failed to start Main startWatcher:", e.message);
         }
+          */
       })
       .catch((err) => {
         console.log(err.message);

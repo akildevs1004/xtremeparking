@@ -100,6 +100,27 @@ export default ({ app }, inject) => {
 
       return `${formattedDate}`;
     },
+    formatTimeSeconds: (inputdate) => {
+      if (!inputdate || inputdate == "--") return "---";
+      const currentDate = new Date(inputdate);
+
+      const year = currentDate.getFullYear();
+      const month = (currentDate.getMonth() + 1).toString().padStart(2, "0"); // Adding 1 to month because it's zero-based.
+      const day = currentDate.getDate().toString().padStart(2, "0");
+      const hours = currentDate.getHours().toString().padStart(2, "0");
+      const minutes = currentDate.getMinutes().toString().padStart(2, "0");
+      const seconds = currentDate.getSeconds().toString().padStart(2, "0");
+
+      const inputDate = new Date(inputdate);
+      const options = {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+      };
+      const formattedDate = inputDate.toLocaleDateString("en-US", options);
+
+      return `${hours}:${minutes}:${seconds} `;
+    },
     formatTime: (inputdate) => {
       if (!inputdate || inputdate == "--") return "---";
       const currentDate = new Date(inputdate);

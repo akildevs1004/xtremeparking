@@ -197,7 +197,7 @@ const apiClient = axios.create({
   timeout: 30000,
 });
 
-async function postWithRetry(payload, tries = 1) {
+async function postWithRetry(payload, tries = 3) {
   let lastErr;
   for (let i = 1; i <= tries; i++) {
     try {

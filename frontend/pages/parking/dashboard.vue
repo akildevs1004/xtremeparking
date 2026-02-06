@@ -723,6 +723,10 @@ export default {
 
           this.getStatistics();
 
+          setInterval(() => {
+            this.getStatistics();
+          }, 1000 * 60);
+
           setTimeout(() => {
             this.mqttLoading = false;
           }, 1000 * 5);
@@ -785,7 +789,7 @@ export default {
         // this.response = error.message;
         this.snackbarColor = "red";
 
-        this.response = "Error occurred while processing statistics.";
+        this.response = "Processing statistics Skipped.";
 
       }
     },
