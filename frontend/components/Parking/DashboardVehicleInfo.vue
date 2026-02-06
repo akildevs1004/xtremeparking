@@ -71,7 +71,7 @@
               <!-- Bottom row (CAM image + info + button) -->
               <div class="blocked-bottom">
                 <!-- IMAGE -->
-                <div class="cam-box">
+                <div class="cam-box" style="width:80%">
                   <v-img :src="getCameraImageUrl(log)" cover class="cam-img" />
                   <!-- <div class="cam-tag">
                     {{ log.camera_name || 'CAM' }}
@@ -84,7 +84,7 @@
                     {{ log.parking_members?.blocked_reason || 'No Permission' }}
                   </div>
 
-                  <v-btn style="width:100%" small depressed color="primary" class="details-btn"
+                  <v-btn style="width:100%" small color="primary" class="details-btn"
                     @click.stop="!loading && selectLog(log, index)">
                     <v-icon left small>mdi-eye</v-icon>
                     VIEW DETAILS
@@ -1160,11 +1160,14 @@ export default {
   flex-direction: column;
   justify-content: space-between;
   gap: 10px;
+  padding-right: 10px;
 }
 
 .warn-line {
   /* background-color: #ccc9c9; */
-  background-color: #dddddd;
+  text-align: center;
+  ;
+  background-color: #e6e7eb;
   color: black;
   height: 50px;
   width: 100%;
@@ -1172,7 +1175,7 @@ export default {
   ;
   border-radius: 5px;
   ;
-  display: inline-flex;
+  display: grid;
   align-items: center;
   gap: 6px;
   font-size: 11px;
