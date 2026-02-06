@@ -100,6 +100,42 @@ export default ({ app }, inject) => {
 
       return `${formattedDate}`;
     },
+    formatDateTimeSmart: (inputdate) => {
+      if (!inputdate || inputdate === "--") return "---";
+
+      const d = new Date(inputdate);
+      if (isNaN(d.getTime())) return "---";
+
+      const now = new Date();
+
+      const isToday =
+        d.getFullYear() === now.getFullYear() &&
+        d.getMonth() === now.getMonth() &&
+        d.getDate() === now.getDate();
+
+      if (isToday) {
+        return d.toLocaleTimeString("en-GB", {
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+      }
+
+      return (
+        d.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }) +
+        " " +
+        d.toLocaleTimeString("en-GB", {
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
+    },
     formatTimeSeconds: (inputdate) => {
       if (!inputdate || inputdate == "--") return "---";
       const currentDate = new Date(inputdate);

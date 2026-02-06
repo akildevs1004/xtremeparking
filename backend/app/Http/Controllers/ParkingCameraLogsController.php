@@ -91,6 +91,7 @@ class ParkingCameraLogsController extends Controller
         $blockedLogs = ParkingBlockedLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot,blocked_reason', 'Device:id,name,location'])
             ->select(
                 'in_background_file_name',
+
                 DB::raw("true as blocked"),
 
                 'id',
@@ -121,6 +122,8 @@ class ParkingCameraLogsController extends Controller
             ->select(
                 DB::raw("false as blocked"),
                 'id',
+                'in_background_file_name',
+                'out_background_file_name',
                 'log_vehicle_number',
                 'raw_country_region',
                 DB::raw("'IN' as direction"),
@@ -147,6 +150,9 @@ class ParkingCameraLogsController extends Controller
             ->select(
                 DB::raw("false as blocked"),
                 'id',
+
+                'in_background_file_name',
+                'out_background_file_name',
                 'log_vehicle_number',
                 'raw_country_region',
                 DB::raw("'OUT' as direction"),

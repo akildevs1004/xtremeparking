@@ -177,7 +177,7 @@ app.whenReady().then(async () => {
           liveStreamHelper();
           startOrganizer();
           startWatcher();
-        }, 5000);
+        }, 1000 * 10);
 
         /*
         try {
@@ -204,6 +204,8 @@ app.whenReady().then(async () => {
       })
       .catch((err) => {
         console.log(err.message);
+
+        logger("Application", "Mail.js Weeoe error: " + err.message);
       });
   });
 });

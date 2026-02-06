@@ -1,7 +1,21 @@
 <template>
   <div class="vehicle-right-panel" :class="{ 'has-info': showInfo && selectedLog }">
 
+    <v-dialog v-model="dialogImagePreview" max-width="80%">
+      <v-card>
+        <v-card-title dense class="popup_background">
+          Image Preview
+          <v-spacer></v-spacer>
+          <v-btn icon @click="dialogImagePreview = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
 
+        <v-card-text class="d-flex justify-center">
+          <v-img :src="dialogImageUrl" contain style="max-width: 80%; max-height: 80vh;"></v-img>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <!-- ========== VEHICLE IN/OUT LOG ========== -->
     <v-card class="panel-card mb-1 log-panel" flat>
       <v-card-title class="panel-title d-flex align-center">
@@ -35,67 +49,68 @@
           ]">
           <v-list-item-content>
             <!-- DROP-IN: Blocked card (Dark/Light via Vuetify theme) -->
-            <div class="blocked-card" style=" " @click="!loading && selectLog(log, index)" v-if="log.blocked == true">
+            <!-- <div class="blocked-card" style=" " @click="!loading && selectLog(log, index)" v-if="log.blocked == true">
 
-              <!-- Left curved strip (pill) -->
-              <!-- <div class="mini-strip"></div> -->
-              <div :class="`mini-strip denied`"></div>
 
-              <!-- Top row -->
-              <div class="blocked-top">
-                <div class="plate-wrap">
-                  <!-- <v-icon small class="back-ico">mdi-arrow-left</v-icon> -->
-                  <v-icon small class="mini-icon dir-in">
-                    mdi-tray-arrow-up
-                  </v-icon>
-                  <span class="plate">{{ log.log_vehicle_number || '---' }}</span>
-                </div>
 
-                <v-chip x-small label class="blocked-chip">
-                  Blocked
-                </v-chip>
+            <div :class="`mini-strip denied`"></div>
+
+
+            <div class="blocked-top">
+              <div class="plate-wrap">
+
+                <v-icon small class="mini-icon dir-in">
+                  mdi-tray-arrow-up
+                </v-icon>
+                <span class="plate">{{ log.log_vehicle_number || '---' }}</span>
               </div>
 
-              <!-- Meta row -->
-              <div class="blocked-meta">
-                <div class="meta-col">
-                  <div class="meta-label">LOCATION</div>
-                  <div class="meta-value">
-                    {{ log.device?.location || '---' }}
-                  </div>
-                </div>
-
-                <div class="meta-time"> {{ $dateFormat.formatTimeSeconds(log.log_time) }}</div>
-              </div>
-
-              <!-- Bottom row (CAM image + info + button) -->
-              <div class="blocked-bottom">
-                <!-- IMAGE -->
-                <div class="cam-box" style="width:80%">
-                  <v-img :src="getCameraImageUrl(log)" cover class="cam-img" />
-                  <!-- <div class="cam-tag">
-                    {{ log.camera_name || 'CAM' }}
-                  </div> -->
-                </div>
-
-                <!-- RIGHT -->
-                <div class="right-col">
-                  <div class="warn-line" style=" color:#353538;text-align: center;">
-                    {{ log.parking_members?.blocked_reason || 'No Permission' }}
-                  </div>
-
-                  <v-btn style="width:100%" small color="primary" @click=gotoBlockedpage()>
-                    <v-icon left small>mdi-eye</v-icon>
-                    VIEW DETAILS
-                  </v-btn>
-                </div>
-              </div>
-
-
+              <v-chip x-small label class="blocked-chip">
+                Blocked
+              </v-chip>
             </div>
-            <div class="mini-log-card" v-if="log.blocked == false">
+
+
+            <div class="blocked-meta">
+              <div class="meta-col">
+
+                <div class="meta-value">
+                  {{ log.device_in?.location || '---' }}
+                </div>
+              </div>
+
+              <div class="meta-time"> {{ $dateFormat.formatDateTimeSmart(log.log_time) }}</div>
+            </div>
+
+
+            <div class="blocked-bottom" v-if="index == 0">
+
+              <div class="cam-box" style="width:80%">
+                <v-img @click="openImagePreview(log)" v-if="log.in_background_file_name || log.out_background_file_name"
+                  :src="getCameraImageUrl(log)" cover class="cam-img" />
+
+              </div>
+
+
+              <div class="right-col">
+                <div class="warn-line" style=" color:#353538;text-align: center;">
+                  {{ log.parking_members?.blocked_reason || 'No Permission' }}
+                </div>
+
+                <v-btn style="width:100%" small color="primary" @click="selectLog(log, index)">
+                  <v-icon left small>mdi-eye</v-icon>
+                  View Details
+                </v-btn>
+              </div>
+            </div>
+
+
+  </div>-->
+            <div class="mini-log-card">
               <!-- left strip -->
-              <div :class="`mini-strip ${log.direction === 'OUT' ? 'outallowed' : 'allowed'}`"></div>
+              <div
+                :class="`mini-strip ${log.blocked ? 'denied' : !log.membership_id ? 'guest' : log.direction === 'OUT' ? 'outallowed' : 'allowed'}`">
+              </div>
               <!-- denied: class="mini-strip denied" -->
 
               <div class="mini-row">
@@ -120,18 +135,51 @@
                   <div class="mini-location">
 
                     {{ log.device_out?.location ? log.device_out?.location : log.device_in?.location || '---' }}
+
+                    <div v-if="log.parking_members?.parking_slot">{{ log.parking_members.parking_slot }}</div>
                   </div>
                 </div>
 
                 <!-- RIGHT -->
                 <div class="mini-right">
-                  <v-chip x-small class="mini-chip allowed-chip">
-                    Allowed
+                  <v-chip x-small
+                    :class="`mini-chip ${log.blocked ? 'blocked-chip' : log.membership_id ? 'allowed-chip' : 'guest-chip'}`">
+                    {{ log.blocked ? 'Blocked' : log.direction === 'OUT' ? ' Allowed' : ' Allowed' }}
                   </v-chip>
 
+
+
                   <div class="mini-time">
-                    {{ $dateFormat.formatTimeSeconds(log.log_time) }}
+                    {{ $dateFormat.formatDateTimeSmart(log.log_time) }}
                   </div>
+                </div>
+              </div>
+
+              <!-- Bottom row (CAM image + info + button) -->
+              <div class="blocked-bottom" v-if="index == 0">
+                <!-- IMAGE -->
+                <div class="cam-box" style="width:80%">
+                  <v-img :src="getCameraImageUrl(log)" cover class="cam-img" />
+                  <!-- <div class="cam-tag">
+                    {{ log.camera_name || 'CAM' }}
+                  </div> -->
+                </div>
+
+                <!-- RIGHT -->
+                <div class="right-col">
+                  <div class="warn-line" style=" color:#353538;text-align: center;" v-if="log.parking_members">
+                    {{ log.parking_members?.first_name + ' ' + log.parking_members?.last_name }}
+
+                    <div v-if="log.parking_members?.parking_slot">{{ log.parking_members.parking_slot }}</div>
+                  </div>
+                  <div v-else>
+                    Visitor
+                  </div>
+
+                  <v-btn style="width:100%" small color="primary" @click="selectLog(log, index)">
+                    <v-icon left small>mdi-eye</v-icon>
+                    View Details
+                  </v-btn>
                 </div>
               </div>
             </div>
@@ -172,7 +220,7 @@
         </span>
 
         <v-btn icon small class="ml-1" color="red" @click.stop="closeInfo">
-          <v-icon color="red" small>mdi-close</v-icon>
+          <v-icon color="red" style="color:red" fill small>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
@@ -277,6 +325,7 @@ export default {
 
   data() {
     return {
+      dialogImagePreview: false,
       dialogBlocked: false,
       dialogImageUrl: "",
       items: [],
@@ -363,18 +412,30 @@ export default {
   },
 
   methods: {
+    openImagePreview(log) {
+      this.dialogImageUrl = this.getCameraImageUrl(log);
+      this.dialogImagePreview = true;
+    },
     gotoBlockedpage() {
       this.$router.push("/parking/blacklistlogs");
     },
     getCameraImageUrl(log) {
-      let path =
-        log.parking_image_path + "/" +
-        log.in_background_file_name.replace("_BACKGROUND", "_VEHICLE");
-
-      console.log("log", path);
-
+      let path = "";
+      if (log.in_background_file_name != null) {
+        let path =
+          log.parking_image_path + "/" +
+          log.in_background_file_name.replace("_BACKGROUND", "_VEHICLE");
+        return path;
+      }
+      else if (log.out_background_file_name != null) {
+        path =
+          log.parking_image_path + "/" +
+          log.out_background_file_name.replace("_BACKGROUND", "_VEHICLE");
+      }
 
       return path;
+
+
     },
     // ======= COMPOSITE KEY for selection + row identity (can have duplicate ids) =======
     getRowKey(log) {
@@ -484,6 +545,9 @@ export default {
     },
 
     selectLog(log, index) {
+
+      // if (index == 0) this.openImagePreview(log);
+
       if (this.loading) return;
       this.selectedLog = log;
       this.selectedIndex = index;
@@ -837,15 +901,33 @@ export default {
   border-radius: 14px 0 0 14px;
 }
 
+.allowed {
+  background: #52cfa5;
+}
+
+.outallowed {
+  background: #52cfa5;
+}
+
+.guest {
+  background: #fbc500;
+}
+
+.denied {
+  background: #ff4d4f;
+}
+
 .mini-strip.allowed {
-  background: #2ecc71;
+  background: #52cfa5;
 }
 
 .mini-strip.outallowed {
-  background: #0413eb;
+  background: #52cfa5;
 }
 
-
+.mini-strip.guest {
+  background: #fbc500;
+}
 
 .mini-strip.denied {
   background: #ff4d4f;
@@ -943,6 +1025,28 @@ export default {
 }
 
 /* Allowed chip */
+
+
+
+
+
+
+.theme--light .guest-chip {
+  background: rgba(255, 197, 0, 0.18) !important;
+  color: #c89c00 !important;
+}
+
+.theme--dark .guest-chip {
+  background: rgba(255, 197, 0, 0.22) !important;
+  color: #fbc500 !important;
+}
+
+.theme--light .allowed-chip {
+  background: rgba(46, 204, 113, 0.22) !important;
+  color: #6ee7b7 !important;
+}
+
+
 .theme--light .allowed-chip {
   background: rgba(46, 204, 113, 0.18) !important;
   color: #1e7f4d !important;
@@ -956,7 +1060,7 @@ export default {
 /* Denied chip */
 .theme--light .denied-chip {
   background: rgba(255, 77, 79, 0.16) !important;
-  color: #b42324 !important;
+  color: #dc143c !important;
 }
 
 .theme--dark .denied-chip {
@@ -1020,7 +1124,7 @@ export default {
   width: 6px;
   border-radius: 999px;
   /* full pill curve */
-  background: #ff4d4f;
+  background: #dc143c;
 }
 
 /* ============ TOP ============ */
@@ -1076,7 +1180,7 @@ export default {
 
 .theme--dark .blocked-chip {
   background: rgba(255, 77, 79, 0.22) !important;
-  color: #fca5a5 !important;
+  color: #dc143c !important;
 }
 
 /* ============ META ============ */
