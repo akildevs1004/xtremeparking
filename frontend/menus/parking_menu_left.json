@@ -33,14 +33,7 @@
     "module": "settings",
     "top_menu_name": "settings"
   },
-  {
-    "icon": "mdi-cancel",
-    "title": "Blocked Logs",
-    "open_menu": false,
-    "to": "/parking/blacklistlogs",
-    "module": "settings",
-    "top_menu_name": "settings"
-  },
+
   {
     "icon": "mdi-video-outline",
     "title": "Cameras",

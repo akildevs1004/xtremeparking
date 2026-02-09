@@ -18,22 +18,51 @@
     </v-dialog>
     <!-- ========== VEHICLE IN/OUT LOG ========== -->
     <v-card class="panel-card mb-1 log-panel" flat>
+      <!-- HEADER -->
       <v-card-title class="panel-title d-flex align-center">
-        Vehicle In/Out
+        <span class="font-weight-medium">Vehicle In / Out</span>
 
         <v-spacer />
 
-        <span v-html="response" :style="`color:${snackbarColor == 'red' ? '#fd3b3b' : 'green'}`">
-          {{ snackbar ? (response ? response : "") : "" }}
-        </span>
+        <!-- Response Message -->
+        <span v-if="snackbar && response" v-html="response" class="mr-2"
+          :style="{ color: snackbarColor === 'red' ? '#fd3b3b' : '#2e7d32' }" />
 
-        <v-spacer />
-
-        <!-- Soft refresh spinner (does NOT block list) -->
+        <!-- Soft Loader -->
         <v-progress-circular v-if="softRefreshing || loading" indeterminate size="14" width="2" class="mr-2" />
 
-        <v-icon small @click.stop="getDataFromApi(false)">mdi-reload</v-icon>
+        <!-- Reload -->
+        <v-icon small class="cursor-pointer" @click.stop="getDataFromApi(false)">
+          mdi-reload
+        </v-icon>
+        <v-icon small class="cursor-pointer ml-2" @click="GateOptions = !GateOptions">
+          mdi-boom-gate-alert
+        </v-icon>
       </v-card-title>
+
+      <v-divider />
+
+      <!-- ACTION BUTTONS -->
+      <v-card-text class="pt-3" v-show="GateOptions">
+        <v-row dense>
+          <v-col cols="6">
+            <v-btn block class="rounded-xl" color="green" dark :loading="openingGate"
+              :disabled="openingGate || bufferSeconds <= 0" @click="openEntryGate">
+              <v-icon left>mdi-door-open</v-icon>
+              Open Entry Gate
+            </v-btn>
+          </v-col>
+
+          <v-col cols="6">
+            <v-btn block class="rounded-xl" color="red" dark :loading="openingGate"
+              :disabled="openingGate || bufferSeconds <= 0" @click="openExitGate">
+              <v-icon left>mdi-door-open</v-icon>
+              Open Exit Gate
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+
 
       <v-divider class="mx-3" />
 
@@ -170,7 +199,7 @@
                   <div class="warn-line" style=" color:#353538;text-align: center;" v-if="log.parking_members">
                     {{ log.parking_members?.first_name + ' ' + log.parking_members?.last_name }}
 
-                    <div v-if="log.parking_members?.parking_slot">{{ log.parking_members.parking_slot }}</div>
+                    <!-- <div v-if="log.parking_members?.parking_slot">{{ log.parking_members.parking_slot }}</div> -->
                   </div>
                   <div v-else>
                     Visitor
@@ -325,6 +354,7 @@ export default {
 
   data() {
     return {
+      GateOptions: false,
       dialogImagePreview: false,
       dialogBlocked: false,
       dialogImageUrl: "",
@@ -412,6 +442,66 @@ export default {
   },
 
   methods: {
+    async openExitGate(timeout = 5000, trigger = 'manual') {
+      this.$axios.post("/parking_open_gate_manual", {
+        company_id: this.$auth.user.company_id,
+        device_serial_number: null,
+        function: "out",
+
+        parking_gate_close_time: this.$auth.user.company.parking_gate_close_time,
+
+        trigger: trigger
+
+      }).then((response) => {
+        // console.log(response);
+        this.snackbar = true;
+        this.snackbarColor = "green";
+
+        this.response = "Gate open command is sent successfully.";
+
+        setTimeout(() => {
+          this.snackbar = false;
+          this.mqttNewMessage = null;
+        }, timeout);
+
+      }).catch((error) => {
+        this.snackbar = true;
+        // this.response = error.message;
+        this.snackbarColor = "red";
+        this.response = "Open gate command Not success. Try Again.";
+
+      });
+    },
+    async openEntryGate(timeout = 5000, trigger = 'manual') {
+      this.$axios.post("/parking_open_gate_manual", {
+        company_id: this.$auth.user.company_id,
+        device_serial_number: null,
+        function: "in",
+
+        parking_gate_close_time: this.$auth.user.company.parking_gate_close_time,
+
+        trigger: trigger
+
+      }).then((response) => {
+        // console.log(response);
+        this.snackbar = true;
+        this.snackbarColor = "green";
+
+        this.response = "Gate open command is sent successfully.";
+
+        setTimeout(() => {
+          this.snackbar = false;
+          this.mqttNewMessage = null;
+        }, timeout);
+
+      }).catch((error) => {
+        this.snackbar = true;
+        // this.response = error.message;
+        this.snackbarColor = "red";
+        this.response = "Error occurred while sending open gate command.";
+
+      });
+    },
     openImagePreview(log) {
       this.dialogImageUrl = this.getCameraImageUrl(log);
       this.dialogImagePreview = true;

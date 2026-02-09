@@ -62,6 +62,9 @@ Route::post('parking_member_product_invoice_submition',  [ParkingMembersControll
 Route::post('parking_member_payments',  [ParkingMembersController::class, 'MemberPayments']);
 
 Route::post('parking_open_gate',  [ParkingDeviceController::class, 'OpenGate']);
+Route::post('parking_open_gate_manual',  [ParkingDeviceController::class, 'OpenGateManually']);
+
+
 // Route::post('parking_close_gate',  [ParkingDeviceController::class, 'CloseGate']);
 
 Route::post('device_acknowledged_from_device',  [ParkingDeviceController::class, 'DeviceAcknowledged']);
