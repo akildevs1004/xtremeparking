@@ -19,6 +19,7 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\KeyGeneratorController;
 use App\Http\Controllers\Parking\ImageProcessingController;
+use App\Http\Controllers\ParkingDeviceController;
 use App\Http\Controllers\SDKController;
 use App\Http\Controllers\Shift\AutoShiftController;
 use App\Http\Controllers\Shift\FiloShiftController;
@@ -47,6 +48,7 @@ use App\Models\Employee;
 use App\Models\ReportNotification;
 use App\Models\SecurityCustomers;
 use App\Models\Shift;
+use App\Services\MqttService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +64,53 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use SimpleSoftwareIO\QrCode\QrCodeServiceProvider;
 use Illuminate\Support\Facades\Log;
 use thiagoalessio\TesseractOCR\TesseractOCR;
+
+
+Route::get("opengate", function (Request $request) {
+
+    $postData = [
+        "action" => "UPDATE_CONFIG",
+        "serialNumber" => 'XTP100001',
+        "config" => ["relay1" => true],
+    ];
+    if ($postData["serialNumber"]) {
+        // Publish  to MQTT
+        $mqtt = new MqttService();
+        $mqtt->publish(env('MQTT_DEVICE_CLIENTID') . "/{$postData['serialNumber']}/config/request",  json_encode($postData), $postData["serialNumber"]);
+    }
+
+    // $request =    new Request([
+    //     'company_id' => 8,
+    //     'event_id' => null,
+    //     'device_id' => 1,
+    //     'function' => "in",
+
+
+    //     'trigger' => 'manual',
+    //     'parking_gate_close_time' => 20,
+    //     'device_serial_number' => 'XTP100001',
+
+
+
+    // ]);
+    // $DeviceController =  new ParkingDeviceController($request);
+    // $DeviceController->OpenGate($request);
+});
+
+Route::get("closegate", function (Request $request) {
+
+    $postData = [
+        "action" => "UPDATE_CONFIG",
+        "serialNumber" => 'XTP100001',
+        "config" => ["relay1" => false],
+    ];
+    if ($postData["serialNumber"]) {
+        // Publish  to MQTT
+        $mqtt = new MqttService();
+        $mqtt->publish(env('MQTT_DEVICE_CLIENTID') . "/{$postData['serialNumber']}/config/request",  json_encode($postData), $postData["serialNumber"]);
+    }
+});
+
 
 Route::get("imageText", function (Request $request) {
 

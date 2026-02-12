@@ -617,7 +617,7 @@ class ParkingCameraLogsController extends Controller
             return [
                 "MQTT_SSL" => true,
                 "MQTT_SOCKET_HOST" => "wss://mqtt.xtremeguard.org:8084",
-                "MQTT_DEVICE_CLIENTID" => "xtremesos",
+                "MQTT_DEVICE_CLIENTID" => "xtreemparking",
                 "TV_COMPANY_ID" => "8",
                 "BACKEND_URL2" => "https://{$serverAddr}:8000",
 
@@ -647,7 +647,7 @@ class ParkingCameraLogsController extends Controller
         return [
             "MQTT_SOCKET_HOST" => "mqtt://{$ip}:8083",
             "MQTT_SSL" => false,
-            "MQTT_DEVICE_CLIENTID" => "xtremesos",
+            "MQTT_DEVICE_CLIENTID" => "xtreemparking",
             "TV_COMPANY_ID" => "8",
             "BACKEND_URL2" => "http://{$ip}:8000",
 

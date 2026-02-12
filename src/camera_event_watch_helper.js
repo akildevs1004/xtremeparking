@@ -264,7 +264,7 @@ function mapTokens(tokens) {
 // ============================================================================
 // 1-MINUTE DEDUPLICATION (AVOID DUPLICATE PUSHES)
 // ============================================================================
-const DEDUP_WINDOW_MS = 5_000; // 1 minute (60_000 1 minute)
+const DEDUP_WINDOW_MS = 1_000; // 1 minute (60_000 1 minute)
 const recentEvents = new Map(); // key -> lastProcessedTimestamp (ms)
 
 // Build a "logical event" key from parsed fields
@@ -393,6 +393,8 @@ async function processQueue() {
 // ============================================================================
 // SCAN EXISTING FILES ON STARTUP (BACKLOG)
 // ============================================================================
+
+/*
 async function scanExistingFiles() {
   try {
     const files = await fsp.readdir(WATCH_DIR);
@@ -415,7 +417,64 @@ async function scanExistingFiles() {
     logLine("❌ Error during initial scan:", err.message);
   }
 }
+*/
 
+async function scanExistingFiles() {
+  const ONE_MIN_MS = 60_000;
+  const now = Date.now();
+
+  try {
+    const names = await fsp.readdir(WATCH_DIR);
+
+    logLine(
+      `🔍 Scanning for recent JPG files (<= 1 minute). Total files: ${names.length}`,
+    );
+
+    const backlog = [];
+
+    for (const name of names) {
+      const ext = path.extname(name).toLowerCase();
+
+      // ✅ Only .jpg / .jpeg
+      if (ext !== ".jpg" && ext !== ".jpeg") continue;
+
+      // ✅ Must match _background pattern
+      if (!BACKGROUND_RX.test(name)) continue;
+
+      // ✅ Skip already processed
+      if (processed.has(name)) continue;
+
+      const filePath = path.join(WATCH_DIR, name);
+
+      try {
+        const st = await fsp.stat(filePath);
+
+        // ✅ Only files modified within last 1 minute
+        if (now - st.mtimeMs <= ONE_MIN_MS) {
+          backlog.push({
+            filePath,
+            mtimeMs: st.mtimeMs,
+          });
+        }
+      } catch {
+        // Ignore stat errors (file might have been deleted/moved)
+      }
+    }
+
+    // Sort oldest → newest (stable processing order)
+    backlog.sort((a, b) => a.mtimeMs - b.mtimeMs);
+
+    logLine(`📌 Recent JPG backlog to enqueue: ${backlog.length}`);
+
+    for (const item of backlog) {
+      enqueueFile(item.filePath);
+    }
+
+    logLine("✅ Recent JPG backlog enqueue complete.");
+  } catch (err) {
+    logLine("❌ Error during recent scan:", err.message);
+  }
+}
 // ============================================================================
 // START WATCHING
 // ============================================================================

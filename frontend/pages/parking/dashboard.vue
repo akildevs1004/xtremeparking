@@ -789,7 +789,9 @@ export default {
         // this.response = error.message;
         this.snackbarColor = "red";
 
-        this.response = "Processing statistics Skipped.";
+        console.error("Error fetching statistics:", error);
+
+        this.response = "Processing statistics Update.";
 
       }
     },
