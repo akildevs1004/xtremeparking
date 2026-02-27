@@ -10,26 +10,43 @@
     <v-dialog v-model="newProductDialog" max-width="400px">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
-          <span dense> {{ editId ? editable ? "Update" : "View" : "New" }} Guest/Member Vehicle </span>
+          <span dense>
+            {{ editId ? (editable ? "Update" : "View") : "New" }} Guest/Member
+            Vehicle
+          </span>
           <v-spacer></v-spacer>
           <v-icon @click="newProductDialog = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
         <v-card-text>
-          <EditMemberVehicleData :isMQTT="isMQTT" :key="key" :editId="editId" :memberId="memberId" :item="item"
-            :editable="editable" @closeDialog="closeProductDialog" />
+          <EditMemberVehicleData
+            :isMQTT="isMQTT"
+            :key="key"
+            :editId="editId"
+            :memberId="memberId"
+            :item="item"
+            :editable="editable"
+            @closeDialog="closeProductDialog"
+          />
         </v-card-text>
       </v-card>
     </v-dialog>
 
     <v-card elevation="0" class="mt-0 popup_background_noviolet">
       <v-toolbar class="mb-2" dense flat>
-        <v-toolbar-title>
-          <span> Vehicles List</span></v-toolbar-title>
+        <v-toolbar-title> <span> Vehicles List</span></v-toolbar-title>
         <!-- <v-tooltip top color="primary">
                 <template v-slot:activator="{ on, attrs }"> -->
-        <v-btn title="Reload" dense class="ma-0 px-0" x-small :ripple="false" @click="getDataFromApi" text>
+        <v-btn
+          title="Reload"
+          dense
+          class="ma-0 px-0"
+          x-small
+          :ripple="false"
+          @click="getDataFromApi"
+          text
+        >
           <v-icon class="ml-2" dark>mdi mdi-reload</v-icon>
         </v-btn>
         <!-- </template>
@@ -37,11 +54,31 @@
 </v-tooltip> -->
 
         <v-spacer></v-spacer>
-        <span style="width: 180px"><v-text-field style="padding-top: 7px" height="20"
-            class="employee-schedule-search-box" @input="getDataFromApi()" v-model="commonSearch" label="Search (min 3)"
-            dense outlined type="text" append-icon="mdi-magnify" clearable hide-details></v-text-field></span>
+        <span style="width: 180px"
+          ><v-text-field
+            style="padding-top: 7px"
+            height="20"
+            class="employee-schedule-search-box"
+            @input="getDataFromApi()"
+            v-model="commonSearch"
+            label="Search (min 3)"
+            dense
+            outlined
+            type="text"
+            append-icon="mdi-magnify"
+            clearable
+            hide-details
+          ></v-text-field
+        ></span>
 
-        <v-btn v-if="can('operators_create')" title="Change Request" x-small :ripple="false" text @click="addItem()">
+        <v-btn
+          v-if="can('operators_create')"
+          title="Change Request"
+          x-small
+          :ripple="false"
+          text
+          @click="addItem()"
+        >
           <v-icon class="">mdi mdi-plus-circle</v-icon>
         </v-btn>
       </v-toolbar>
@@ -53,27 +90,37 @@
           <v-btn v-bind="attrs" text @click="snack = false"> Close </v-btn>
         </template>
       </v-snackbar>
-      <v-data-table dense :headers="headers" :items="data" :loading="loading" :options.sync="options" :footer-props="{
-        itemsPerPageOptions: [10, 50, 100, 500, 1000],
-      }" class="elevation-1" :server-items-length="totalRowsCount" fixed-header :height="tableHeight"
-        :disable-sort="true">
+      <v-data-table
+        dense
+        :headers="headers"
+        :items="data"
+        :loading="loading"
+        :options.sync="options"
+        :footer-props="{
+          itemsPerPageOptions: [10, 50, 100, 500, 1000],
+        }"
+        class="elevation-1"
+        :server-items-length="totalRowsCount"
+        fixed-header
+        :height="tableHeight"
+        :disable-sort="true"
+      >
         <template v-slot:item.sno="{ item, index }">
           {{
             currentPage
               ? (currentPage - 1) * perPage +
-              (cumulativeIndex + data.indexOf(item))
+                (cumulativeIndex + data.indexOf(item))
               : ""
           }}
         </template>
-
 
         <template v-slot:item.guest_first_name="{ item, index }">
           {{ $utils.caps(item.guest_first_name) }}
           {{ $utils.caps(item.guest_last_name) }}
         </template>
         <template v-slot:item.guest_address="{ item, index }">
-          {{ (item.guest_address) }},
-          {{ (item.guest_location) }}
+          {{ item.guest_address }},
+          {{ item.guest_location }}
         </template>
 
         <template v-slot:item.options="{ item }">
@@ -97,7 +144,10 @@
                   Edit
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item v-if="can('operators_delete')" @click="deleteItem(item)">
+              <v-list-item
+                v-if="can('operators_delete')"
+                @click="deleteItem(item)"
+              >
                 <v-list-item-title style="cursor: pointer">
                   <v-icon color="error" small> mdi-delete </v-icon>
                   Delete
@@ -113,7 +163,7 @@
 
 <script>
 import EditMemberVehicleData from "../../components/Parking/EditMemberVehicleData.vue";
-import { mqttRequestReply } from '@/utils/mqttRequestReplyClient.js'; // adjust path
+import { mqttRequestReply } from "@/utils/mqttRequestReplyClient.js"; // adjust path
 
 export default {
   props: ["memberId", "isMQTT"],
@@ -204,9 +254,11 @@ export default {
     buildingTypes: [],
     _id: null,
     isBackendRequestOpen: false,
+    companyId: 0,
   }),
   computed: {},
   mounted() {
+    this.companyId = this.$route?.query?.id;
     this.tableHeight = window.innerHeight - 230;
     window.addEventListener("resize", () => {
       this.tableHeight = window.innerHeight - 230;
@@ -225,7 +277,7 @@ export default {
     }
     try {
       if (window) this.browserHeight = window.innerHeight - 70;
-    } catch (e) { }
+    } catch (e) {}
   },
   watch: {
     options: {
@@ -237,7 +289,6 @@ export default {
   },
   methods: {
     can(per) {
-
       return true;
       return this.$pagePermission.can(per, this);
     },
@@ -289,7 +340,7 @@ export default {
       this.loading = true;
       this.snackbar = false;
       this.response = "";
-      const companyId = this.$auth.user?.company_id || 8; // fallback company id
+      const companyId = this.$auth.user?.company_id || this.companyId; // fallback company id
 
       try {
         let result = null;
@@ -318,20 +369,19 @@ export default {
               console.warn("[MQTT] Unexpected response:", mqttResponse);
             }
           } catch (err) {
-            console.warn("[MQTT] Delete failed; fallback to HTTP:", err?.message || err);
+            console.warn(
+              "[MQTT] Delete failed; fallback to HTTP:",
+              err?.message || err
+            );
           }
-        }
-        else {
+        } else {
           // ---------- 2) Fallback to HTTP ----------
 
           const { data } = await this.$axios.delete(
             `/parking_members_vehiclesList/${item.id}`
           );
           result = data;
-
         }
-
-
 
         // ---------- 3) Handle result ----------
         if (result?.status === false) {
@@ -373,7 +423,6 @@ export default {
     //       },
     //     };
 
-
     //     this.$axios
     //       .delete(`parking_members_vehiclesList/${item.id}`)
     //       .then(({ data }) => {
@@ -383,14 +432,10 @@ export default {
     //         this.loading = false;
     //       });
 
-
-
     //   }
     // },
 
     async getDataFromApi(url = "", filter_column = "", filter_value = "") {
-
-
       if (this.isBackendRequestOpen) return false;
       this.isBackendRequestOpen = true;
 
@@ -425,23 +470,23 @@ export default {
       let dataFinal = null;
 
       if (this.isMQTT) {
-
-
         // --- MQTT Request/Reply Flow ---
         const mqttResponse = await mqttRequestReply({
-          companyId: 8,
-          action: 'parking_members_vehiclesList',
+          companyId: this.companyId,
+          action: "parking_members_vehiclesList",
           payload: this.payloadOptions.params,
           timeoutMs: 8000,
         });
 
         // Check if the action matches expected type
-        if (mqttResponse && mqttResponse.action === 'parking_members_vehiclesList') {
+        if (
+          mqttResponse &&
+          mqttResponse.action === "parking_members_vehiclesList"
+        ) {
           dataFinal = mqttResponse.data || null;
         } else {
-          console.warn('Unexpected MQTT response:', mqttResponse);
+          console.warn("Unexpected MQTT response:", mqttResponse);
         }
-
       } else {
         // // --- HTTP Request (Axios) ---
         const response = await this.$axios.get(url, this.payloadOptions);
@@ -456,12 +501,9 @@ export default {
         this.loading = false;
         this.totalRowsCount = dataFinal.total || 0;
       } else {
-        console.warn('No data received from either MQTT or backend');
+        console.warn("No data received from either MQTT or backend");
         this.loading = false;
       }
-
-
-
     },
   },
 };

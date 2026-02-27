@@ -316,7 +316,7 @@ export default {
 
 
           let data = await mqttRequestReply({
-            companyId: 8,
+            companyId: this.$route?.query?.id,
             action: 'login',
             payload: {
               email: this.credentials.email,

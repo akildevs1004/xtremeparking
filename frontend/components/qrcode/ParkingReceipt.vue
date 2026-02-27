@@ -176,7 +176,7 @@ export default {
 
 
       let data = await mqttRequestReply({
-        companyId: 8,
+        companyId: this.$route?.query?.id,
         action: 'parking_qr_pay_extra_minutes',
         payload: { log_id: logid },
         timeoutMs: 1000 * 30,
