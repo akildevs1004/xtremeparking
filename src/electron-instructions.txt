@@ -1,0 +1,9 @@
+modificadtion after exe build
+
+1. asar extract app.asar app-unpacked (unpack)
+2. asar pack app-unpacked app.asar (pack again)
+
+
+3. YourApp/
+ └── resources/
+      ├── app.asar   ← replace this

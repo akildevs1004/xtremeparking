@@ -4,7 +4,7 @@
 // - Adds sanitizeServiceName() + getLogDayFolder()
 // - Updates spawnWrapper + spawnPhpCgiWorker to use cleaner log messages (no double prefix)
 // - Updates stopServices() shutdown file to date folder: logs/YYYY-MM-DD/XtremeGuardParking_SHUTDOWN.log
-
+const http = require('http');
 const simpleGit = require("simple-git");
 const fs = require("fs");
 const path = require("path");
@@ -532,6 +532,26 @@ function cleanupOldLogs(daysToKeep = 2) {
   }
 }
 
+
+function waitForURL(url, timeout = 10000) {
+    return new Promise((resolve, reject) => {
+        const start = Date.now();
+        
+        const check = () => {
+            http.get(url, (res) => {
+                resolve(); // Success!
+            }).on('error', () => {
+                if (Date.now() - start > timeout) {
+                    reject(new Error("Timeout waiting for " + url));
+                } else {
+                    setTimeout(check, 500); // Try again in 500ms
+                }
+            });
+        };
+        check();
+    });
+}
+
 module.exports = {
   logger,
   runInstaller,
@@ -542,5 +562,6 @@ module.exports = {
   setMenu,
   getCachedMachineId,
   isClockTampered,
-  cleanupOldLogs, // ✅ ADD THIS
+  cleanupOldLogs, // ✅ ADD THIS,
+  waitForURL
 };

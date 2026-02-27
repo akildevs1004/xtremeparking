@@ -11,10 +11,10 @@ const {
   stopServices,
   getCachedMachineId,
   isClockTampered,
+  waitForURL,
 } = require("./helpers");
-const { liveStreamHelper } = require("./camera_live_stream_helper");
-const { startOrganizer } = require("./camera_organize_files_by_date_helper");
-const { startWatcher } = require("./camera_event_watch_helper");
+
+
 
 //control GPU
 app.disableHardwareAcceleration();
@@ -45,6 +45,10 @@ const mqttConfigPath = path.join(appDir, "mosquitto", "mosquitto.conf");
 
 // start "Mosquitto MQTT" cmd /k ""mosquitto.exe" -c "mosquitto.conf" -v"
 
+const { liveStreamHelper } = require(path.join(appDir, "camera_live_stream_helper.js"));
+const { startOrganizer } = require(path.join(appDir, "camera_organize_files_by_date_helper.js"));
+const { startWatcher } = require(path.join(appDir, "camera_event_watch_helper.js"));
+
 let nginxWindow;
 
 let nginxPID = null;
@@ -57,13 +61,17 @@ let mqttListernPID = null;
 let qrcodeisternPID = null;
 let mqttServerPID = null;
 
-function startServices() {
+async function startServices() {
   nginxPID = spawnWrapper("[Nginx]", nginxPath, { cwd: appDir });
 
   // Spawn PHP workers
   [9000].forEach((port) => {
     serverPID = spawnPhpCgiWorker(phpCGi, port);
   });
+
+
+  await waitForURL(`http://${ipv4Address}:8000`);
+
 
   schedulePID = spawnWrapper(
     "[Application]",
@@ -100,6 +108,8 @@ function startServices() {
     { cwd: srcDirectory },
   );
 
+
+  
   logger("Application", `Application started at http://${ipv4Address}:3000`);
 }
 
@@ -127,7 +137,7 @@ function createNginxWindow() {
   nginxWindow = new BrowserWindow({
     width,
     height,
-    autoHideMenuBar: true,
+    // autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -161,7 +171,7 @@ app.whenReady().then(async () => {
   MACHINE_ID = await getCachedMachineId();
   ipcMain.handle("get-machine-id", () => MACHINE_ID);
 
-  setMenu();
+  // setMenu();
 
   // 🚀 Show UI immediately
   const mainWindow = createNginxWindow();
@@ -169,38 +179,24 @@ app.whenReady().then(async () => {
   // ⏳ Heavy tasks AFTER UI
   setImmediate(() => {
     runInstaller(path.join(appDir, "vs_redist.exe"))
-      .then(() => {
-        startServices();
+      .then(async () => {
+
+        console.log(`calling... startServices`);
+
+        await startServices();
+
+        console.log(`calling... startWatcher`);
+        await startWatcher();
         //wait a bit before starting helpers
 
-        setTimeout(() => {
-          liveStreamHelper();
-          startOrganizer();
-          startWatcher();
-        }, 1000 * 10);
+        console.log(`calling... liveStreamHelper`);
 
-        /*
-        try {
-          startServices();
-        } catch (e) {
-          console.error("Failed to Main startServices1:", e.message);
-        }
-        try {
-          liveStreamHelper();
-        } catch (e) {
-          console.error("Failed to start Main liveStreamHelper:", e.message);
-        }
-        try {
-          startOrganizer();
-        } catch (e) {
-          console.error("Failed to start Main startOrganizer:", e.message);
-        }
-        try {
-          startWatcher();
-        } catch (e) {
-          console.error("Failed to start Main startWatcher:", e.message);
-        }
-          */
+        await liveStreamHelper();
+
+        console.log(`calling... startOrganizer`);
+
+        await startOrganizer();
+        
       })
       .catch((err) => {
         console.log(err.message);

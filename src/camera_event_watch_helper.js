@@ -109,7 +109,7 @@ async function loadConfig() {
   try {
     logLine("🔄 Loading ALL environment variables from API:", CONFIG_ENDPOINT);
 
-    const res = await axios.get(CONFIG_ENDPOINT, { timeout: 5000 });
+    const res = await axios.get(CONFIG_ENDPOINT, { timeout: 1000 * 30 });
     const cfg = res.data || {};
 
     // Optional: log config once (sanitized)
@@ -142,6 +142,9 @@ async function loadConfig() {
 
     logLine("✅ Config loaded from API");
   } catch (err) {
+    console.log(`loading confif exception`);
+    console.log(err);
+
     //logLine("❌ Failed API config load. Using .env fallback.", err.message);
     // COMPANY_ID = (process.env.COMPANY_ID ?? "").toString().trim();
     // const envWatch = (process.env.WATCH_DIR ?? "./inbox").toString().trim();
