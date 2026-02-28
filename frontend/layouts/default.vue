@@ -881,7 +881,7 @@ export default {
     // if(this.$route.name=='')
 
     await this.setMenus();
-    await this.loadAlarmNotificationIcons();
+    // await this.loadAlarmNotificationIcons();
     await this.getCompanyDetails();
     //this.logo_src = require("@/static/logo_header.png");
     this.pendingNotificationsCount = 0;
@@ -952,7 +952,7 @@ export default {
       }
     } catch (e) { }
 
-    this.loadAlarmNotificationIcons();
+    // this.loadAlarmNotificationIcons();
   },
 
   watch: {
@@ -1372,60 +1372,60 @@ export default {
         }),
       };
 
-      this.$axios
-        .get(`get_alarm_notification_display`, options)
-        .then(({ data }) => {
-          this.isBackendRequestOpen = false;
-          this.notificationsMenuItems = [];
-          this.pendingNotificationsCount = 0;
-          this.notificationAlarmDevicesContent = data;
-          this.key += 1;
+      // this.$axios
+      //   .get(`get_alarm_notification_display`, options)
+      //   .then(({ data }) => {
+      //     this.isBackendRequestOpen = false;
+      //     this.notificationsMenuItems = [];
+      //     this.pendingNotificationsCount = 0;
+      //     this.notificationAlarmDevicesContent = data;
+      //     this.key += 1;
 
-          data.forEach((element) => {
-            let notification = {
-              id: element.id,
-              title: element.device?.customer?.building_name
-                ? element.device.customer.building_name +
-                " - " +
-                element.alarm_type
-                : "---",
-              date_from: element.alarm_start_datetime,
-              click: "/alarm/allevents",
-              icon:
-                this.alarm_icons[element.alarm_type] ??
-                element.alarm_type + ".png",
-              key: "leaves",
-            };
+      //     data.forEach((element) => {
+      //       let notification = {
+      //         id: element.id,
+      //         title: element.device?.customer?.building_name
+      //           ? element.device.customer.building_name +
+      //           " - " +
+      //           element.alarm_type
+      //           : "---",
+      //         date_from: element.alarm_start_datetime,
+      //         click: "/alarm/allevents",
+      //         icon:
+      //           this.alarm_icons[element.alarm_type] ??
+      //           element.alarm_type + ".png",
+      //         key: "leaves",
+      //       };
 
-            this.notificationsMenuItems.push(notification);
-          });
+      //       this.notificationsMenuItems.push(notification);
+      //     });
 
-          this.pendingNotificationsCount = data.length;
-          if (this.$route.name == "alarm-dashboard") {
-            if (
-              this.notificationsMenuItems.length > 0 &&
-              (!this.wait5Minutes || this.isNewAlarmAdded())
-            )
-              this.dialogAlarmPopupNotificationStatus = true;
-            else this.dialogAlarmPopupNotificationStatus = false;
-          }
+      //     this.pendingNotificationsCount = data.length;
+      //     if (this.$route.name == "alarm-dashboard") {
+      //       if (
+      //         this.notificationsMenuItems.length > 0 &&
+      //         (!this.wait5Minutes || this.isNewAlarmAdded())
+      //       )
+      //         this.dialogAlarmPopupNotificationStatus = true;
+      //       else this.dialogAlarmPopupNotificationStatus = false;
+      //     }
 
-          // console.log(
-          //   this.notificationsMenuItems.length,
-          //   this.wait5Minutes,
-          //   this.dialogAlarmPopupNotificationStatus
-          // );
+      //     // console.log(
+      //     //   this.notificationsMenuItems.length,
+      //     //   this.wait5Minutes,
+      //     //   this.dialogAlarmPopupNotificationStatus
+      //     // );
 
-          this.previousnotificationsMenuItems = this.notificationsMenuItems;
-        })
-        .catch((error) => {
-          if (this.$axios.isCancel(error)) {
-            console.log("Previous request canceled");
-          } else {
-            console.error("Error loading notifications:", error);
-          }
-          this.isBackendRequestOpen = false;
-        });
+      //     this.previousnotificationsMenuItems = this.notificationsMenuItems;
+      //   })
+      //   .catch((error) => {
+      //     if (this.$axios.isCancel(error)) {
+      //       console.log("Previous request canceled");
+      //     } else {
+      //       console.error("Error loading notifications:", error);
+      //     }
+      //     this.isBackendRequestOpen = false;
+      //   });
     },
 
     showPopupAlarmStatus() {

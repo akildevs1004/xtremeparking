@@ -472,12 +472,12 @@ export default {
           this.$router.push("/carwashing/dashboard");
         }
     } catch (ex) {}
-    this.getStatistics();
+    //this.getStatistics();
     // this.getDashboardData();
 
     setInterval(() => {
       this.getStatistics();
-    }, 1000 * 300); // Refresh statistics every 5 minutes
+    }, 1000 * 120); // Refresh statistics every 2 minutes
 
     this.initMqtt();
 
