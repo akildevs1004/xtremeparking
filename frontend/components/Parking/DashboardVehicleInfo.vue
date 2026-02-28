@@ -35,9 +35,9 @@
         <v-icon small class="cursor-pointer" @click.stop="getDataFromApi(false)">
           mdi-reload
         </v-icon>
-        <v-icon small class="cursor-pointer ml-2" @click="GateOptions = !GateOptions">
+        <!-- <v-icon small class="cursor-pointer ml-2" @click="GateOptions = !GateOptions">
           mdi-boom-gate-alert
-        </v-icon>
+        </v-icon> -->
       </v-card-title>
 
       <v-divider />
