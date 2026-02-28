@@ -10,6 +10,7 @@
     "obf": "javascript-obfuscator main.js --output dist/main.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true && javascript-obfuscator helpers.js --output dist/helpers.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true && javascript-obfuscator socket.js --output dist/socket.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true &&javascript-obfuscator camera_2_start_camera_live_stream.js --output dist/camera_2_start_camera_live_stream.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true && javascript-obfuscator camera_1_organize_files_by_date.js --output dist/camera_1_organize_files_by_date.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true  && javascript-obfuscator camera_3_watchCameraImages.js --output dist/camera_3_watchCameraImages.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true"
   },
   "build": {
+    "asar": false,
     "publish": {
       "provider": "generic",
       "url": "https://backend.smart-queue.com/desktop_updates/"
@@ -75,10 +76,6 @@
       {
         "from": "ffmpeg",
         "to": "ffmpeg"
-      },
-      {
-        "from": "database_deploy",
-        "to": "database_deploy"
       }
     ],
     "productName": "XtremeGuardParking",
@@ -121,6 +118,6 @@
     "systeminformation": "^5.30.0",
     "tesseract.js": "^6.0.1",
     "unzipper": "^0.12.3",
-    "ws": "^8.18.3"
+    "ws": "^8.19.0"
   }
 }

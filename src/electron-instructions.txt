@@ -1,5 +1,8 @@
 modificadtion after exe build
 
+
+npm install -g @electron/asar
+
 1. asar extract app.asar app-unpacked (unpack)
 2. asar pack app-unpacked app.asar (pack again)
 

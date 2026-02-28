@@ -14,7 +14,9 @@ const {
   waitForURL,
 } = require("./helpers");
 
-
+const { liveStreamHelper } = require("./camera_live_stream_helper.js");
+const { startOrganizer } = require("./camera_organize_files_by_date_helper.js");
+const { startWatcher } = require("./camera_event_watch_helper.js");
 
 //control GPU
 app.disableHardwareAcceleration();
@@ -45,9 +47,7 @@ const mqttConfigPath = path.join(appDir, "mosquitto", "mosquitto.conf");
 
 // start "Mosquitto MQTT" cmd /k ""mosquitto.exe" -c "mosquitto.conf" -v"
 
-const { liveStreamHelper } = require(path.join(appDir, "camera_live_stream_helper.js"));
-const { startOrganizer } = require(path.join(appDir, "camera_organize_files_by_date_helper.js"));
-const { startWatcher } = require(path.join(appDir, "camera_event_watch_helper.js"));
+
 
 let nginxWindow;
 
