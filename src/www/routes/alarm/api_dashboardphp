@@ -1,0 +1,90 @@
+<?php
+
+
+use App\Http\Controllers;
+use App\Http\Controllers\AlarmLogsController;
+use App\Http\Controllers\AlarmSensorTypesController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\AnnouncementsCategoriesController;
+
+use App\Http\Controllers\Customers\Alarm\AlarmNotificationController;
+use App\Http\Controllers\Customers\Alarm\DeviceArmedLogsController;
+use App\Http\Controllers\Customers\AlarmDashboard;
+use App\Http\Controllers\Customers\AlarmDashboardController;
+use App\Http\Controllers\Customers\AlarmDeviceTemperatureLogsController;
+use App\Http\Controllers\Customers\Api\ApiAlarmDeviceSensorLogsController;
+use App\Http\Controllers\Customers\Api\ApiAlarmDeviceTemperatureLogsController;
+use App\Http\Controllers\Customers\CustomerAlarmEventsController;
+use App\Http\Controllers\Customers\CustomerBuildingPhotosController;
+use App\Http\Controllers\Customers\CustomerBuildingPicturesController;
+use App\Http\Controllers\Customers\CustomerCamerasController;
+use App\Http\Controllers\Customers\CustomerContactsController;
+use App\Http\Controllers\Customers\CustomerPaymentsController;
+use App\Http\Controllers\Customers\CustomersController;
+use App\Http\Controllers\Customers\Reports\AlarmReportsController;
+use App\Http\Controllers\Customers\SecurityLoginController;
+use App\Http\Controllers\DeviceNotificationsManagersController;
+use App\Http\Controllers\DeviceProductServicesController;
+use App\Http\Controllers\DeviceZonesController;
+use App\Http\Controllers\DeviceZoneTypesController;
+use App\Http\Controllers\PlottingController;
+use App\Http\Controllers\RolePermissionsController;
+use App\Models\AlarmLogs;
+use App\Models\Customers\Customers;
+use App\Models\Customers\SecurityLogin;
+use App\Models\DeviceArmedLogs;
+use App\Models\DeviceProductServices;
+use App\Models\MapKey;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use Ramsey\Uuid\Type\Integer;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
+
+
+//dashboard
+// Route::get('get_device_armed_logs', [CustomerAlarmEventsController::class, 'getAlarmLogs']);
+Route::apiResource('device_armed_logs', DeviceArmedLogsController::class);
+Route::get('device_armed_stats', [AlarmDashboardController::class, 'getDeviceArmedStatistics']);
+Route::get('device_live_stats', [AlarmDashboardController::class, 'getDeviceLiveStatistics']);
+Route::get('security_device_live_stats_groupby', [AlarmDashboardController::class, 'getDeviceLiveStatisticsGroupBy']);
+
+Route::get('customer_contract_stats', [AlarmDashboardController::class, 'getCustomerContractStatistics']);
+Route::get('device_sensors_stats', [AlarmDashboardController::class, 'getDeviceSensorStatistics']);
+
+Route::get('customer_profile_completion_percentage', [CustomersController::class, "customerProfileCompletionPercentage"]);
+Route::get('alarm_response_statistics', [AlarmDashboardController::class, "alarmResponseStatistics"]);
+Route::get('alarm_customer_statistics', [AlarmDashboardController::class, "alarmCustomerStatistics"]);
+
+Route::get('alarm_statistics', [AlarmDashboardController::class, "alarmStatistics"]);
+Route::get('alarm_event_statistics', [AlarmDashboardController::class, "alarmEventStatistics"]);
+Route::get('dashboard_statistics_date_range', [AlarmDashboardController::class, "dashboardStatisctsDateRange"]);
+Route::get('dashboard_statistics_all_statistics', [AlarmDashboardController::class, "dashboardStatisctsAllCounts"]);
+
+Route::get('dashboard_statistics_date_range_history', [AlarmDashboardController::class, "dashboardStatisctsDateRangeHistory"]);
+Route::get('dashboard_events_statistics_date_range_history', [AlarmDashboardController::class, "dashboardEventsStatisctsDateRangeHistory"]);
+Route::get('dashboard_get_open_alarms', [AlarmDashboardController::class, "dashboardOpenAlarmList"]);
+Route::get('dashboard_alarm_statistics', [AlarmDashboardController::class, "dashboardAlarmStatistics"]);
+
+
+
+
+
+
+
+
+
+
+
+
+Route::get('dashboard_statistics_hourly_range', [AlarmDashboardController::class, "dashboardStatisctsHourlyRange"]);
+
+
+
+Route::get('dashboard_statistics_customers', [AlarmDashboardController::class, "dashboardStatisctsCustomers"]);
+
+// Route::get('dashboard_today_statistics', [AlarmDashboardController::class, "dashboardStatisctsToday"]);
+
+
+Route::get('customer_contract_expin30days_stats', [CustomersController::class, "customerContractExpin30daysStats"]);
+Route::get('customer_devices_types_stats', [CustomersController::class, "customerDevicesStats"]);
