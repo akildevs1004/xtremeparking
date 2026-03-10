@@ -14,6 +14,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Throwable;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;   // ✅ ADD THIS
+use App\Models\Company;
+
+
+
 
 use Illuminate\Support\Str;
 
@@ -27,23 +32,26 @@ class ParkingMembersController extends Controller
      */
     public function index(Request $request)
     {
+        info("called here");
+        
         $model = ParkingMembers::where("company_id", $request->company_id);
 
         $model->when($request->filled("common_search"), function ($q) use ($request) {
+
+
             $q->where(function ($qwhere) use ($request) {
-                $qwhere->where("first_name", "ILIKE", "%$request->common_search%")
-                    ->orWhere("last_name", "ILIKE", "%$request->common_search%")
-                    ->orWhere("phone", "ILIKE", "%$request->common_search%")
-                    ->orWhere("email", "ILIKE", "%$request->common_search%")
-                    ->orWhere("member_type", "ILIKE", "%$request->common_search%")
-                    ->orWhere("plate_number", "ILIKE", "%$request->common_search%")
-                    ->orWhere("plate_size", "ILIKE", "%$request->common_search%")
-                    ->orWhere("parking_slot", "ILIKE", "%$request->common_search%")
-                    ->orWhereHas("ParkingMembersVehiclesList", function ($qFamily) use ($request) {
-                        $qFamily->where("plate_number", "ILIKE", "%$request->common_search%")
-                            ->orWhere("plate_size", "ILIKE", "%$request->common_search%")
-                            ->orWhere("parking_slot", "ILIKE", "%$request->common_search%");
-                    });
+                $qwhere->where("first_name", "ILIKE", "%$request->common_search%");
+                $qwhere->orWhere("last_name", "ILIKE", "%$request->common_search%");
+                $qwhere->orWhere("phone", "ILIKE", "%$request->common_search%");
+                $qwhere->orWhere("email", "ILIKE", "%$request->common_search%");
+                $qwhere->orWhere("member_type", "ILIKE", "%$request->common_search%");
+                $qwhere->orWhere("plate_number", "ILIKE", "%$request->common_search%");
+                $qwhere->orWhere("plate_size", "ILIKE", "%$request->common_search%");
+                $qwhere->orWhere("parking_slot", "ILIKE", "%$request->common_search%");
+                $qwhere->orWhereHas("ParkingFamilyMembers", function ($qFamily) use ($request) {
+                $qFamily->where("plate_number", "ILIKE", "%$request->common_search%")
+                    ->orWhere("plate_size", "ILIKE", "%$request->common_search%");
+            });
             });
         });
 
@@ -190,14 +198,8 @@ class ParkingMembersController extends Controller
         if ($request->filled("editId")) {
 
             $isExit = ParkingMembers::where("plate_number", $request->plate_number)->where("id", "!=", $request->editId)->exists();
-            $isExitSlot = false;
-            if ($request->filled("parking_slot") && $request->parking_slot != '') {
-                $isExitSlot = ParkingMembers::where("parking_slot", $request->parking_slot)->where("company_id", $request->company_id)->where("id", "!=", $request->editId)->exists();
-                $isExitSlotGuest = ParkingMembersVehiclesList::where("parking_slot", $request->parking_slot)->where("company_id", $request->company_id)->exists();
-                $isExitSlot = $isExitSlot || $isExitSlotGuest;
-            }
             //duplicate checking
-            if (!$isExit && !$isExitSlot) {
+            if (!$isExit) {
 
                 if (isset($request->attachment) && $request->hasFile('attachment')) {
                     $file = $request->file('attachment');
@@ -210,6 +212,7 @@ class ParkingMembersController extends Controller
                 unset($data['password']);
                 unset($data['confirm_password']);
                 $record = ParkingMembers::where("id", $request->editId)->update($data);
+
                 //Update user password
 
                 if ($request->filled('password') && $request->filled('confirm_password')) {
@@ -229,35 +232,17 @@ class ParkingMembersController extends Controller
 
                 return $this->response('Parking Member   details are updated', $record, true);
             } else {
-                $errorMsg = '';
-                if ($isExit) {
-                    $errorMsg .= $request->plate_number . ' - Plate Number is already Exist. ';
-                }
-                if ($isExitSlot) {
-                    $errorMsg .= $request->parking_slot . ' - Parking Slot is already Exist. ';
-                }
-                return $this->response($errorMsg, null, false);
+                return $this->response($request->plate_number . ' - Plate Number is already Exist', null, false);
             }
         } else {
 
             //create new
 
             $isExit = ParkingMembers::where("plate_number", $request->plate_number)->exists();
-            $isExitGuest = ParkingMembersVehiclesList::where("vehicle_number", $request->plate_number)->exists();
-            $isExitSlot = false;
-            if ($request->filled("parking_slot") && $request->parking_slot != '') {
-                $isExitSlot = ParkingMembers::where("parking_slot", $request->parking_slot)->where("company_id", $request->company_id)->exists();
-                $isExitSlotGuest = ParkingMembersVehiclesList::where("parking_slot", $request->parking_slot)->where("company_id", $request->company_id)->exists();
-                $isExitSlot = $isExitSlot || $isExitSlotGuest;
-            }
+            if ($isExit == 0) {
 
-            if ($isExit) {
-                return $this->response($request->plate_number . ' - Plate number is already Exist', null, false);
-            } elseif ($isExitGuest) {
-                return $this->response($request->plate_number . ' - Plate number is already Exist in Guest/Members List', null, false);
-            } elseif ($isExitSlot) {
-                return $this->response($request->parking_slot . ' - Parking Slot is already Exist', null, false);
-            } else {
+                $isExitGuest = ParkingMembersVehiclesList::where("vehicle_number", $request->plate_number)->exists();
+                if ($isExitGuest == 0) { //guest not exist
 
                     //create user account
                     if (($request->filled('password') && $request->filled('confirm_password')) || $request->filled("is_import_from_csv")) {
@@ -309,6 +294,10 @@ class ParkingMembersController extends Controller
 
                                     $record = ParkingMembersVehiclesList::create($Guestdata);
 
+                                    $this->exportParkingMembersJson();
+
+
+
                                     return $this->response('Parking Member   is created as ' . $ParkingMember->first_name . '  ' . $ParkingMember->last_name . ' Guest/Member List', $record, true);
                                 }
                             } else {
@@ -321,7 +310,7 @@ class ParkingMembersController extends Controller
                     }
                     if (!isset($data['last_name'])) $data['last_name'] = "";
 
-                    if ($request->filled("is_import_from_csv")) {
+                    if ($request->filled("is_import_from_csv") || !$request->filled('membership_start')) {
                         $start_date = Carbon::parse(date("Y-m-d"));
 
                         $end_date = (clone $start_date)->addDays(
@@ -332,8 +321,17 @@ class ParkingMembersController extends Controller
                         $data['membership_end'] = $end_date;
                     }
 
+                    if($request->filled('is_active'))
+                        {
+                            $data['is_active'] =$request->filled('is_active');
+                        }
+                        else{
+                            $data['is_active'] =true;
+                        }
+
 
                     $record = ParkingMembers::create($data);
+                     $this->exportParkingMembersJson();
 
                     if (isset($request->attachment) && $request->hasFile('attachment')) {
                         $file = $request->file('attachment');
@@ -347,6 +345,8 @@ class ParkingMembersController extends Controller
                     }
 
                     return $this->response('Parking Member   is created.', $record, true);
+                } else {
+                    return $this->response($request->plate_number . ' -  Plate number is already Exist in Guest/Members List', null, false);
                 }
             } else {
                 return $this->response($request->plate_number . ' - Plate number is already Exist', null, false);
@@ -546,6 +546,7 @@ class ParkingMembersController extends Controller
                 ];
 
                 $member->update($updateData);
+                $this->exportParkingMembersJson();
             }
         }
 
@@ -607,6 +608,8 @@ class ParkingMembersController extends Controller
 
                 $this->updateSubscriptionDates($request->member_id, $request->editId);
 
+                $this->exportParkingMembersJson();
+
                 return $this->response('Payment Details are Updated.', $record, true);
             } else {
                 $data["created_datetime"] = date("Y-m-d H:i:s");
@@ -623,6 +626,8 @@ class ParkingMembersController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
+
+
     }
 
     public function updateSubscriptionDates($member_id, $customer_payment_id)
@@ -649,6 +654,7 @@ class ParkingMembersController extends Controller
                         "membership_start" => $start_date,
                         "membership_end" => $end_date,
                     ]);
+                    $this->exportParkingMembersJson();
                 }
             }
         }
@@ -1005,4 +1011,88 @@ class ParkingMembersController extends Controller
 
         throw new \Exception("createMemberInternal() not connected to your existing member creation logic.");
     }
+
+    public function exportParkingMembersJson()
+{
+    $today = Carbon::today();
+
+    $result = collect();
+
+         $members = ParkingMembers::with('ParkingFamilyMembers')
+        ->select('id', 'plate_number', 'is_active', 'membership_end', 'first_name', 'last_name')
+      //   ->where("plate_number", "DXBZ19425")
+        ->get();
+
+    foreach ($members as $member) {
+
+        $blocked = !$member->is_active ||
+                   ($member->member_end_date &&
+                    Carbon::parse($member->member_end_date)->lt($today));
+
+        // Add main plate number
+        $result->push([
+            'plate_number' => $member->plate_number,
+            'blocked' => $blocked,
+            'id' =>$member->id,
+            'name' => $member->first_name.' '.$member->last_name, 
+            'family_memebr' => false
+
+        ]);
+if($member->ParkingFamilyMembers)
+        // Add family vehicles
+        foreach ($member->ParkingFamilyMembers as $vehicle) {
+            $result->push([
+                'plate_number' => $vehicle->vehicle_number,
+                'blocked' => $blocked,
+                'id' =>$vehicle->id,
+                 
+                'name' => $member->first_name.' '.$member->last_name,
+                'family_memebr' => true
+            ]);
+        }
+    }
+
+     
+
+    Storage::put(
+        'parking_members.json',
+        $result->toJson(JSON_PRETTY_PRINT)
+    );
+
+    return response()->json([
+        'message' => 'File created successfully'
+    ]);
+}
+
+ public function exportAllCompaniesJson()
+{
+    // Load all companies with their devices
+     $companies = Company::with('devices')->get();
+
+    foreach ($companies as $company) {
+        $data = [
+            'company' => [
+                'id' => $company->id,
+                'name' => $company->name,
+                'guest_vehicles' => $company->guset_vehicles,
+                'devices' => $company->devices->map(function($device) {
+                    return [
+                        'id' => $device->id,
+                        'name' => $device->name,
+                        'camera_in_name' => $device->camera_in_name,
+                        'camera_out_name' => $device->camera_out_name,
+                    ];
+                }),
+            ]
+        ];
+
+        // Save each company to a separate JSON file
+        $filename = 'company_' . $company->id . '.json';
+        Storage::put($filename, json_encode($data, JSON_PRETTY_PRINT));
+    }
+
+    return response()->json([
+        'message' => 'All companies exported successfully.'
+    ]);
+}
 }

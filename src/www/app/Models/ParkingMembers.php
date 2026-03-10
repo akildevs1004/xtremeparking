@@ -31,7 +31,7 @@ class ParkingMembers extends Model
         }
     }
 
-    public function ParkingMembersVehiclesList()
+    public function ParkingFamilyMembers()
     {
         return $this->hasMany(ParkingMembersVehiclesList::class, 'member_id');
     }
