@@ -328,6 +328,10 @@ export default {
         value: "plate_number",
       },
       {
+        text: "Parking Slot",
+        value: "parking_slot",
+      },
+      {
         text: "Owner Name",
         value: "first_name",
       },
