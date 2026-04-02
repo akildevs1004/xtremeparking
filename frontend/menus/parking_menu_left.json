@@ -26,6 +26,14 @@
     "top_menu_name": "settings"
   },
   {
+    "icon": "mdi-boom-gate",
+    "title": "Parking Slots",
+    "open_menu": false,
+    "to": "/settings/parking-slots",
+    "module": "parking-slots",
+    "top_menu_name": "settings"
+  },
+  {
     "icon": "mdi-account-cancel",
     "title": "Blocked List",
     "open_menu": false,

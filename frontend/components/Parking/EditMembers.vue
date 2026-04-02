@@ -92,6 +92,7 @@
                 <v-col cols="6" dense>
                   <v-text-field
                     label="Contact Number"
+                    placeholder="971xxxxxxxxx"
                     dense
                     small
                     outlined
@@ -110,6 +111,7 @@
                 <v-col cols="6" dense>
                   <v-text-field
                     label="Email ID(Login name)"
+                    placeholder="youremail@gmail.com"
                     dense
                     small
                     outlined
@@ -195,6 +197,11 @@
                     item-text="name"
                     item-value="id"
                   ></v-select>
+                  <span
+                    v-if="primary_errors && primary_errors.floor_no"
+                    class="text-danger mt-2"
+                    >{{ primary_errors.floor_no[0] }}</span
+                  >
                 </v-col>
 
                 <v-col cols="6" dense>
@@ -210,6 +217,12 @@
                     item-text="name"
                     item-value="id"
                   ></v-select>
+
+                  <span
+                    v-if="primary_errors && primary_errors.slot_number"
+                    class="text-danger mt-2"
+                    >{{ primary_errors.slot_number[0] }}</span
+                  >
                 </v-col>
 
                 <v-col cols="6" v-if="member_type == 'Tenant'">
@@ -278,7 +291,27 @@
                     ></v-date-picker>
                   </v-menu>
                 </v-col>
-                <v-col cols="6" dense>
+                <v-col cols="4" dense>
+                  <v-text-field
+                    :filled="!editable"
+                    label="Prefix"
+                    dense
+                    small
+                    outlined
+                    clearable
+                    autocomplete="off"
+                    v-model="payload_members.prefix"
+                    hide-details
+                    :readonly="!editable"
+                  ></v-text-field>
+                  <span
+                    v-if="primary_errors && primary_errors.prefix"
+                    class="text-danger mt-2"
+                    >{{ primary_errors.prefix[0] }}</span
+                  >
+                </v-col>
+
+                 <v-col cols="4" dense>
                   <v-text-field
                     :filled="!editable"
                     label="Plate Number"
@@ -298,7 +331,7 @@
                   >
                 </v-col>
 
-                <v-col cols="6" dense>
+                <v-col cols="4" dense>
                   <v-text-field
                     :filled="!editable"
                     label="Vehicle Country Region/Country"
@@ -579,6 +612,7 @@ export default {
 
       floor_no: null,
       slot_number: null,
+      prefix:null,
     },
 
     e1: 1,
@@ -661,6 +695,8 @@ export default {
 
 
       this.payload_members.floor_no = this.item.floor_no;
+      this.payload_members.prefix = this.item.prefix;
+      
       this.payload_members.slot_number = parseInt(this.item.slot_number); // Convert string to integer
 
       if (this.item.floor_no) {
@@ -830,3 +866,14 @@ export default {
   },
 };
 </script>
+<style scoped>
+/deep/ input[type="number"] {
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}
+/deep/ input[type="number"]::-webkit-outer-spin-button,
+/deep/ input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+</style>

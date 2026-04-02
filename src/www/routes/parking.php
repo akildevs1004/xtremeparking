@@ -11,6 +11,7 @@ use App\Http\Controllers\ParkingCameraLogsController;
 use App\Http\Controllers\ParkingDeviceController;
 use App\Http\Controllers\ParkingMembersController;
 use App\Http\Controllers\ParkingMembersVehiclesListController;
+use App\Http\Controllers\ParkingSlotsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\Reports\DailyController;
@@ -62,6 +63,9 @@ Route::post('parking_member_product_invoice_submition',  [ParkingMembersControll
 Route::post('parking_member_payments',  [ParkingMembersController::class, 'MemberPayments']);
 
 Route::post('parking_open_gate',  [ParkingDeviceController::class, 'OpenGate']);
+Route::post('parking_open_gate_manual',  [ParkingDeviceController::class, 'OpenGateManually']);
+
+
 // Route::post('parking_close_gate',  [ParkingDeviceController::class, 'CloseGate']);
 
 Route::post('device_acknowledged_from_device',  [ParkingDeviceController::class, 'DeviceAcknowledged']);
@@ -143,3 +147,7 @@ Route::get('test_generate_qrcode', function () {
 
 
 Route::apiResource('cameraslist', CamerasListController::class);
+Route::resource('parking-slots', ParkingSlotsController::class);
+Route::post('parking-slots-update-range', [ParkingSlotsController::class, 'updateRange']);
+Route::get('parking-slots-floors', [ParkingSlotsController::class, 'parkingSlotsFloors']);
+Route::get('parking-slots-by-floors', [ParkingSlotsController::class, 'parkingSlotsByFloors']);

@@ -33,7 +33,7 @@ class ParkingMembersController extends Controller
     public function index(Request $request)
     {
         info("called here");
-        
+
         $model = ParkingMembers::where("company_id", $request->company_id);
 
         $model->when($request->filled("common_search"), function ($q) use ($request) {
@@ -49,9 +49,9 @@ class ParkingMembersController extends Controller
                 $qwhere->orWhere("plate_size", "ILIKE", "%$request->common_search%");
                 $qwhere->orWhere("parking_slot", "ILIKE", "%$request->common_search%");
                 $qwhere->orWhereHas("ParkingFamilyMembers", function ($qFamily) use ($request) {
-                $qFamily->where("plate_number", "ILIKE", "%$request->common_search%")
-                    ->orWhere("plate_size", "ILIKE", "%$request->common_search%");
-            });
+                    $qFamily->where("plate_number", "ILIKE", "%$request->common_search%")
+                        ->orWhere("plate_size", "ILIKE", "%$request->common_search%");
+                });
             });
         });
 
@@ -67,7 +67,15 @@ class ParkingMembersController extends Controller
             });
         });
 
-        return $model->orderBy('created_at', 'ASC')->paginate($request->perPage);;
+        $model->when($request->filled("floor_no"), function ($q) use ($request) {
+            $q->where("floor_no", $request->floor_no);
+        });
+
+        $model->when($request->filled("slot_number"), function ($q) use ($request) {
+            $q->where("slot_number", $request->slot_number);
+        });
+
+        return $model->orderBy('created_at', 'desc')->paginate($request->per_page);;
     }
 
     public function membersAll(Request $request)
@@ -95,29 +103,39 @@ class ParkingMembersController extends Controller
      */
     public function store(Request $request)
     {
+
+        $messages = [
+            'phone.required' => 'The phone number is mandatory.',
+            'phone.regex' => 'Please enter a valid UAE phone number starting with 971.',
+            'phone.min' => 'The phone number must be exactly 12 digits.',
+            'phone.unique' => 'This phone number is already registered to another member.',
+            'floor_no.unique' => 'This floor number is already assigned.',
+            'slot_number.unique' => 'This parking slot is already taken.',
+        ];
+
         if ($request->editId) {
             $request->validate([
-
                 'company_id' => 'required|integer',
                 'editId' => 'required',
                 'first_name' => 'required',
                 'last_name' => 'nullable',
                 'email' => 'required',
-                'phone' => 'nullable',
+                'phone' => [
+                    'required',
+                    'string',
+                    'regex:/^971(50|52|54|55|56|58|5|2|3|4|6|7|9)\d{7}$/',
+                    'unique:parking_members,phone,' . $request->editId,
+                    'min:12',
+                    'max:12',
+                ],
                 'plate_size' => 'nullable',
                 'plate_number' => 'required',
                 'member_type' => 'required',
                 'membership_start' => 'nullable',
                 'membership_end' => 'nullable',
                 'parking_slot' => 'nullable',
-
                 'address' => 'nullable',
                 'remarks' => 'nullable',
-
-
-
-
-
                 'vehicle_country_region' => 'nullable',
                 'vehicle_plate_type' => 'nullable',
                 'vehicle_plate_color' => 'nullable',
@@ -125,12 +143,12 @@ class ParkingMembersController extends Controller
                 'vehicle_type' => 'nullable',
                 'vehicle_color' => 'nullable',
                 'blocked_reason' => 'nullable',
-
                 'password' => 'nullable',
                 'confirm_password' => 'nullable',
-
-
-            ]);
+                'floor_no' => 'nullable|unique:parking_members,floor_no,' . $request->editId,
+                'slot_number' => 'nullable|unique:parking_members,slot_number,' . $request->editId,
+                'prefix' => 'nullable',
+            ], $messages);
         } else {
             $request->validate([
 
@@ -139,7 +157,14 @@ class ParkingMembersController extends Controller
                 'first_name' => 'required',
                 'last_name' => 'nullable',
                 'email' => 'required',
-                'phone' => 'nullable',
+                'phone' => [
+                    'required',
+                    'string',
+                    'regex:/^971(50|52|54|55|56|58|5|2|3|4|6|7|9)\d{7}$/',
+                    'unique:parking_members,phone',
+                    'min:12',
+                    'max:12',
+                ],
                 'plate_size' => 'nullable',
                 'plate_number' => 'nullable',
 
@@ -161,7 +186,13 @@ class ParkingMembersController extends Controller
                 'password' => 'nullable',
                 'confirm_password' => 'nullable',
 
-            ]);
+                'floor_no' => 'required',
+                'slot_number' => [
+                    'required',
+                    'unique:parking_members,slot_number',
+                ],
+                'prefix' => 'nullable',
+            ], $messages);
         }
 
 
@@ -321,17 +352,15 @@ class ParkingMembersController extends Controller
                         $data['membership_end'] = $end_date;
                     }
 
-                    if($request->filled('is_active'))
-                        {
-                            $data['is_active'] =$request->filled('is_active');
-                        }
-                        else{
-                            $data['is_active'] =true;
-                        }
+                    if ($request->filled('is_active')) {
+                        $data['is_active'] = $request->filled('is_active');
+                    } else {
+                        $data['is_active'] = true;
+                    }
 
 
                     $record = ParkingMembers::create($data);
-                     $this->exportParkingMembersJson();
+                    $this->exportParkingMembersJson();
 
                     if (isset($request->attachment) && $request->hasFile('attachment')) {
                         $file = $request->file('attachment');
@@ -626,8 +655,6 @@ class ParkingMembersController extends Controller
         } catch (\Throwable $th) {
             throw $th;
         }
-
-
     }
 
     public function updateSubscriptionDates($member_id, $customer_payment_id)
@@ -1013,86 +1040,86 @@ class ParkingMembersController extends Controller
     }
 
     public function exportParkingMembersJson()
-{
-    $today = Carbon::today();
+    {
+        $today = Carbon::today();
 
-    $result = collect();
+        $result = collect();
 
-         $members = ParkingMembers::with('ParkingFamilyMembers')
-        ->select('id', 'plate_number', 'is_active', 'membership_end', 'first_name', 'last_name')
-      //   ->where("plate_number", "DXBZ19425")
-        ->get();
+        $members = ParkingMembers::with('ParkingFamilyMembers')
+            ->select('id', 'plate_number', 'is_active', 'membership_end', 'first_name', 'last_name')
+            //   ->where("plate_number", "DXBZ19425")
+            ->get();
 
-    foreach ($members as $member) {
+        foreach ($members as $member) {
 
-        $blocked = !$member->is_active ||
-                   ($member->member_end_date &&
+            $blocked = !$member->is_active ||
+                ($member->member_end_date &&
                     Carbon::parse($member->member_end_date)->lt($today));
 
-        // Add main plate number
-        $result->push([
-            'plate_number' => $member->plate_number,
-            'blocked' => $blocked,
-            'id' =>$member->id,
-            'name' => $member->first_name.' '.$member->last_name, 
-            'family_memebr' => false
-
-        ]);
-if($member->ParkingFamilyMembers)
-        // Add family vehicles
-        foreach ($member->ParkingFamilyMembers as $vehicle) {
+            // Add main plate number
             $result->push([
-                'plate_number' => $vehicle->vehicle_number,
+                'plate_number' => $member->plate_number,
                 'blocked' => $blocked,
-                'id' =>$vehicle->id,
-                 
-                'name' => $member->first_name.' '.$member->last_name,
-                'family_memebr' => true
+                'id' => $member->id,
+                'name' => $member->first_name . ' ' . $member->last_name,
+                'family_memebr' => false
+
             ]);
+            if ($member->ParkingFamilyMembers)
+                // Add family vehicles
+                foreach ($member->ParkingFamilyMembers as $vehicle) {
+                    $result->push([
+                        'plate_number' => $vehicle->vehicle_number,
+                        'blocked' => $blocked,
+                        'id' => $vehicle->id,
+
+                        'name' => $member->first_name . ' ' . $member->last_name,
+                        'family_memebr' => true
+                    ]);
+                }
         }
+
+
+
+        Storage::put(
+            'parking_members.json',
+            $result->toJson(JSON_PRETTY_PRINT)
+        );
+
+        return response()->json([
+            'message' => 'File created successfully'
+        ]);
     }
 
-     
+    public function exportAllCompaniesJson()
+    {
+        // Load all companies with their devices
+        $companies = Company::with('devices')->get();
 
-    Storage::put(
-        'parking_members.json',
-        $result->toJson(JSON_PRETTY_PRINT)
-    );
+        foreach ($companies as $company) {
+            $data = [
+                'company' => [
+                    'id' => $company->id,
+                    'name' => $company->name,
+                    'guest_vehicles' => $company->guset_vehicles,
+                    'devices' => $company->devices->map(function ($device) {
+                        return [
+                            'id' => $device->id,
+                            'name' => $device->name,
+                            'camera_in_name' => $device->camera_in_name,
+                            'camera_out_name' => $device->camera_out_name,
+                        ];
+                    }),
+                ]
+            ];
 
-    return response()->json([
-        'message' => 'File created successfully'
-    ]);
-}
+            // Save each company to a separate JSON file
+            $filename = 'company_' . $company->id . '.json';
+            Storage::put($filename, json_encode($data, JSON_PRETTY_PRINT));
+        }
 
- public function exportAllCompaniesJson()
-{
-    // Load all companies with their devices
-     $companies = Company::with('devices')->get();
-
-    foreach ($companies as $company) {
-        $data = [
-            'company' => [
-                'id' => $company->id,
-                'name' => $company->name,
-                'guest_vehicles' => $company->guset_vehicles,
-                'devices' => $company->devices->map(function($device) {
-                    return [
-                        'id' => $device->id,
-                        'name' => $device->name,
-                        'camera_in_name' => $device->camera_in_name,
-                        'camera_out_name' => $device->camera_out_name,
-                    ];
-                }),
-            ]
-        ];
-
-        // Save each company to a separate JSON file
-        $filename = 'company_' . $company->id . '.json';
-        Storage::put($filename, json_encode($data, JSON_PRETTY_PRINT));
+        return response()->json([
+            'message' => 'All companies exported successfully.'
+        ]);
     }
-
-    return response()->json([
-        'message' => 'All companies exported successfully.'
-    ]);
-}
 }
