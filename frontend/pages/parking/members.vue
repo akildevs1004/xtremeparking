@@ -23,14 +23,21 @@
     <v-dialog v-model="DialogCredits" max-width="400px">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
-          <span dense> Member - Credits - Avaialble : {{ item ? item.guest_parking_hours_count : 0 }}</span>
+          <span dense>
+            Member - Credits - Avaialble :
+            {{ item ? item.guest_parking_hours_count : 0 }}</span
+          >
           <v-spacer></v-spacer>
           <v-icon @click="DialogCredits = false" outlined>
             mdi mdi-close-circle
           </v-icon>
         </v-card-title>
         <v-card-text>
-          <ParkingMemberCredits :editable="true" :key="key" :memberId="memberId" />
+          <ParkingMemberCredits
+            :editable="true"
+            :key="key"
+            :memberId="memberId"
+          />
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -49,8 +56,6 @@
       </v-card>
     </v-dialog>
 
-
-
     <v-dialog v-model="newMemberDialog" max-width="1200px">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
@@ -61,79 +66,168 @@
           </v-icon>
         </v-card-title>
         <v-card-text>
-          <EditMembers :key="key" :editId="editId" :item="item" :editable="editable" @closeDialog="closeMemberDialog" />
+          <EditMembers
+            :key="key"
+            :editId="editId"
+            :item="item"
+            :editable="editable"
+            @closeDialog="closeMemberDialog"
+          />
         </v-card-text>
       </v-card>
     </v-dialog>
 
-    <v-card elevation="0" class="mt-0" :style="'height:' + (browserHeight - 20) + 'px'">
+    <v-card
+      elevation="0"
+      class="mt-0"
+      :style="'height:' + (browserHeight - 20) + 'px'"
+    >
       <v-toolbar dense flat>
         <v-toolbar-title> <span> Members/Vehicles List </span></v-toolbar-title>
 
-        <v-btn title="Reload" dense class="ma-0 px-0" x-small :ripple="false" @click="getDataFromApi" text>
+        <v-btn
+          title="Reload"
+          dense
+          class="ma-0 px-0"
+          x-small
+          :ripple="false"
+          @click="getDataFromApi"
+          text
+        >
           <v-icon class="ml-2" dark>mdi mdi-reload</v-icon>
         </v-btn>
 
-
         <v-spacer></v-spacer>
         <div>
-
           <v-row>
-            <v-col style="max-width:200px"><v-select @change="getDataFromApi()" label="Status"
-                class="employee-schedule-search-box" style="
-                        z-index: 999;
+            <v-col style="max-width: 200px"
+              ><v-select
+                @change="getDataFromApi()"
+                label="Members"
+                class="employee-schedule-search-box"
+                style="z-index: 999"
+                height="20px"
+                outlined
+                v-model="filterMemberType"
+                dense
+                :items="[
+                  { value: null, text: 'All Members' },
+                  { value: 'Tenant', text: 'Tenants' },
+                  { value: 'Membership', text: 'Paid Members' },
+                ]"
+                item-text="text"
+                item-value="value"
+                hide-details
+              ></v-select
+            ></v-col>
+            <v-col style="max-width: 200px"
+              ><v-select
+                @change="getDataFromApi()"
+                label="Status"
+                class="employee-schedule-search-box"
+                style="z-index: 999"
+                height="20px"
+                outlined
+                v-model="filterMemberStatus"
+                dense
+                :items="[
+                  { value: null, text: 'All Members' },
+                  { value: false, text: 'Blocked' },
+                  { value: true, text: 'Active' },
+                ]"
+                item-text="text"
+                item-value="value"
+                hide-details
+              ></v-select
+            ></v-col>
 
+            <v-col style="max-width: 200px"
+              ><v-select
+                @change="() => {
+                  loadSlotList(filterFloor);
+                }"
+                label="Floor"
+                class="employee-schedule-search-box"
+                style="z-index: 999"
+                height="20px"
+                outlined
+                v-model="filterFloor"
+                dense
+                :items="floorList"
+                item-text="name"
+                item-value="id"
+                hide-details
+              ></v-select
+            ></v-col>
 
-                      " height="20px" outlined v-model="filterMemberType" dense :items="[
-                        { value: null, text: 'All Members' },
-                        { value: 'Tenant', text: 'Tenants' },
-                        { value: 'Membership', text: 'Paid Members' },
+            <v-col style="max-width: 200px"
+              ><v-select
+                @change="getDataFromApi()"
+                label="Slot Number"
+                class="employee-schedule-search-box"
+                style="z-index: 999"
+                height="20px"
+                outlined
+                v-model="filterSlotNumber"
+                dense
+                :items="slotNumbers"
+                item-text="name"
+                item-value="id"
+                hide-details
+              ></v-select
+            ></v-col>
 
-                      ]" item-text="text" item-value="value" hide-details></v-select></v-col>
-            <v-col style="max-width:200px"><v-select @change="getDataFromApi()" label="Status"
-                class="employee-schedule-search-box" style="
-                        z-index: 999;
-
-
-                      " height="20px" outlined v-model="filterMemberStatus" dense :items="[
-                        { value: null, text: 'All Members' },
-                        { value: false, text: 'Blocked' },
-                        { value: true, text: 'Active' },
-
-                      ]" item-text="text" item-value="value" hide-details></v-select></v-col>
-
-            <v-col style="max-width:250px">
-
-              <span style=" "><v-text-field style=" " height="20" @click:clear="commonSearch = ''; getDataFromApi()"
-                  class="employee-schedule-search-box" @input="getDataFromApi()" v-model="commonSearch"
-                  label="Search (min 3)" dense outlined type="text" append-icon="mdi-magnify" clearable
-                  hide-details></v-text-field></span>
-
+            <v-col style="max-width: 250px">
+              <span style=""
+                ><v-text-field
+                  style=""
+                  height="20"
+                  @click:clear="
+                    commonSearch = '';
+                    getDataFromApi();
+                  "
+                  class="employee-schedule-search-box"
+                  @input="getDataFromApi()"
+                  v-model="commonSearch"
+                  label="Search (min 3)"
+                  dense
+                  outlined
+                  type="text"
+                  append-icon="mdi-magnify"
+                  clearable
+                  hide-details
+                ></v-text-field
+              ></span>
             </v-col>
 
-            <v-col style="max-width:40px">
-              <v-btn v-if="can('operators_create')" title="Change Request" x-small :ripple="false" text
-                @click="addItem()">
+            <v-col style="max-width: 40px">
+              <v-btn
+                v-if="can('operators_create')"
+                title="Change Request"
+                x-small
+                :ripple="false"
+                text
+                @click="addItem()"
+              >
                 <v-icon class="">mdi mdi-plus-circle</v-icon>
-              </v-btn>
-
-
-
-            </v-col><v-col style="max-width:40px">
-
-
-              <v-btn v-if="can('operators_create')" title="Change Request" x-small :ripple="false" text
-                @click="key++; DialogImport = true">
+              </v-btn> </v-col
+            ><v-col style="max-width: 40px">
+              <v-btn
+                v-if="can('operators_create')"
+                title="Change Request"
+                x-small
+                :ripple="false"
+                text
+                @click="
+                  key++;
+                  DialogImport = true;
+                "
+              >
                 <v-icon class="">mdi-calendar-export</v-icon>
               </v-btn>
-
             </v-col>
           </v-row>
-
         </div>
-
-
-
       </v-toolbar>
 
       <v-snackbar v-model="snack" :timeout="3000" :color="snackColor">
@@ -143,32 +237,48 @@
           <v-btn v-bind="attrs" text @click="snack = false"> Close </v-btn>
         </template>
       </v-snackbar>
-      <v-data-table dense :headers="headers" :items="data" :loading="loading" :options.sync="options" :footer-props="{
-        itemsPerPageOptions: [10, 50, 100, 500, 1000],
-      }" class="elevation-1" :server-items-length="totalRowsCount" fixed-header :height="tableHeight"
-        :disable-sort="true">
+      <v-data-table
+        dense
+        :headers="headers"
+        :items="data"
+        :loading="loading"
+        :options.sync="options"
+        :footer-props="{
+          itemsPerPageOptions: [10, 50, 100, 500, 1000],
+        }"
+        class="elevation-1"
+        :server-items-length="totalRowsCount"
+        fixed-header
+        :height="tableHeight"
+        :disable-sort="true"
+      >
         <template v-slot:item.sno="{ item, index }">
           {{
             currentPage
               ? (currentPage - 1) * perPage +
-              (cumulativeIndex + data.indexOf(item))
+                (cumulativeIndex + data.indexOf(item))
               : ""
           }}
         </template>
         <template v-slot:item.first_name="{ item, index }" style="width: 300px">
           <v-row no-gutters>
-            <v-col style="
+            <v-col
+              style="
                 padding: 5px;
                 padding-left: 0px;
                 width: 50px;
                 max-width: 50px;
-              ">
-              <v-img style="
+              "
+            >
+              <v-img
+                style="
                   border-radius: 50%;
                   height: 50px;
                   width: 50px;
                   max-width: 50px;
-                " :src="item.picture ? item.picture : '/no-business_profile.png'">
+                "
+                :src="item.picture ? item.picture : '/no-business_profile.png'"
+              >
               </v-img>
             </v-col>
             <v-col style="padding: 10px">
@@ -192,25 +302,50 @@
           {{ item.guest_parking_hours_count || "---" }}
         </template>
 
-
-
         <template v-slot:item.is_active="{ item }">
-
-          <v-chip v-if="item.is_active" color="green" small text-color="white" class="ma-1"
-            style="font-size: 12px;text-align: center;  height:20px; padding-top: 0px; padding-bottom: 0px;width:80px;">
+          <v-chip
+            v-if="item.is_active"
+            color="green"
+            small
+            text-color="white"
+            class="ma-1"
+            style="
+              font-size: 12px;
+              text-align: center;
+              height: 20px;
+              padding-top: 0px;
+              padding-bottom: 0px;
+              width: 80px;
+            "
+          >
             Active
           </v-chip>
-          <v-chip v-else color="#ef4444" small text-color="white" class="ma-1"
-            style="font-size: 12px;text-align: center; height:20px; padding-top: 0px; padding-bottom: 0px;width:80px;">
+          <v-chip
+            v-else
+            color="#ef4444"
+            small
+            text-color="white"
+            class="ma-1"
+            style="
+              font-size: 12px;
+              text-align: center;
+              height: 20px;
+              padding-top: 0px;
+              padding-bottom: 0px;
+              width: 80px;
+            "
+          >
             Blocked
           </v-chip>
         </template>
         <template v-slot:item.membership_start="{ item }">
-
-
-          <div v-if="item.member_type == 'Membership' && !item.membership_start" style="color:#ef4444">Invoice Pending
+          <div
+            v-if="item.member_type == 'Membership' && !item.membership_start"
+            style="color: #ef4444"
+          >
+            Invoice Pending
           </div>
-          <div v-else> {{ item.membership_start || "---" }}</div>
+          <div v-else>{{ item.membership_start || "---" }}</div>
         </template>
         <template v-slot:item.membership_end="{ item }">
           {{ item.membership_end || "---" }}
@@ -242,8 +377,6 @@
                 </v-list-item-title>
               </v-list-item>
 
-
-
               <v-list-item @click="editItem(item)">
                 <v-list-item-title style="cursor: pointer">
                   <v-icon color="secondary" small> mdi-pencil </v-icon>
@@ -266,19 +399,17 @@
 </template>
 
 <script>
-import EditMembers from '../../components/Parking/EditMembers.vue';
-import ImportMembersCsvPopup from '../../components/Parking/ImportMembersCsvPopup.vue';
-import MemberVehiclesList from '../../components/Parking/MemberVehiclesList.vue';
-import ParkingMemberCredits from '../../components/Parking/ParkingMemberCredits.vue';
-
-
-
-
-
+import EditMembers from "../../components/Parking/EditMembers.vue";
+import ImportMembersCsvPopup from "../../components/Parking/ImportMembersCsvPopup.vue";
+import MemberVehiclesList from "../../components/Parking/MemberVehiclesList.vue";
+import ParkingMemberCredits from "../../components/Parking/ParkingMemberCredits.vue";
 
 export default {
   components: {
-    EditMembers, MemberVehiclesList, ParkingMemberCredits, ImportMembersCsvPopup
+    EditMembers,
+    MemberVehiclesList,
+    ParkingMemberCredits,
+    ImportMembersCsvPopup,
   },
   data: () => ({
     DialogImport: false,
@@ -294,10 +425,14 @@ export default {
     commonSearch: "",
     filterMemberStatus: null,
     filterMemberType: null,
+    filterFloor: null,
+    filterSlotNumber: null,
     perPage: 10,
     cumulativeIndex: 1,
     currentPage: 1,
     branchesList: [],
+    floorList: [],
+    slotNumbers: [],
     isCompany: true,
     tableHeight: 750,
     id: "",
@@ -324,13 +459,14 @@ export default {
         value: "sno",
       },
       {
-        text: "Vehicle/ Number",
-        value: "plate_number",
+        text: "Floor",
+        value: "floor_no",
       },
       {
-        text: "Parking Slot",
-        value: "parking_slot",
+        text: "Slot Number",
+        value: "slot_number",
       },
+
       {
         text: "Owner Name",
         value: "first_name",
@@ -342,10 +478,12 @@ export default {
       {
         text: "Email",
         value: "email",
-      }, {
+      },
+      {
         text: "Type",
         value: "member_type",
-      }, {
+      },
+      {
         text: "Active/Blocked",
         value: "is_active",
       },
@@ -399,6 +537,7 @@ export default {
 
     this.getBuildingTypes();
     this.getDataFromApi();
+    this.loadFloorList();
   },
   created() {
     this._id = 4; //this.$route.params.id;
@@ -411,7 +550,7 @@ export default {
     }
     try {
       if (window) this.browserHeight = window.innerHeight - 70;
-    } catch (e) { }
+    } catch (e) {}
   },
   watch: {
     options: {
@@ -422,6 +561,35 @@ export default {
     },
   },
   methods: {
+    loadFloorList() {
+      this.$axios
+        .get("parking-slots-floors", {
+          params: {
+            company_id: this.$auth.user.company_id,
+          },
+        })
+        .then(({ data }) => {
+          this.floorList = [{ id: null, name: "All Floors" }, ...data];
+        })
+        .catch((e) => {
+          console.log("Floor load error", e);
+        });
+    },
+    loadSlotList(floor_no) {
+      this.$axios
+        .get("parking-slots-by-floors", {
+          params: {
+            company_id: this.$auth.user.company_id,
+            floor_no: floor_no,
+          },
+        })
+        .then(({ data }) => {
+          this.slotNumbers = [{ id: null, name: "All Slots" }, ...data];
+        })
+        .catch((e) => {
+          console.log("Floor load error", e);
+        });
+    },
     can(per) {
       return this.$pagePermission.can(per, this);
     },
@@ -457,7 +625,6 @@ export default {
       this.newMemberDialog = false;
       this.DialogCredits = false;
 
-
       this.getDataFromApi();
     },
     getBuildingTypes() {
@@ -490,7 +657,6 @@ export default {
       this.DialogCredits = true;
     },
     viewGuestsList(item) {
-
       this.memberId = item.id;
       this.key += 1;
       this.item = item;
@@ -549,6 +715,10 @@ export default {
           common_search: this.commonSearch,
           filterMemberStatus: this.filterMemberStatus,
           filterMemberType: this.filterMemberType,
+          floor_no: this.filterfloor,
+          slot_number: this.filterSlotNumber,
+
+          
           // branch_id: this.branch_id,
           ...this.payload,
         },
