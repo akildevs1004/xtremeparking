@@ -1,0 +1,30 @@
+[
+  {
+    "icon": "mdi-home",
+    "title": "Dashboard",
+    "to": "/customer/dashboard",
+    "menu": "customer_dashboard",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi-clock-outline",
+    "title": "Alarms",
+    "to": "/customer/allevents",
+    "menu": "customer_alarms",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi-home",
+    "title": "Profile",
+    "to": "/customer/profile",
+    "menu": "customer_profile",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi mdi-calendar-star-four-points",
+    "title": "Tickets",
+    "to": "/customer/tickets",
+    "menu": "customer_tickets",
+    "module": "topmenu"
+  }
+]

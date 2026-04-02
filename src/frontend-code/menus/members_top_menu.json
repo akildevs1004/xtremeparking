@@ -1,0 +1,17 @@
+[
+  {
+    "icon": "mdi-home",
+    "title": "Vehicles",
+    "to": "/members/dashboard",
+    "menu": "members_dashboard",
+    "module": "topmenu"
+  },
+
+  {
+    "icon": "mdi-home",
+    "title": "Reports",
+    "to": "/members/reports",
+    "menu": "members_reports",
+    "module": "topmenu"
+  }
+]

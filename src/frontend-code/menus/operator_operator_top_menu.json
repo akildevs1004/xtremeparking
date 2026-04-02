@@ -1,0 +1,24 @@
+[
+  {
+    "icon": "mdi-home",
+    "title": "Dashboard",
+    "to": "/operator/dashboard",
+    "menu": "operator_dashboard",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi-home",
+    "title": "Map",
+    "to": "/operator/map",
+    "menu": "operator_map",
+    "module": "topmenu"
+  },
+
+  {
+    "icon": "mdi-home",
+    "title": "Events",
+    "to": "/operator/eventslist",
+    "menu": "operator_eventslist",
+    "module": "topmenu"
+  }
+]

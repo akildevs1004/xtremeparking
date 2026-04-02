@@ -1,0 +1,32 @@
+[
+  {
+    "icon": "mdi-home",
+    "title": "Dashboard",
+    "to": "/carwashing/dashboard",
+    "menu": "parking_dashboard",
+    "module": "topmenu"
+  },
+
+  {
+    "icon": "mdi mdi-calendar-star-four-points",
+    "title": "Reports",
+    "to": "/carwashing/reports",
+    "menu": "parking_reports",
+    "module": "topmenu"
+  },
+
+  {
+    "icon": "mdi-bell",
+    "title": "Devices/Rooms",
+    "to": "/devices/devices",
+    "menu": "devices_devices",
+    "module": "topmenu"
+  },
+  {
+    "icon": "mdi-bell",
+    "title": "Settings",
+    "to": "/settings",
+    "menu": "settings",
+    "module": "topmenu"
+  }
+]

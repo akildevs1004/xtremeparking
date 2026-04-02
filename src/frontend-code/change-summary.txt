@@ -1,0 +1,2 @@
+changes for parking slots: implement parking slots management with CRUD operations and validation
+changes for parking members: add columns floor_no,slot_number,prefix parking members
