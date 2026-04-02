@@ -10,7 +10,6 @@
     "obf": "javascript-obfuscator main.js --output dist/main.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true && javascript-obfuscator helpers.js --output dist/helpers.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true && javascript-obfuscator socket.js --output dist/socket.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true &&javascript-obfuscator camera_2_start_camera_live_stream.js --output dist/camera_2_start_camera_live_stream.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true && javascript-obfuscator camera_1_organize_files_by_date.js --output dist/camera_1_organize_files_by_date.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true  && javascript-obfuscator camera_3_watchCameraImages.js --output dist/camera_3_watchCameraImages.js --compact true --string-array true --string-array-encoding base64 --control-flow-flattening true"
   },
   "build": {
-    "asar": false,
     "publish": {
       "provider": "generic",
       "url": "https://backend.smart-queue.com/desktop_updates/"
