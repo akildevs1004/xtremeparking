@@ -182,7 +182,6 @@
                 </v-col>
 
                 <v-col cols="6" dense>
-                  {{payload_members.floor_no}}
                   <v-select
                     :disabled="!editable"
                     label="Floor Number"
@@ -199,7 +198,6 @@
                 </v-col>
 
                 <v-col cols="6" dense>
-                  {{payload_members.slot_number}}
                   <v-select
                     :disabled="!editable"
                     label="Slot Number"
@@ -554,7 +552,7 @@ export default {
     contactTypes: [],
     branchesList: [],
     floorList: [],
-    parkingSlots:[],
+    parkingSlots: [],
     startDateMenuOpen: "",
     endDateMenuOpen: "",
     preloader: false,
@@ -608,6 +606,8 @@ export default {
     },
   },
   created() {
+    this.loadFloorList();
+
     this.primary_previewImage = null;
     this.payload_members = {
       member_type: "Tenant",
@@ -658,9 +658,15 @@ export default {
       this.payload_members.vehicle_color = this.item.vehicle_color;
 
       this.payload_members.blocked_reason = this.item.blocked_reason;
-    }
 
-    this.loadFloorList();
+
+      this.payload_members.floor_no = this.item.floor_no;
+      this.payload_members.slot_number = parseInt(this.item.slot_number); // Convert string to integer
+
+      if (this.item.floor_no) {
+        this.loadSlotList(this.item.floor_no);
+      }
+    }
   },
   watch: {
     // Keep range valid if user picks an earlier FROM than current TO
