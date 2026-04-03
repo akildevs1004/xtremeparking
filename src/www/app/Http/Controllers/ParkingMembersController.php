@@ -21,7 +21,7 @@ use App\Models\Company;
 
 
 use Illuminate\Support\Str;
-
+use Illuminate\Validation\Rule;
 
 class ParkingMembersController extends Controller
 {
@@ -32,29 +32,22 @@ class ParkingMembersController extends Controller
      */
     public function index(Request $request)
     {
-        info("called here");
-
         $model = ParkingMembers::where("company_id", $request->company_id);
 
         $model->when($request->filled("common_search"), function ($q) use ($request) {
-
-
             $q->where(function ($qwhere) use ($request) {
                 $qwhere->where("first_name", "ILIKE", "%$request->common_search%");
                 $qwhere->orWhere("last_name", "ILIKE", "%$request->common_search%");
                 $qwhere->orWhere("phone", "ILIKE", "%$request->common_search%");
                 $qwhere->orWhere("email", "ILIKE", "%$request->common_search%");
-                $qwhere->orWhere("member_type", "ILIKE", "%$request->common_search%");
                 $qwhere->orWhere("plate_number", "ILIKE", "%$request->common_search%");
                 $qwhere->orWhere("plate_size", "ILIKE", "%$request->common_search%");
-                $qwhere->orWhere("parking_slot", "ILIKE", "%$request->common_search%");
                 $qwhere->orWhereHas("ParkingFamilyMembers", function ($qFamily) use ($request) {
                     $qFamily->where("plate_number", "ILIKE", "%$request->common_search%")
                         ->orWhere("plate_size", "ILIKE", "%$request->common_search%");
                 });
             });
         });
-
 
         $model->when($request->filled("filterMemberStatus"), function ($q) use ($request) {
             $q->where(function ($qwhere) use ($request) {
@@ -73,6 +66,10 @@ class ParkingMembersController extends Controller
 
         $model->when($request->filled("slot_number"), function ($q) use ($request) {
             $q->where("slot_number", $request->slot_number);
+        });
+
+        $model->when($request->filled("unit_number"), function ($q) use ($request) {
+            $q->where("unit_number", $request->unit_number);
         });
 
         return $model->orderBy('created_at', 'desc')->paginate($request->per_page);;
@@ -110,7 +107,8 @@ class ParkingMembersController extends Controller
             'phone.min' => 'The phone number must be exactly 12 digits.',
             'phone.unique' => 'This phone number is already registered to another member.',
             'floor_no.unique' => 'This floor number is already assigned.',
-            'slot_number.unique' => 'This parking slot is already taken.',
+            'slot_number.unique' => 'This parking number is already taken.',
+            'unit_number.unique' => 'This unit number is already taken.',
         ];
 
         if ($request->editId) {
@@ -145,9 +143,10 @@ class ParkingMembersController extends Controller
                 'blocked_reason' => 'nullable',
                 'password' => 'nullable',
                 'confirm_password' => 'nullable',
-                'floor_no' => 'nullable|unique:parking_members,floor_no,' . $request->editId,
-                'slot_number' => 'nullable|unique:parking_members,slot_number,' . $request->editId,
-                'prefix' => 'nullable',
+                'floor_no' => 'required',
+                'slot_number' => 'required|unique:parking_members,slot_number,' . $request->editId,
+                'unit_number' => 'required|unique:parking_members,unit_number,' . $request->editId,
+                'prefix' => 'required',
             ], $messages);
         } else {
             $request->validate([
@@ -191,7 +190,11 @@ class ParkingMembersController extends Controller
                     'required',
                     'unique:parking_members,slot_number',
                 ],
-                'prefix' => 'nullable',
+                'unit_number' => [
+                    'required',
+                    'unique:parking_members,unit_number',
+                ],
+                'prefix' => 'required',
             ], $messages);
         }
 

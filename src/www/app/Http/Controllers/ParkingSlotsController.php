@@ -125,6 +125,11 @@ class ParkingSlotsController extends Controller
                 $model->where('floor_no', $request->floor_no);
             }
 
+            // Filter by floor number
+            if ($request->filled('slot_number')) {
+                $model->where('slot_number', $request->slot_number);
+            }
+
             // Filter by status
             if ($request->filled('status')) {
                 $model->where('status', $request->status);
