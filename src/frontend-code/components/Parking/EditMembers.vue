@@ -183,12 +183,12 @@
                   >
                 </v-col>
 
-                <v-col cols="6" dense>
+                <v-col cols="4" dense>
                   <v-select
                     :disabled="!editable"
-                    label="Floor Number"
+                    label="Parking Floor"
                     v-model="payload_members.floor_no"
-                    @change="loadSlotList(payload_members.floor_no)"
+                    @change="loadChildList(payload_members.floor_no)"
                     :items="floorList"
                     dense
                     placeholder="Floor Number"
@@ -204,14 +204,14 @@
                   >
                 </v-col>
 
-                <v-col cols="6" dense>
+                <v-col cols="4" dense>
                   <v-select
                     :disabled="!editable"
-                    label="Slot Number"
+                    label="Parking Number"
                     v-model="payload_members.slot_number"
                     :items="parkingSlots"
                     dense
-                    placeholder="Slot Number"
+                    placeholder="Parking Number"
                     outlined
                     :hide-details="true"
                     item-text="name"
@@ -222,6 +222,27 @@
                     v-if="primary_errors && primary_errors.slot_number"
                     class="text-danger mt-2"
                     >{{ primary_errors.slot_number[0] }}</span
+                  >
+                </v-col>
+
+                <v-col cols="4" dense>
+                  <v-select
+                    :disabled="!editable"
+                    label="Room Number"
+                    v-model="payload_members.unit_number"
+                    :items="roomNumbers"
+                    dense
+                    placeholder="Room Number"
+                    outlined
+                    :hide-details="true"
+                    item-text="name"
+                    item-value="id"
+                  ></v-select>
+
+                  <span
+                    v-if="primary_errors && primary_errors.unit_number"
+                    class="text-danger mt-2"
+                    >{{ primary_errors.unit_number[0] }}</span
                   >
                 </v-col>
 
@@ -291,7 +312,7 @@
                     ></v-date-picker>
                   </v-menu>
                 </v-col>
-                <v-col cols="4" dense>
+                <v-col cols="6" dense>
                   <v-text-field
                     :filled="!editable"
                     label="Prefix"
@@ -311,7 +332,7 @@
                   >
                 </v-col>
 
-                 <v-col cols="4" dense>
+                <v-col cols="6" dense>
                   <v-text-field
                     :filled="!editable"
                     label="Plate Number"
@@ -331,7 +352,7 @@
                   >
                 </v-col>
 
-                <v-col cols="4" dense>
+                <v-col cols="6" dense>
                   <v-text-field
                     :filled="!editable"
                     label="Vehicle Country Region/Country"
@@ -457,26 +478,6 @@
                 <v-col cols="6" dense>
                   <v-text-field
                     :filled="!editable"
-                    label="Parking Slot"
-                    dense
-                    small
-                    outlined
-                    clearable
-                    autocomplete="off"
-                    v-model="payload_members.parking_slot"
-                    hide-details
-                    :readonly="!editable"
-                  ></v-text-field>
-                  <span
-                    v-if="primary_errors && primary_errors.parking_slot"
-                    class="text-danger mt-2"
-                    >{{ primary_errors.tenant_parking_slot[0] }}</span
-                  >
-                </v-col>
-
-                <v-col cols="6" dense>
-                  <v-text-field
-                    :filled="!editable"
                     label="Password"
                     dense
                     small
@@ -586,6 +587,7 @@ export default {
     branchesList: [],
     floorList: [],
     parkingSlots: [],
+    roomNumbers: [],
     startDateMenuOpen: "",
     endDateMenuOpen: "",
     preloader: false,
@@ -612,7 +614,7 @@ export default {
 
       floor_no: null,
       slot_number: null,
-      prefix:null,
+      prefix: null,
     },
 
     e1: 1,
@@ -693,14 +695,13 @@ export default {
 
       this.payload_members.blocked_reason = this.item.blocked_reason;
 
-
       this.payload_members.floor_no = this.item.floor_no;
       this.payload_members.prefix = this.item.prefix;
-      
+
       this.payload_members.slot_number = parseInt(this.item.slot_number); // Convert string to integer
 
       if (this.item.floor_no) {
-        this.loadSlotList(this.item.floor_no);
+        this.loadChildList(this.item.floor_no);
       }
     }
   },
@@ -721,7 +722,7 @@ export default {
   methods: {
     loadFloorList() {
       this.$axios
-        .get("parking-slots-floors", {
+        .get("floor-list", {
           params: {
             company_id: this.$auth.user.company_id,
           },
@@ -732,6 +733,11 @@ export default {
         .catch((e) => {
           console.log("Floor load error", e);
         });
+    },
+
+    loadChildList(floor_no) {
+      this.loadSlotList(floor_no);
+      this.loadRoomList(floor_no);
     },
 
     loadSlotList(floor_no) {
@@ -747,6 +753,21 @@ export default {
         })
         .catch((e) => {
           console.log("Floor load error", e);
+        });
+    },
+    loadRoomList(floor_no) {
+      this.$axios
+        .get("rooms-by-floors", {
+          params: {
+            company_id: this.$auth.user.company_id,
+            floor_no: floor_no,
+          },
+        })
+        .then(({ data }) => {
+          this.roomNumbers = data;
+        })
+        .catch((e) => {
+          console.log("Rooms load error", e);
         });
     },
 

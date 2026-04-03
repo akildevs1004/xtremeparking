@@ -65,7 +65,7 @@
         ]
       },
       {
-        "from": "frontend",
+        "from": "frontend/dist",
         "to": "frontend"
       },
       {

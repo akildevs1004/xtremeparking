@@ -10,7 +10,7 @@
     <v-dialog v-model="newProductDialog" max-width="300px">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
-          <span dense> {{ editId ? "Update" : "New" }} Parking Slot</span>
+          <span dense> {{ editId ? "Update" : "New" }} Unit</span>
           <v-spacer></v-spacer>
           <v-icon @click="newProductDialog = false" outlined>
             mdi mdi-close-circle
@@ -80,20 +80,20 @@
 
                       <v-col v-if="editId" cols="12" dense>
                         <v-text-field
-                          label="Slot Number"
+                          label="Room Number"
                           dense
                           small
                           outlined
                           type="number"
-                          v-model="payload.slot_number"
+                          v-model="payload.unit_number"
                           hide-details
                           :readonly="!editable"
                           :filled="!editable"
                         ></v-text-field>
                         <span
-                          v-if="primary_errors && primary_errors.slot_number"
+                          v-if="primary_errors && primary_errors.unit_number"
                           class="text-danger mt-2"
-                          >{{ primary_errors.slot_number[0] }}</span
+                          >{{ primary_errors.unit_number[0] }}</span
                         >
                       </v-col>
                     </v-row>
@@ -122,7 +122,7 @@
 
     <v-card elevation="0" class="mt-0">
       <v-toolbar class="mb-2" dense flat>
-        <v-toolbar-title> <span> Parking Slots</span></v-toolbar-title>
+        <v-toolbar-title> <span> Units</span></v-toolbar-title>
         <!-- <v-tooltip top color="primary">
                 <template v-slot:activator="{ on, attrs }"> -->
         <v-btn
@@ -221,13 +221,13 @@
           }}
         </template>
 
-        <!-- default rendering for floor_no and slot_number with modal-based edit -->
+        <!-- default rendering for floor_no and unit_number with modal-based edit -->
         <template v-slot:item.floor_no="{ item }">
           <span>{{ item.floor_no }}</span>
         </template>
 
-        <template v-slot:item.slot_number="{ item }">
-          <span>{{ item.slot_number }}</span>
+        <template v-slot:item.unit_number="{ item }">
+          <span>{{ item.unit_number }}</span>
         </template>
 
         <template v-slot:item.options="{ item }">
@@ -299,7 +299,7 @@ export default {
     primary_errors: [],
     Model: "Log",
     security_id: null,
-    endpoint: "parking-slots",
+    endpoint: "units",
 
     filters: {
       floor_no: null,
@@ -325,8 +325,8 @@ export default {
       },
 
       {
-        text: "Slot Number",
-        value: "slot_number",
+        text: "Room Number",
+        value: "unit_number",
       },
       // {
       //   text: "Status",
@@ -469,7 +469,7 @@ export default {
 
       this.payload = {
         floor_no: item.floor_no || "",
-        slot_number: item.slot_number || 0,
+        unit_number: item.unit_number || 0,
       };
       this.newProductDialog = true;
     },
@@ -521,13 +521,13 @@ export default {
       let url;
 
       if (this.editId) {
-        // Update uses slot_number in backend
+        // Update uses unit_number in backend
         payload = {
           floor_no: this.payload.floor_no,
-          slot_number: this.payload.slot_number,
+          unit_number: this.payload.unit_number,
         };
         method = "put";
-        url = `/parking-slots/${this.editId}`;
+        url = `/units/${this.editId}`;
       } else {
         // Store remains unchanged
         payload = {
@@ -536,7 +536,7 @@ export default {
           end_number: this.payload.end_number,
         };
         method = "post";
-        url = "parking-slots";
+        url = "/units";
       }
 
       this.$axios[method](url, payload)
@@ -569,9 +569,9 @@ export default {
     deleteItem(item) {
       if (confirm("Are you sure want to delete  ?")) {
         this.loading = true;
-        this.$axios.delete(`/parking-slots/${item.id}`).then(({ data }) => {
+        this.$axios.delete(`/units/${item.id}`).then(({ data }) => {
           this.snackbar = true;
-          this.response = "Parking Slot Deleted Successfully";
+          this.response = "Room Deleted Successfully";
           this.getDataFromApi();
           this.loading = false;
         });

@@ -10,7 +10,7 @@
     <v-dialog v-model="newProductDialog" max-width="300px">
       <v-card>
         <v-card-title dark class="popup_background_noviolet">
-          <span dense> {{ editId ? "Update" : "New" }} Parking Slot</span>
+          <span dense> {{ editId ? "Update" : "New" }} Floor</span>
           <v-spacer></v-spacer>
           <v-icon @click="newProductDialog = false" outlined>
             mdi mdi-close-circle
@@ -24,76 +24,21 @@
                   <v-col cols="12">
                     <v-row class="pt-0">
                       <v-col cols="12" dense>
-                        <v-autocomplete
+                        <v-text-field
                           label="Floor Number"
-                          outlined
-                          v-model="payload.floor_no"
-                          dense
-                          :items="floorList"
-                          item-text="name"
-                          item-value="name"
-                          hide-details
-                          @change="getDataFromApi"
-                        ></v-autocomplete>
-                        <span
-                          v-if="primary_errors && primary_errors.floor_no"
-                          class="text-danger mt-2"
-                          >{{ primary_errors.floor_no[0] }}</span
-                        >
-                      </v-col>
-                      <v-col v-if="!editId" cols="12" dense>
-                        <v-text-field
-                          label="Start Number"
                           dense
                           small
                           outlined
-                          type="number"
-                          v-model="payload.start_number"
+                          type="text"
+                          v-model="payload.name"
                           hide-details
                           :readonly="!editable"
                           :filled="!editable"
                         ></v-text-field>
                         <span
-                          v-if="primary_errors && primary_errors.start_number"
+                          v-if="primary_errors && primary_errors.name"
                           class="text-danger mt-2"
-                          >{{ primary_errors.start_number[0] }}</span
-                        >
-                      </v-col>
-                      <v-col v-if="!editId" cols="12" dense>
-                        <v-text-field
-                          label="End Number"
-                          dense
-                          small
-                          outlined
-                          type="number"
-                          v-model="payload.end_number"
-                          hide-details
-                          :readonly="!editable"
-                          :filled="!editable"
-                        ></v-text-field>
-                        <span
-                          v-if="primary_errors && primary_errors.end_number"
-                          class="text-danger mt-2"
-                          >{{ primary_errors.end_number[0] }}</span
-                        >
-                      </v-col>
-
-                      <v-col v-if="editId" cols="12" dense>
-                        <v-text-field
-                          label="Slot Number"
-                          dense
-                          small
-                          outlined
-                          type="number"
-                          v-model="payload.slot_number"
-                          hide-details
-                          :readonly="!editable"
-                          :filled="!editable"
-                        ></v-text-field>
-                        <span
-                          v-if="primary_errors && primary_errors.slot_number"
-                          class="text-danger mt-2"
-                          >{{ primary_errors.slot_number[0] }}</span
+                          >{{ primary_errors.name[0] }}</span
                         >
                       </v-col>
                     </v-row>
@@ -122,7 +67,7 @@
 
     <v-card elevation="0" class="mt-0">
       <v-toolbar class="mb-2" dense flat>
-        <v-toolbar-title> <span> Parking Slots</span></v-toolbar-title>
+        <v-toolbar-title> <span> Floors</span></v-toolbar-title>
         <!-- <v-tooltip top color="primary">
                 <template v-slot:activator="{ on, attrs }"> -->
         <v-btn
@@ -152,9 +97,9 @@
             "
             height="25px"
             outlined
-            v-model="filters.floor_no"
+            v-model="filters.id"
             dense
-            :items="[{ id: null, name: `All Floors` }, ...floorList]"
+            :items="floorList"
             item-text="name"
             item-value="id"
             hide-details
@@ -221,13 +166,9 @@
           }}
         </template>
 
-        <!-- default rendering for floor_no and slot_number with modal-based edit -->
-        <template v-slot:item.floor_no="{ item }">
-          <span>{{ item.floor_no }}</span>
-        </template>
-
-        <template v-slot:item.slot_number="{ item }">
-          <span>{{ item.slot_number }}</span>
+        <!-- default rendering for name and slot_number with modal-based edit -->
+        <template v-slot:item.name="{ item }">
+          <span>{{ item.name }}</span>
         </template>
 
         <template v-slot:item.options="{ item }">
@@ -299,16 +240,13 @@ export default {
     primary_errors: [],
     Model: "Log",
     security_id: null,
-    endpoint: "parking-slots",
+    endpoint: "floors",
 
     filters: {
-      floor_no: null,
-      status: "",
+      id: null,
     },
     payload: {
-      floor_no: "",
-      start_number: 0,
-      end_number: 0,
+      name: "",
     },
     loading: true,
     browserHeight: 700,
@@ -320,18 +258,9 @@ export default {
         value: "sno",
       },
       {
-        text: "Floor No",
-        value: "floor_no",
+        text: "Floor",
+        value: "name",
       },
-
-      {
-        text: "Slot Number",
-        value: "slot_number",
-      },
-      // {
-      //   text: "Status",
-      //   value: "status",
-      // },
       {
         text: "Options",
         value: "options",
@@ -368,7 +297,6 @@ export default {
     });
 
     this.getDataFromApi();
-
     this.loadFloorList();
   },
   created() {
@@ -401,7 +329,7 @@ export default {
           },
         })
         .then(({ data }) => {
-          this.floorList = data;
+          this.floorList = [{ id: null, name: "All Floors" }, ...data];
         })
         .catch((e) => {
           console.log("Floor load error", e);
@@ -444,9 +372,7 @@ export default {
       this.item = null;
       this.viewCustomerId = null;
       this.payload = {
-        floor_no: "",
-        start_number: 0,
-        end_number: 0,
+        name: "",
       };
       this.newProductDialog = true;
     },
@@ -468,8 +394,7 @@ export default {
       this.item = item;
 
       this.payload = {
-        floor_no: item.floor_no || "",
-        slot_number: item.slot_number || 0,
+        name: item.name || "",
       };
       this.newProductDialog = true;
     },
@@ -523,20 +448,17 @@ export default {
       if (this.editId) {
         // Update uses slot_number in backend
         payload = {
-          floor_no: this.payload.floor_no,
-          slot_number: this.payload.slot_number,
+          name: this.payload.name,
         };
         method = "put";
-        url = `/parking-slots/${this.editId}`;
+        url = `/floors/${this.editId}`;
       } else {
         // Store remains unchanged
         payload = {
-          floor_no: this.payload.floor_no,
-          start_number: this.payload.start_number,
-          end_number: this.payload.end_number,
+          name: this.payload.name,
         };
         method = "post";
-        url = "parking-slots";
+        url = "floors";
       }
 
       this.$axios[method](url, payload)
@@ -569,9 +491,9 @@ export default {
     deleteItem(item) {
       if (confirm("Are you sure want to delete  ?")) {
         this.loading = true;
-        this.$axios.delete(`/parking-slots/${item.id}`).then(({ data }) => {
+        this.$axios.delete(`/floors/${item.id}`).then(({ data }) => {
           this.snackbar = true;
-          this.response = "Parking Slot Deleted Successfully";
+          this.response = "Floor Deleted Successfully";
           this.getDataFromApi();
           this.loading = false;
         });

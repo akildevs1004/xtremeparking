@@ -26,6 +26,22 @@
     "top_menu_name": "settings"
   },
   {
+    "icon": "mdi-stairs",
+    "title": "Floors",
+    "open_menu": false,
+    "to": "/settings/floors",
+    "module": "parking-slots",
+    "top_menu_name": "settings"
+  },
+  {
+    "icon": "mdi-bed",
+    "title": "Rooms",
+    "open_menu": false,
+    "to": "/settings/units",
+    "module": "parking-slots",
+    "top_menu_name": "settings"
+  },
+  {
     "icon": "mdi-boom-gate",
     "title": "Parking Slots",
     "open_menu": false,

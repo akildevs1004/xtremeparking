@@ -101,7 +101,7 @@
         <div>
           <v-row>
             <v-col style="max-width: 200px"
-              ><v-select
+              ><v-autocomplete
                 @change="getDataFromApi()"
                 label="Members"
                 class="employee-schedule-search-box"
@@ -118,10 +118,10 @@
                 item-text="text"
                 item-value="value"
                 hide-details
-              ></v-select
+              ></v-autocomplete
             ></v-col>
             <v-col style="max-width: 200px"
-              ><v-select
+              ><v-autocomplete
                 @change="getDataFromApi()"
                 label="Status"
                 class="employee-schedule-search-box"
@@ -138,14 +138,16 @@
                 item-text="text"
                 item-value="value"
                 hide-details
-              ></v-select
+              ></v-autocomplete
             ></v-col>
 
             <v-col style="max-width: 200px"
-              ><v-select
-                @change="() => {
-                  loadSlotList(filterFloor);
-                }"
+              ><v-autocomplete
+                @change="
+                  () => {
+                    loadSlotList(filterFloor);
+                  }
+                "
                 label="Floor"
                 class="employee-schedule-search-box"
                 style="z-index: 999"
@@ -157,24 +159,41 @@
                 item-text="name"
                 item-value="id"
                 hide-details
-              ></v-select
+              ></v-autocomplete
             ></v-col>
 
             <v-col style="max-width: 200px"
-              ><v-select
+              ><v-autocomplete
                 @change="getDataFromApi()"
-                label="Slot Number"
+                label="Parking Number"
                 class="employee-schedule-search-box"
                 style="z-index: 999"
                 height="20px"
                 outlined
                 v-model="filterSlotNumber"
                 dense
-                :items="slotNumbers"
+                :items="[{ id: null, name: `All Slots` }, ...slotNumbers]"
                 item-text="name"
                 item-value="id"
                 hide-details
-              ></v-select
+              ></v-autocomplete
+            ></v-col>
+
+            <v-col style="max-width: 200px"
+              ><v-autocomplete
+                @change="getDataFromApi()"
+                label="Room Number"
+                class="employee-schedule-search-box"
+                style="z-index: 999"
+                height="20px"
+                outlined
+                v-model="filterRoomNumber"
+                dense
+                :items="[{ id: null, name: `All Rooms` }, ...slotNumbers]"
+                item-text="name"
+                item-value="id"
+                hide-details
+              ></v-autocomplete
             ></v-col>
 
             <v-col style="max-width: 250px">
@@ -427,6 +446,7 @@ export default {
     filterMemberType: null,
     filterFloor: null,
     filterSlotNumber: null,
+    filterRoomNumber: null,
     perPage: 10,
     cumulativeIndex: 1,
     currentPage: 1,
@@ -463,8 +483,13 @@ export default {
         value: "floor_no",
       },
       {
-        text: "Slot Number",
+        text: "Parking Number",
         value: "slot_number",
+      },
+
+      {
+        text: "Room Number",
+        value: "unit_number",
       },
 
       {
@@ -563,7 +588,7 @@ export default {
   methods: {
     loadFloorList() {
       this.$axios
-        .get("parking-slots-floors", {
+        .get("floor-list", {
           params: {
             company_id: this.$auth.user.company_id,
           },
@@ -584,10 +609,25 @@ export default {
           },
         })
         .then(({ data }) => {
-          this.slotNumbers = [{ id: null, name: "All Slots" }, ...data];
+          this.slotNumbers = data;
         })
         .catch((e) => {
           console.log("Floor load error", e);
+        });
+    },
+    loadRoomList(floor_no) {
+      this.$axios
+        .get("rooms-by-floors", {
+          params: {
+            company_id: this.$auth.user.company_id,
+            floor_no: floor_no,
+          },
+        })
+        .then(({ data }) => {
+          this.roomNumbers = [{ id: null, name: "All Rooms" }, ...data];
+        })
+        .catch((e) => {
+          console.log("Rooms load error", e);
         });
     },
     can(per) {
@@ -717,8 +757,7 @@ export default {
           filterMemberType: this.filterMemberType,
           floor_no: this.filterfloor,
           slot_number: this.filterSlotNumber,
-
-          
+          unit_number: this.filterRoomNumber,
           // branch_id: this.branch_id,
           ...this.payload,
         },
