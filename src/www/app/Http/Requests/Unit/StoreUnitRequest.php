@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests\Parking;
+namespace App\Http\Requests\Unit;
 
 use App\Traits\failedValidationWithName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreParkingSlotsRequest extends FormRequest
+class StoreUnitRequest extends FormRequest
 {
     use failedValidationWithName;
 
@@ -32,6 +32,7 @@ class StoreParkingSlotsRequest extends FormRequest
             'floor_no' => [
                 'required',
                 'string',
+                'min:1',
             ],
 
             'start_number' => [
@@ -39,7 +40,7 @@ class StoreParkingSlotsRequest extends FormRequest
                 'integer',
                 'min:1',
                 // This checks for duplicates ONLY within the same company
-                Rule::unique('parking_slots', 'slot_number')->where(function ($query) {
+                Rule::unique('units', 'unit_number')->where(function ($query) {
                     return $query->where('company_id', $this->company_id);
                 }),
             ],
@@ -50,7 +51,7 @@ class StoreParkingSlotsRequest extends FormRequest
                 'min:1',
                 'gte:start_number',
                 // This checks for duplicates ONLY within the same company
-                Rule::unique('parking_slots', 'slot_number')->where(function ($query) {
+                Rule::unique('units', 'unit_number')->where(function ($query) {
                     return $query->where('company_id', $this->company_id);
                 }),
             ],
