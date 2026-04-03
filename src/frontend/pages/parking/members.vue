@@ -197,26 +197,21 @@
             ></v-col>
 
             <v-col style="max-width: 250px">
-              <span style=""
-                ><v-text-field
-                  style=""
-                  height="20"
-                  @click:clear="
-                    commonSearch = '';
-                    getDataFromApi();
-                  "
-                  class="employee-schedule-search-box"
-                  @input="getDataFromApi()"
+              <span style="">
+                <v-text-field
                   v-model="commonSearch"
                   label="Search (min 3)"
+                  class="employee-schedule-search-box"
+                  append-icon="mdi-magnify"
+                  height="20"
                   dense
                   outlined
-                  type="text"
-                  append-icon="mdi-magnify"
                   clearable
                   hide-details
-                ></v-text-field
-              ></span>
+                  @input="handleSearchInput"
+                  @click:clear="handleClear"
+                ></v-text-field>
+              </span>
             </v-col>
 
             <v-col style="max-width: 40px">
@@ -442,6 +437,7 @@ export default {
     key: 1,
     viewCustomerId: null,
     commonSearch: "",
+    searchTimeout: null, // Variable to hold our timer
     filterMemberStatus: null,
     filterMemberType: null,
     filterFloor: null,
@@ -590,6 +586,24 @@ export default {
     },
   },
   methods: {
+    handleSearchInput() {
+      // 1. Clear the timer every time the user types a character
+      if (this.searchTimeout) clearTimeout(this.searchTimeout);
+
+      // 2. Set a new timer
+      this.searchTimeout = setTimeout(() => {
+        // Only fetch if empty (reset) or meets your "min 3" requirement
+        if (this.commonSearch.length >= 3 || this.commonSearch.length === 0) {
+          this.getDataFromApi();
+        }
+      }, 500); // 500ms is the sweet spot for user typing
+    },
+    handleClear() {
+      // Clear immediately without waiting for debounce
+      this.commonSearch = "";
+      if (this.searchTimeout) clearTimeout(this.searchTimeout);
+      this.getDataFromApi();
+    },
     loadFloorList() {
       this.$axios
         .get("floor-list", {
