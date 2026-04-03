@@ -491,6 +491,10 @@ export default {
         text: "Room Number",
         value: "unit_number",
       },
+      {
+        text: "Car Number",
+        value: "plate_number",
+      },
 
       {
         text: "Owner Name",
