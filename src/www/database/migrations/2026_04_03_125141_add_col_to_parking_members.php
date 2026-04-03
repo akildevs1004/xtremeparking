@@ -16,6 +16,8 @@ return new class extends Migration
         Schema::table('parking_members', function (Blueprint $table) {
             $table->string('floor_no')->nullable();
             $table->string('slot_number')->nullable();
+            $table->string('unit_number')->nullable();
+            $table->string('prefix')->nullable();
         });
     }
 
@@ -27,8 +29,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('parking_members', function (Blueprint $table) {
-            $table->dropColumn('floor_no');
-            $table->dropColumn('slot_number');
+            $table->dropColumn(['unit_number']);
         });
     }
 };
