@@ -130,7 +130,7 @@
                 </v-col>
 
                 <v-col cols="6" dense>
-                  <v-select
+                  <v-autocomplete
                     :disabled="!editable"
                     label="Member Type"
                     v-model="payload_members.member_type"
@@ -155,7 +155,7 @@
                     :hide-details="true"
                     item-text="description"
                     item-value="name"
-                  ></v-select>
+                  ></v-autocomplete>
 
                   <span
                     v-if="primary_errors && primary_errors.member_type"
@@ -184,7 +184,7 @@
                 </v-col>
 
                 <v-col cols="4" dense>
-                  <v-select
+                  <v-autocomplete
                     :disabled="!editable"
                     label="Parking Floor"
                     v-model="payload_members.floor_no"
@@ -196,7 +196,7 @@
                     :hide-details="true"
                     item-text="name"
                     item-value="id"
-                  ></v-select>
+                  ></v-autocomplete>
                   <span
                     v-if="primary_errors && primary_errors.floor_no"
                     class="text-danger mt-2"
@@ -205,7 +205,7 @@
                 </v-col>
 
                 <v-col cols="4" dense>
-                  <v-select
+                  <v-autocomplete
                     :disabled="!editable"
                     label="Parking Number"
                     v-model="payload_members.slot_number"
@@ -216,7 +216,7 @@
                     :hide-details="true"
                     item-text="name"
                     item-value="id"
-                  ></v-select>
+                  ></v-autocomplete>
 
                   <span
                     v-if="primary_errors && primary_errors.slot_number"
@@ -226,7 +226,7 @@
                 </v-col>
 
                 <v-col cols="4" dense>
-                  <v-select
+                  <v-autocomplete
                     :disabled="!editable"
                     label="Room Number"
                     v-model="payload_members.unit_number"
@@ -237,7 +237,7 @@
                     :hide-details="true"
                     item-text="name"
                     item-value="id"
-                  ></v-select>
+                  ></v-autocomplete>
 
                   <span
                     v-if="primary_errors && primary_errors.unit_number"
@@ -414,7 +414,7 @@
                   >
                 </v-col>
                 <v-col cols="6" dense>
-                  <v-select
+                  <v-autocomplete
                     label="Plate Size"
                     :disabled="!editable"
                     v-model="payload_members.plate_size"
@@ -434,7 +434,7 @@
                     :hide-details="true"
                     item-text="description"
                     item-value="name"
-                  ></v-select>
+                  ></v-autocomplete>
                 </v-col>
                 <v-col cols="6" dense>
                   <v-text-field

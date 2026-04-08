@@ -146,6 +146,7 @@
                 @change="
                   () => {
                     loadSlotList(filterFloor);
+                    loadRoomList(filterFloor);
                   }
                 "
                 label="Floor"
@@ -189,7 +190,7 @@
                 outlined
                 v-model="filterRoomNumber"
                 dense
-                :items="[{ id: null, name: `All Rooms` }, ...slotNumbers]"
+                :items="[{ id: null, name: `All Rooms` }, ...roomNumbers]"
                 item-text="name"
                 item-value="id"
                 hide-details
@@ -449,6 +450,7 @@ export default {
     branchesList: [],
     floorList: [],
     slotNumbers: [],
+    roomNumbers:[],
     isCompany: true,
     tableHeight: 750,
     id: "",
