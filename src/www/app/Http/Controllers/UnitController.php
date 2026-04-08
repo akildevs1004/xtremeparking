@@ -162,7 +162,9 @@ class UnitController extends Controller
     {
         return DB::table('units')
             ->where('company_id', $request->company_id)
-            ->where('floor_no', $request->floor_no)
+            ->when($request->filled('floor_no'), function ($query) use ($request) {
+                $query->where('floor_no', $request->floor_no);
+            })
             ->select('unit_number as id', 'unit_number as name')
             ->orderBy('unit_number')
             ->get();

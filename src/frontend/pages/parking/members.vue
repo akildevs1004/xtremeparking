@@ -450,7 +450,7 @@ export default {
     branchesList: [],
     floorList: [],
     slotNumbers: [],
-    roomNumbers:[],
+    roomNumbers: [],
     isCompany: true,
     tableHeight: 750,
     id: "",
@@ -565,6 +565,9 @@ export default {
     this.getBuildingTypes();
     this.getDataFromApi();
     this.loadFloorList();
+
+    this.loadSlotList();
+    this.loadRoomList();
   },
   created() {
     this._id = 4; //this.$route.params.id;
@@ -620,7 +623,7 @@ export default {
           console.log("Floor load error", e);
         });
     },
-    loadSlotList(floor_no) {
+    loadSlotList(floor_no = null) {
       this.$axios
         .get("parking-slots-by-floors", {
           params: {
@@ -635,7 +638,7 @@ export default {
           console.log("Floor load error", e);
         });
     },
-    loadRoomList(floor_no) {
+    loadRoomList(floor_no = null) {
       this.$axios
         .get("rooms-by-floors", {
           params: {

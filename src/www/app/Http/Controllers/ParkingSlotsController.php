@@ -357,7 +357,9 @@ class ParkingSlotsController extends Controller
     {
         return DB::table('parking_slots')
             ->where('company_id', $request->company_id)
-            ->where('floor_no', $request->floor_no)
+            ->when($request->filled('floor_no'), function ($query) use ($request) {
+                $query->where('floor_no', $request->floor_no);
+            })
             ->select('slot_number as id', 'slot_number as name')
             ->orderBy('slot_number')
             ->get();
