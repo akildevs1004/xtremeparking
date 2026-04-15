@@ -614,6 +614,7 @@ export default {
 
       floor_no: null,
       slot_number: null,
+      unit_number: null,
       prefix: null,
     },
 
@@ -699,6 +700,7 @@ export default {
       this.payload_members.prefix = this.item.prefix;
 
       this.payload_members.slot_number = parseInt(this.item.slot_number); // Convert string to integer
+      this.payload_members.unit_number = parseInt(this.item.unit_number); // Convert string to integer
 
       if (this.item.floor_no) {
         this.loadChildList(this.item.floor_no);
