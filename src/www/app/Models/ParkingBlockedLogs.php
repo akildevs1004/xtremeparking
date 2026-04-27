@@ -24,6 +24,10 @@ class ParkingBlockedLogs extends Model
 
         return   "http://{$ip}:8000" . '/api' . '/parking_camera_logs' . '/' . $this->attributes['company_id'] . '';
     }
+    public function Device()
+    {
+        return $this->belongsTo(Device::class, "raw_device_no", "serial_number");
+    }
 
     public function ParkingMembers()
     {

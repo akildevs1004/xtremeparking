@@ -37,7 +37,7 @@ use App\Models\Theme;
 use App\Models\VisitorLog;
 use Exception;
 use Illuminate\Support\Facades\Mail;
-
+use App\Http\Controllers\ParkingMembersController;
 class CompanyController extends Controller
 {
     public function validateCompany(CompanyRequest $request)
@@ -89,7 +89,7 @@ class CompanyController extends Controller
         unset($data["company_id"]);
         if ($request->filled("company_id")) {
             Company::where("id", $request->company_id)->update($data);
-
+              (new ParkingMembersController())->exportAllCompaniesJson();
 
             (new ActivityController())->recordNewActivity($request, "update", "Company Parking Settings are Updated", $request->company_id,  "company", null, null);
 

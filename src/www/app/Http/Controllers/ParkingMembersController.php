@@ -122,7 +122,7 @@ class ParkingMembersController extends Controller
                     'required',
                     'string',
                     'regex:/^971(50|52|54|55|56|58|5|2|3|4|6|7|9)\d{7}$/',
-                    'unique:parking_members,phone,' . $request->editId,
+                    // 'unique:parking_members,phone,' . $request->editId,
                     'min:12',
                     'max:12',
                 ],
@@ -145,7 +145,7 @@ class ParkingMembersController extends Controller
                 'confirm_password' => 'nullable',
                 'floor_no' => 'required',
                 'slot_number' => 'required|unique:parking_members,slot_number,' . $request->editId,
-                'unit_number' => 'required|unique:parking_members,unit_number,' . $request->editId,
+                // 'unit_number' => 'required|unique:parking_members,unit_number,' . $request->editId,
                 'prefix' => 'required',
             ], $messages);
         } else {
@@ -160,7 +160,7 @@ class ParkingMembersController extends Controller
                     'required',
                     'string',
                     'regex:/^971(50|52|54|55|56|58|5|2|3|4|6|7|9)\d{7}$/',
-                    'unique:parking_members,phone',
+                    // 'unique:parking_members,phone',
                     'min:12',
                     'max:12',
                 ],
@@ -190,10 +190,10 @@ class ParkingMembersController extends Controller
                     'required',
                     'unique:parking_members,slot_number',
                 ],
-                'unit_number' => [
-                    'required',
-                    'unique:parking_members,unit_number',
-                ],
+                // 'unit_number' => [
+                //     'required',
+                //     'unique:parking_members,unit_number',
+                // ],
                 'prefix' => 'required',
             ], $messages);
         }

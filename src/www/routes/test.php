@@ -19,6 +19,7 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\KeyGeneratorController;
 use App\Http\Controllers\Parking\ImageProcessingController;
+use App\Http\Controllers\ParkingDeviceController;
 use App\Http\Controllers\SDKController;
 use App\Http\Controllers\Shift\AutoShiftController;
 use App\Http\Controllers\Shift\FiloShiftController;
@@ -47,6 +48,7 @@ use App\Models\Employee;
 use App\Models\ReportNotification;
 use App\Models\SecurityCustomers;
 use App\Models\Shift;
+use App\Services\MqttService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +64,160 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use SimpleSoftwareIO\QrCode\QrCodeServiceProvider;
 use Illuminate\Support\Facades\Log;
 use thiagoalessio\TesseractOCR\TesseractOCR;
+use App\Http\Controllers\Parking\CameraLogListenerController;
+// Route::redirect('/', 'api/test');
+use Carbon\Carbon;
+
+Route::get("testingcamera1", function (Request $request) {
+
+ 
+
+ $dt=Carbon::createFromFormat('YmdHisv', "20260225132321000" , 'UTC'); // set TZ if needed
+ return $formattedLogTime = $dt->format('Y-m-d H:i:s');        // "2025-09-10 12:53:02"
+
+
+// Logger::channel('custom')->info(date("Y-m-d H:i:s"));
+//     Logger::channel('custom')->info(json_encode($request->all()));
+
+
+
+$jsonPayload = '{
+    "timestamp":"20260214162016000",
+    "filename":"I-75945_1771071025.jpg",
+    "vehicle_id":"I-75945",
+    "event_category":"TrafficJunction",
+    "event_type":"TrafficJunction",
+    "camera_code":"BH09F2DPAJEECF9",
+    "direction":"Head",
+    "lane":"1",
+    "tag":"I-75945",
+    "company_id":8,
+    "fields":null
+}';
+
+// Decode JSON to array
+$data = json_decode($jsonPayload, true);
+
+// Create a Request object
+$request = new Request($data);
+
+// Now you can access fields like normal
+$timestamp      = $request->input('timestamp');
+$filename       = $request->input('filename');
+$vehicleId      = $request->input('vehicle_id');
+$eventCategory  = $request->input('event_category');
+$eventType      = $request->input('event_type');
+$cameraCode     = $request->input('camera_code');
+$direction      = $request->input('direction');
+$lane           = $request->input('lane');
+$tag            = $request->input('tag');
+$companyId      = $request->input('company_id');
+$fields         = $request->input('fields');
+
+
+
+ $DeviceController =  new CameraLogListenerController();
+             return    $response=    $DeviceController->CameraLogProcessing($request); 
+
+
+
+
+    return $request->all();
+    
+});
+
+// Route::get("cgi-bin/NotifyEvent", function (Request $request) {
+
+// Logger::channel('custom')->info(date("Y-m-d H:i:s"));
+//     Logger::channel('custom')->info(json_encode($request->all()));
+
+
+//     return $request->all();
+    
+// });
+
+
+Route::get('test', function (Request $request) {
+ Logger::channel('custom')->info("Test");
+    Logger::channel('custom')->info(date("Y-m-d H:i:s"));
+    Logger::channel('custom')->info(json_encode($request->all()));
+
+
+    return $request->all();
+});
+
+Route::get("openexitgate", function (Request $request) {
+
+    $postData = [
+        "action" => "UPDATE_CONFIG",
+        "serialNumber" => 'XTP100001',
+        "config" => ["relay0" => true],
+    ];
+    if ($postData["serialNumber"]) {
+        // Publish  to MQTT
+        $mqtt = new MqttService();
+        $mqtt->publish(env('MQTT_DEVICE_CLIENTID') . "/{$postData['serialNumber']}/config/request",  json_encode($postData), $postData["serialNumber"]);
+    }
+
+
+    $postData = [
+        "action" => "UPDATE_CONFIG",
+        "serialNumber" => 'XTP100001',
+        "config" => ["relay0" => false],
+    ];
+    if ($postData["serialNumber"]) {
+        // Publish  to MQTT
+        $mqtt = new MqttService();
+        $mqtt->publish(env('MQTT_DEVICE_CLIENTID') . "/{$postData['serialNumber']}/config/request",  json_encode($postData), $postData["serialNumber"]);
+    }
+
+   
+});
+
+
+
+Route::get("openentrygate", function (Request $request) {
+
+    $postData = [
+        "action" => "UPDATE_CONFIG",
+        "serialNumber" => 'XTP100001',
+        "config" => ["relay1" => true],
+    ];
+    if ($postData["serialNumber"]) {
+        // Publish  to MQTT
+        $mqtt = new MqttService();
+        $mqtt->publish(env('MQTT_DEVICE_CLIENTID') . "/{$postData['serialNumber']}/config/request",  json_encode($postData), $postData["serialNumber"]);
+    }
+
+
+    $postData = [
+        "action" => "UPDATE_CONFIG",
+        "serialNumber" => 'XTP100001',
+        "config" => ["relay1" => false],
+    ];
+    if ($postData["serialNumber"]) {
+        // Publish  to MQTT
+        $mqtt = new MqttService();
+        $mqtt->publish(env('MQTT_DEVICE_CLIENTID') . "/{$postData['serialNumber']}/config/request",  json_encode($postData), $postData["serialNumber"]);
+    }
+
+   
+});
+
+Route::get("closegate111", function (Request $request) {
+
+    $postData = [
+        "action" => "UPDATE_CONFIG",
+        "serialNumber" => 'XTP100001',
+        "config" => ["relay1" => false],
+    ];
+    if ($postData["serialNumber"]) {
+        // Publish  to MQTT
+        $mqtt = new MqttService();
+        $mqtt->publish(env('MQTT_DEVICE_CLIENTID') . "/{$postData['serialNumber']}/config/request",  json_encode($postData), $postData["serialNumber"]);
+    }
+});
+
 
 Route::get("imageText", function (Request $request) {
 
@@ -1221,10 +1377,7 @@ Route::post('/cameratesting', function (Request $request) {
             'json_content' => $requstJson,
         ]);
 });
-Route::get('test', function () {
 
-    return "Hello";
-});
 Route::get('testgetpendinginvoice', function () {
 
 

@@ -101,9 +101,6 @@ class CameraLogListenerController extends Controller
 
     public function CameraLogProcessing(Request $request)
     {
-        $startMemory = memory_get_usage(); // Checkpoint 0
-        $startTime = microtime(true);
-
         // Validate required minimums (tweak rules as needed)
         $data = $request->validate([
             'timestamp'       => ['required'],
@@ -129,13 +126,33 @@ class CameraLogListenerController extends Controller
 
 
         $logId = (string)$data['timestamp'];
-        $this->logPerformance("Initial Load", $startMemory, $logId);
 
-        $raw = $logId; // YmdHisv
-        $dt  = Carbon::createFromFormat('YmdHisv', $raw, 'Asia/Dubai'); // set TZ if needed
+          $raw = $logId; // YmdHisv
+         //$dt  = Carbon::createFromFormat('YmdHisv', $raw, 'Asia/Dubai'); // set TZ if needed
+        $dt  = Carbon::createFromFormat('YmdHisv', $raw,'UTC' ); // set TZ if needed
+
+
+//         // Get current Dubai time
+// $nowDubai = Carbon::now('Asia/Dubai');
+
+// // Compare: is $dt less than now in Dubai?
+// if ($dt->lt($nowDubai)) { // lt = less than
+//    // echo '$dt is before current Dubai time';
+
+//    return response()->json(['status' => 'true', 'message' =>  ' current Dubai time ok'], 200);
+// } else {
+//    // echo '$dt is after current Dubai time';
+// }
+
 
         // Without milliseconds
         $formattedLogTime = $dt->format('Y-m-d H:i:s');        // "2025-09-10 12:53:02"
+
+
+        
+
+
+        
 
 
         // Centralized log helper
@@ -156,27 +173,26 @@ class CameraLogListenerController extends Controller
         // $relativePath = env("PARKING_CAMERA_PUBLIC_FOLDER") . '/' . $request->company_id . "/" . $fileName;
         // $imagePath = public_path($relativePath);
 
-        $imagePath =  env("PARKING_CAMERA_STORAGE_PATH") . '/' . $request->company_id . "/" . $fileName;
+        $imagePath =  env("PARKING_CAMERA_STORAGE_PATH_NODE") . '/' . $request->company_id . "/" . $fileName;
 
 
 
 
-        if (! file_exists($imagePath)) {
-            $log("Vehicle Background Image Not Found at {$imagePath}");
-            return response()->json(['status' => 'error', 'message' => 'Image not found' . $imagePath], 404);
-        }
+        // if (! file_exists($imagePath)) {
+        //     $log("Vehicle Background Image Not Found at {$imagePath}");
+        //     return response()->json(['status' => 'error', 'message' => 'Image not found' . $imagePath], 404);
+        // }
 
         // ---- OCR stage ------------------------------------------------------
         $rawText = '';
-        try {
+       /* try {
             $log("Starting OCR on {$imagePath}");
 
-            $this->logPerformance("Before OCR", $startMemory, $logId);
             $rawText = (new TesseractOCR($imagePath))
                 ->lang('eng') // adjust if you have additional language packs
                 ->psm(6)      // Assume a uniform block of text
                 ->oem(3)      // Default OCR engine
-                ->run(5);
+                ->run(3);
 
             // Normalize to the section starting at "Camera Info." if present
             $needle = 'Camera Info.';
@@ -193,8 +209,7 @@ class CameraLogListenerController extends Controller
             $log('OCR Error: ' . $e->getMessage());
             // Continue flow but with empty $rawText—parser should handle gracefully
         }
-
-        $this->logPerformance("After OCR", $startMemory, $logId);
+            */
 
         // ---- Parse OCR footer via your existing helper ----------------------
         $imageText = [];
@@ -215,14 +230,14 @@ class CameraLogListenerController extends Controller
 
 
 
-        if (! $camera_code) {
-            $log('Background Image device_no not Found in OCR');
-            $log($imageTextArr["raw"]);
+        // if (! $camera_code) {
+        //     $log('Background Image device_no not Found in OCR');
+        //     $log($imageTextArr["raw"]);
 
 
 
-            return response()->json(['status' => 'error', 'message' => $imageTextArr["raw"] . 'Background Image  device_no not found in OCR'], 422);
-        }
+        //     return response()->json(['status' => 'error', 'message' => $imageTextArr["raw"] . 'Background Image  device_no not found in OCR'], 422);
+        // }
 
         $functionIO = null;
         $device     = null;
@@ -248,6 +263,24 @@ class CameraLogListenerController extends Controller
                 $functionIO = 'in';
             } elseif ($isOut) {
                 $functionIO = 'out';
+
+ 
+                
+                    $requestOUT =    new Request([
+                        'company_id' => $device->company_id ,
+                        
+                        "function" => "out",
+                        'trigger' => 'automatic',
+                        'device_serial_number' => $device->serial_number,
+                        'parking_gate_close_time' => $device->company->parking_gate_close_time,
+
+                    ]);
+
+                $DeviceController =  new ParkingDeviceController();
+                   $DeviceController->OpenGateManually($requestOUT);
+                    
+
+                   
             }
         }
 
@@ -281,7 +314,7 @@ class CameraLogListenerController extends Controller
         $plateNo      = $data['vehicle_id']      ?? null;
 
 
-        $captureTime  = date("Y-d-m H:i:s", strtotime($imageText['capture_time'])  ?? null);
+        //$captureTime  = date("Y-d-m H:i:s", strtotime($imageText['capture_time'])  ?? null);
         $captureTime  = $formattedLogTime; // date("Y-d-m H:i:s", strtotime($imageText['capture_time'])  ?? null);
 
 
@@ -347,12 +380,16 @@ class CameraLogListenerController extends Controller
             }
         }
 
-        $parkingMember = ParkingMembers::where('company_id', $companyId)
+         $parkingMember = ParkingMembers::where('company_id', $companyId)
             ->where(function ($q) use ($plateNo) {
                 $q->where('plate_number', $plateNo)
                   ->orWhereRaw("CONCAT(COALESCE(prefix,''), plate_number) = ?", [$plateNo]);
             })
             ->first();
+
+        // $parkingMember = ParkingMembers::where('company_id', $companyId)
+        //     ->where('plate_number', $plateNo)
+        //     ->first();
         // $parkingMember = ParkingMembers::where('company_id', $companyId)
         //     ->where('id', 1)
         //     ->first();
@@ -425,6 +462,7 @@ class CameraLogListenerController extends Controller
                 }
             }
 
+            /*
             //guest is vehicles are not  allowed
             if (is_null($parkingMember)   && !$device->company->guset_vehicles) {
 
@@ -439,7 +477,7 @@ class CameraLogListenerController extends Controller
 
                 return $this->response("Entry", $vehicleRecord, false);
             }
-
+*/
 
 
             $new_Extradata = [];
@@ -517,7 +555,14 @@ class CameraLogListenerController extends Controller
             $new = array_merge($new->toArray(), $new_Extradata);
 
 
+if (is_null($parkingMember)   && !$device->company->guset_vehicles) 
 
+    {
+ $new["gate_open_automatically"] = "Vehicle Entry  - Gate Open Manually";
+
+    }
+    else
+        {
 
 
             $request =    new Request([
@@ -536,8 +581,11 @@ class CameraLogListenerController extends Controller
             ]);
             $DeviceController =  new ParkingDeviceController($request);
             $DeviceController->OpenGate($request);
+ $new["gate_open_automatically"] = "Vehicle Entry  - Gate Open Automatically";
 
-            $new["gate_open_automatically"] = "Vehicle Entry  - Gate Open Automatically";
+        }
+
+           
 
             $new["function"] = "in";
 
@@ -853,16 +901,8 @@ class CameraLogListenerController extends Controller
             // return response()->json(['status' => 'success', 'id' => $open->id, 'minutes' => $minutes, 'fee' => $fee], 200);
         }
 
-
-        $this->logPerformance("End of Request", $startMemory, $logId);
-
         // Unknown device function
         $log('Device function neither IN nor OUT: ' . $functionIO);
-
-
-
-        $executionTime = round(microtime(true) - $startTime, 3);
-        $log("Total Execution Time: {$executionTime} seconds");
         return response()->json(['status' => 'error', 'message' => 'Invalid device function'], 422);
         // } catch (\Throwable $e) {
         //     $log('DB/Create error: ' . $e->getMessage());
@@ -977,23 +1017,5 @@ class CameraLogListenerController extends Controller
     {
 
         return ParkingMembersVehiclesList::with("ParkingMember")->where("vehicle_number", $vehicleNumber)->first();
-    }
-
-
-    private function logPerformance($stage, $startMemory, $logId)
-    {
-        $currentMemory = memory_get_usage();
-        $peakMemory = memory_get_peak_usage();
-
-        // Convert to MB for readability
-        $usedMB = round(($currentMemory - $startMemory) / 1024 / 1024, 2);
-        $totalMB = round($currentMemory / 1024 / 1024, 2);
-        $peakMB = round($peakMemory / 1024 / 1024, 2);
-
-        $msg = "--- Performance [{$stage}] --- Used: {$usedMB}MB | Total: {$totalMB}MB | Peak: {$peakMB}MB";
-
-        // Reuse your existing log helper logic
-        $line = now()->format('Y-m-d H:i:s') . " {$logId} : {$msg}\n";
-        Storage::append('logs/parking-performance-' . now()->format('d-m-Y') . '.log', $line);
     }
 }

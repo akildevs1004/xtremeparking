@@ -15,8 +15,8 @@ use App\Http\Controllers\SecuritySosRoomsListController;
 
 
 //tv cmds
-Route::get('/envsettings',  function (Request $request) {
-
+Route::get('/envsettings1111111111',  function (Request $request) {
+/*
     // return [
     //     "MQTT_SOCKET_HOST" => "wss://mqtt.xtremeguard.org:8084",
     //     "MQTT_DEVICE_CLIENTID" => "xtremesos",
@@ -56,4 +56,6 @@ Route::get('/envsettings',  function (Request $request) {
     //     "TV_COMPANY_ID" => "8",
     //     "BACKEND_URL2" => "http://" . (new SOSRoomsControllers())->getServerIp() . ":8000",
     // ];
+
+    */
 });

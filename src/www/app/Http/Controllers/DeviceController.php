@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Console\Scheduling\Schedule;
+use App\Http\Controllers\ParkingMembersController;
 
 class DeviceController extends Controller
 {
@@ -394,6 +395,9 @@ class DeviceController extends Controller
 
                     $record = Device::where("id", $request->editId)->update($data);
 
+                    (new ParkingMembersController())->exportAllCompaniesJson();
+
+
 
                     if ($record) {
                         return $this->response('Device successfully Updated.', $record, true);
@@ -451,6 +455,8 @@ class DeviceController extends Controller
 
 
                     $record = Device::create($data);
+
+                    (new ParkingMembersController())->exportAllCompaniesJson();
 
 
                     if ($record) {
@@ -621,6 +627,9 @@ class DeviceController extends Controller
 
                 $data = ["alarm_status" => 0, "alarm_end_datetime" => date('Y-m-d H:i:s')];
                 Device::where("serial_number", $request->serial_number)->update($data);
+
+                    (new ParkingMembersController())->exportAllCompaniesJson();
+
 
                 $data = ["status" => 0, "device_id" => $request->serial_number, "log_time" => date('Y-m-d H:i:s')];
                 AlarmLogs::create($data);
@@ -809,6 +818,7 @@ class DeviceController extends Controller
             } else {
                 return $this->response('Device serial Number is not exist', null, false);
             }
+                    (new ParkingMembersController())->exportAllCompaniesJson();
 
             //update to Device
             if ($request->model_number == 'OX-900') {

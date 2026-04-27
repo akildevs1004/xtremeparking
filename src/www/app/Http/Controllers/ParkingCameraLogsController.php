@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\ParkingReports;
 use App\Models\Company;
 use App\Models\Device;
+use App\Models\ParkingBlockedLogs;
 use App\Models\ParkingCameraLogs;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -87,9 +88,42 @@ class ParkingCameraLogsController extends Controller
         $companyId = $request->company_id;
         $today = now()->toDateString();
 
-        $inLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot'])
+        $blockedLogs = ParkingBlockedLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot,blocked_reason', 'Device:id,name,location'])
             ->select(
+                'in_background_file_name',
+
+                DB::raw("true as blocked"),
+
                 'id',
+                'plate_number as log_vehicle_number',
+                'raw_country_region',
+                DB::raw("'IN' as direction"),
+                'company_id',
+                'parking_member_id',
+                'created_datetime as log_time_in',
+                DB::raw("null as log_time_out"),
+                'created_datetime as log_time',
+                DB::raw("null as duration_in_minutes"),
+                DB::raw("null as duration_in_hours"),
+                DB::raw("null as duration_per_hour_amount"),
+                DB::raw("null as total_amount"),
+                DB::raw("null as payment_mode"),
+                DB::raw("null as device_id_in"),
+
+            )
+            ->where('company_id', $companyId)
+            // ->whereDate('in_time', $today)
+
+            ->orderBy('created_datetime', 'desc')
+            ->limit(20)
+            ->get();
+
+        $inLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot', 'DeviceIn:id,name,location'])
+            ->select(
+                DB::raw("false as blocked"),
+                'id',
+                'in_background_file_name',
+                'out_background_file_name',
                 'log_vehicle_number',
                 'raw_country_region',
                 DB::raw("'IN' as direction"),
@@ -102,7 +136,8 @@ class ParkingCameraLogsController extends Controller
                 'duration_in_hours',
                 'duration_per_hour_amount',
                 'total_amount',
-                'payment_mode'
+                'payment_mode',
+                'device_id_in'
             )
             ->where('company_id', $companyId)
             // ->whereDate('in_time', $today)
@@ -111,9 +146,13 @@ class ParkingCameraLogsController extends Controller
             ->limit(20)
             ->get();
 
-        $outLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot'])
+        $outLogs = ParkingCameraLogs::with(['ParkingMembers:id,is_active,last_name,member_type,first_name,parking_slot', 'DeviceOut:id,name,location'])
             ->select(
+                DB::raw("false as blocked"),
                 'id',
+
+                'in_background_file_name',
+                'out_background_file_name',
                 'log_vehicle_number',
                 'raw_country_region',
                 DB::raw("'OUT' as direction"),
@@ -126,7 +165,8 @@ class ParkingCameraLogsController extends Controller
                 'duration_in_hours',
                 'duration_per_hour_amount',
                 'total_amount',
-                'payment_mode'
+                'payment_mode',
+                'device_id_out'
             )
             ->where('company_id', $companyId)
             // ->whereDate('out_time', $today)
@@ -140,13 +180,17 @@ class ParkingCameraLogsController extends Controller
             ->sortByDesc('log_time')
             ->values();
 
+        $logs = $logs->concat($blockedLogs)
+            ->sortByDesc('log_time')
+            ->values();
+
         return response()->json($logs);
 
         return ['data' => $logs];
     }
     public function getRecords(Request $request, $perpage = null)
     {
-        $model = ParkingCameraLogs::with(["ParkingMembers", "ParkingMembersGuest"])->where('company_id', $request->company_id);;
+        $model = ParkingCameraLogs::with(["ParkingMembers", "ParkingMembersGuest", "DeviceIn", "DeviceOut"])->where('company_id', $request->company_id);;
 
         $model->when($request->filled('member_id'), function ($q) use ($request) {
             $q->where('membership_id', $request->member_id);
@@ -495,14 +539,14 @@ class ParkingCameraLogsController extends Controller
 
 
         // // Base folder where your camera images are stored
-        // $basePath = env('PARKING_CAMERA_STORAGE_PATH');
+        // $basePath = env('PARKING_CAMERA_STORAGE_PATH_NODE');
 
         // // Full path to image
         // $filePath = $basePath . DIRECTORY_SEPARATOR . $company . DIRECTORY_SEPARATOR . $filename;
 
 
 
-        $basePath = rtrim(env('PARKING_CAMERA_STORAGE_PATH'), DIRECTORY_SEPARATOR);
+        $basePath = rtrim(env('PARKING_CAMERA_STORAGE_PATH_NODE'), DIRECTORY_SEPARATOR);
         $todayPrefix = now()->format('Ymd');
         $filePrefix = null;
 
@@ -512,17 +556,33 @@ class ParkingCameraLogsController extends Controller
         }
 
         // Default path (for today's files or files without prefix)
-        $filePath = $basePath . DIRECTORY_SEPARATOR . $company . DIRECTORY_SEPARATOR . $filename;
+          $filePath = $basePath . DIRECTORY_SEPARATOR . $company . DIRECTORY_SEPARATOR . $filename;
+
+            // $filePath=str_replace("BACKGROUND","VEHICLE",$filePath);
 
         // If prefix is found and not today's date, look inside that subfolder
         if ($filePrefix && $filePrefix !== $todayPrefix) {
             $filePath = $basePath . DIRECTORY_SEPARATOR . $company . DIRECTORY_SEPARATOR . $filePrefix . DIRECTORY_SEPARATOR . $filename;
         }
 
+// if (strpos($filePath, 'VEHICLE') !== false) 
+//     {
+//     $filePath = str_replace('BACKGROUND', 'VEHICLE', $filePath);
+// }
+        //   $filePath = str_replace('_BACKGROUND_DETECTION', '_VEHICLE_DETECTION', $filePath);
+ 
+    //   $filePath = str_replace('_VEHICLE.jpg', '_BACKGROUND.jpg', $filePath);
+    //   $filePath = str_replace('PLATE', 'BACKGROUND', $filePath);
+
+
+      
+        $filePath = str_replace('-', '', $filePath);
 
 
 
+      
 
+ 
 
 
 
@@ -573,20 +633,21 @@ class ParkingCameraLogsController extends Controller
             return [
                 "MQTT_SSL" => true,
                 "MQTT_SOCKET_HOST" => "wss://mqtt.xtremeguard.org:8084",
-                "MQTT_DEVICE_CLIENTID" => "xtremesos",
+                "MQTT_DEVICE_CLIENTID" => "xtreemparking",
                 "TV_COMPANY_ID" => "8",
                 "BACKEND_URL2" => "https://{$serverAddr}:8000",
 
                 "MQTT_QRCODE_PAYMENT" => "mqtt://xtremeguard.org",
                 "host" => "mqtts://{$serverAddr}:8083",
                 // "WATCH_DIR" => "D:\\projects\\vehicleparkingbills\\parking_camera_logs\\data",
-                "WATCH_DIR" => env('PARKING_CAMERA_STORAGE_PATH'), //realpath(base_path('../../parking_camera_logs/data')) ?: base_path('../../parking_camera_logs/data'),
+                "WATCH_DIR" => env('PARKING_CAMERA_STORAGE_PATH_NODE'), //realpath(base_path('../../parking_camera_logs/data')) ?: base_path('../../parking_camera_logs/data'),
 
                 "COMPANY_ID" =>  "8",
                 "API_URL" =>  "https://{$serverAddr}:8000/api/camera_log_listner",
                 "API_KEY" =>  "",
                 "MQTT_SERVER" =>  "wss://{$serverAddr}:8083",
                 "MQTT_FRONTEND" =>  "mqtts://{$serverAddr}:8083",
+"PARKING_CAMERA_STORAGE_PATH_NODE"=>env('PARKING_CAMERA_STORAGE_PATH_NODE'), 
 
                 //live camera
                 "BASE_HTTP_PORT" =>  "7081",
@@ -603,7 +664,7 @@ class ParkingCameraLogsController extends Controller
         return [
             "MQTT_SOCKET_HOST" => "mqtt://{$ip}:8083",
             "MQTT_SSL" => false,
-            "MQTT_DEVICE_CLIENTID" => "xtremesos",
+            "MQTT_DEVICE_CLIENTID" => "xtreemparking",
             "TV_COMPANY_ID" => "8",
             "BACKEND_URL2" => "http://{$ip}:8000",
 
@@ -611,10 +672,10 @@ class ParkingCameraLogsController extends Controller
             "MQTT_QRCODE_PAYMENT" => "mqtt://xtremeguard.org",
             "host" => "mqtt://{$ip}:8083",
             // "WATCH_DIR" => "D:\\projects\\vehicleparkingbills\\parking_camera_logs\\data",
-            "WATCH_DIR" =>    env('PARKING_CAMERA_STORAGE_PATH'), //     realpath(base_path('../../../parking_camera_logs/data')) ?: base_path('../../../parking_camera_logs/data'),
+            "WATCH_DIR" =>    env('PARKING_CAMERA_STORAGE_PATH_NODE'), //     realpath(base_path('../../../parking_camera_logs/data')) ?: base_path('../../../parking_camera_logs/data'),
 
-
-            "COMPANY_ID" =>  "8",
+"PARKING_CAMERA_STORAGE_PATH_NODE"=>env('PARKING_CAMERA_STORAGE_PATH_NODE'), 
+            "COMPANY_ID" =>  "8", 
             "API_URL" =>  "http://{$ip}:8000/api/camera_log_listner",
             "API_KEY" =>  "",
             "MQTT_SERVER" =>  "ws://{$ip}:8083",

@@ -167,12 +167,12 @@ class UnitController extends Controller
             })
             ->select('unit_number as id', 'unit_number as name')
             ->orderBy('unit_number')
-            ->get();
-            // ->map(function($item){
-            //     return [
-            //         'id' => (int) $item->id,
-            //         'name' => (int) $item->name
-            //     ];
-            // });
+            ->get()
+            ->map(function($item){
+                return [
+                    'id' => (int) $item->id,
+                    'name' => (int) $item->name
+                ];
+            });
     }
 }

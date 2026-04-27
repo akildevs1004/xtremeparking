@@ -13,5 +13,8 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         //
+        'cgi-bin/NotifyEvent',
+         
+    'NotificationInfo/DeviceInfo',   // skip CSRF for a specific route
     ];
 }

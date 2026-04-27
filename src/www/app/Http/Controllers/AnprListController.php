@@ -145,9 +145,9 @@ class AnprListController extends Controller
                 $key = $this->plateCanonicalKey($camPlate);
                 if ($key === '' || !isset($dbWhiteSet[$key])) {
                     $this->removeRecno(
-                        config('services.dahua.host'),
-                        config('services.dahua.username'),
-                        config('services.dahua.password'),
+                        "172.16.4.217",
+                        "admin",
+                        "Admin@123",
                         config('services.dahua.timeout', 15),
                         self::WHITE,
                         $recno
@@ -172,9 +172,9 @@ class AnprListController extends Controller
                 $key = $this->plateCanonicalKey($camPlate);
                 if ($key === '' || !isset($dbBlackSet[$key])) {
                     $this->removeRecno(
-                        config('services.dahua.host'),
-                        config('services.dahua.username'),
-                        config('services.dahua.password'),
+                        "172.16.4.217",
+                        "admin",
+                        "Admin@123",
                         config('services.dahua.timeout', 15),
                         self::BLACK,
                         $recno
@@ -261,9 +261,9 @@ class AnprListController extends Controller
             throw new RuntimeException("Invalid plate/category");
         }
 
-        $host = config('services.dahua.host');
-        $user = config('services.dahua.username');
-        $pass = config('services.dahua.password');
+        $host = "172.16.4.217";
+        $user = "admin";
+        $pass = "Admin@123";
         $timeout = config('services.dahua.timeout', 15);
 
         $targetList = $category === 'white' ? self::WHITE : self::BLACK;
@@ -290,9 +290,9 @@ class AnprListController extends Controller
         $plate = strtoupper(trim($plate));
         $category = strtolower(trim($category));
 
-        $host = config('services.dahua.host');
-        $user = config('services.dahua.username');
-        $pass = config('services.dahua.password');
+        $host = "172.16.4.217";
+        $user = "admin";
+        $pass = "Admin@123";
         $timeout = config('services.dahua.timeout', 15);
 
         $removed = [];
@@ -321,9 +321,9 @@ class AnprListController extends Controller
     // =========================
     private function listCameraRecords(string $listName): array
     {
-        $host = config('services.dahua.host');
-        $user = config('services.dahua.username');
-        $pass = config('services.dahua.password');
+        $host = "172.16.4.217";
+        $user = "admin";
+        $pass = "Admin@123";
         $timeout = config('services.dahua.timeout', 15);
 
         $all = [];

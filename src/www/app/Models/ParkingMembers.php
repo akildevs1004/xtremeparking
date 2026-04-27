@@ -30,9 +30,8 @@ class ParkingMembers extends Model
             return null;
         }
     }
-
-    public function ParkingFamilyMembers()
+   public function ParkingFamilyMembers()
     {
-        return $this->hasMany(ParkingMembersVehiclesList::class, 'member_id');
+        return $this->hasMany(ParkingMembersVehiclesList::class, "member_id");
     }
 }

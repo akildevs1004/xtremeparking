@@ -5,8 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Community\Parking;
 use App\Models\ParkingMembers;
 use App\Models\ParkingMembersTransactions;
+use App\Http\Controllers\ParkingMembersController;
+
+
 use App\Models\ParkingMembersVehiclesList;
 use Illuminate\Http\Request;
+
+ 
 
 class ParkingMembersVehiclesListController extends Controller
 {
@@ -85,6 +90,7 @@ class ParkingMembersVehiclesListController extends Controller
         $isExit = ParkingMembersVehiclesList::where("vehicle_number", $request->vehicle_number)->exists();
         if ($isExit == 0) {
             $record = ParkingMembersVehiclesList::create($data);
+            (new ParkingMembersController)->exportParkingMembersJson();
 
             return $this->response('Parking Member Guest Details are created.', $record, true);
         } else {
@@ -146,6 +152,8 @@ class ParkingMembersVehiclesListController extends Controller
         if ($isExit == 0) {
             $record = ParkingMembersVehiclesList::where("id",   $id)->where("company_id",  $request->company_id)->update($data);
 
+            (new ParkingMembersController)->exportParkingMembersJson();
+
             return $this->response('Parking Member Guest Details are Updated.', $record, true);
         } else {
             return $this->response($request->vehicle_number . ' - Parking Member Guest Vehicle is  already Exist', null, false);
@@ -196,6 +204,7 @@ class ParkingMembersVehiclesListController extends Controller
 
             ];
             $record = ParkingMembersTransactions::create($transactionData);
+            
 
             ParkingMembers::where("id", $request->member_id)->where("company_id", $request->company_id)
                 ->update(["guest_parking_hours_count" => $previousCount + $request->guest_parking_hours_count]);
@@ -205,5 +214,10 @@ class ParkingMembersVehiclesListController extends Controller
         }
 
         return $this->response('Parking Member Credits are Not Updated ',  null, false);
+    }
+
+    public function ParkingMembersCreateJson(Request $request)
+    {
+        
     }
 }

@@ -30,7 +30,14 @@ class ParkingCameraLogs extends Model
     {
         return $this->belongsTo(ParkingMembers::class, "membership_id");
     }
-
+    public function DeviceIn()
+    {
+        return $this->belongsTo(Device::class, "device_id_in");
+    }
+    public function DeviceOut()
+    {
+        return $this->belongsTo(Device::class, "device_id_out");
+    }
     public function ParkingMembersGuest()
     {
         return $this->belongsTo(ParkingMembersVehiclesList::class, "member_guest_vehicle_id");

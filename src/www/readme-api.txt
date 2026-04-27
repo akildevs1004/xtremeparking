@@ -11,4 +11,11 @@ http://localhost:8000/api/test900device1
 http://localhost:8000/api/update_logs
 Kernal Jobs  sync_alarm_logs_update_start_end_time
 
+
+
+php artisan serve --host=0.0.0.0 --port=8000
+
+
+
+"C:\Users\admin\AppData\Local\Programs\XtremeGuardParking\resources\mosquitto\mosquitto.exe" -c "C:\Users\admin\AppData\Local\Programs\XtremeGuardParking\resources\mosquitto\mosquitto.conf" -v
  

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\DeviceCommandsJob;
 use App\Models\CustomerProductServices;
 use App\Models\Customers\CustomerPayments;
+use App\Models\Device;
 use App\Models\ParkingCameraLogs;
 use App\Models\ParkingMembers;
 use App\Models\TaxSlabs;
@@ -24,13 +25,13 @@ class ParkingDeviceController extends Controller
                 $postData = [
                     "action" => "UPDATE_CONFIG",
                     "serialNumber" => $request->device_serial_number,
-                    "config" => ["relay0" => true],
+                    "config" => ["relay1" => true],
                 ];
             } else if ($request->function == 'out') {
                 $postData = [
                     "action" => "UPDATE_CONFIG",
                     "serialNumber" => $request->device_serial_number,
-                    "config" => ["relay1" => true],
+                    "config" => ["relay0" => true],
                 ];
             }
 
@@ -58,12 +59,41 @@ class ParkingDeviceController extends Controller
     //         return $this->response('Device Serial Number Not Found', null, false);
     //     }
     // }
-    public function OpenGate(Request $request)
+    public function OpenGateManually(Request $request)
     {
         $request->validate([
             'company_id' => 'required|integer',
-            'event_id' => 'required|integer', //memberid
-            'device_id' => 'required|integer', //memberid
+            'event_id' => 'nullable|integer', //memberid
+            'device_id' => 'nullable|integer', //memberid
+            'trigger' => 'required|string', //memberid
+            'device_serial_number' => 'nullable|string', //memberid
+            "function" => 'required|string', //memberid
+            "parking_gate_close_time" => 'nullable', //memberid
+
+
+        ]);
+
+        $request = new Request([
+            'company_id' => $request->company_id,
+
+
+            'trigger' => $request->trigger, //memberid
+            'device_serial_number' => Device::where('company_id', $request->company_id)->first()->serial_number ?? null, //memberid
+            "function" => $request->function, //memberid
+            "parking_gate_close_time" => $request->parking_gate_close_time, //memberid
+
+        ]);
+
+        return $this->OpenGate($request);
+    }
+    public function OpenGate(Request $request)
+    {
+
+      return $this->response('Gate Opened', null, true);
+        $request->validate([
+            'company_id' => 'required|integer',
+            'event_id' => 'nullable|integer', //memberid
+            'device_id' => 'nullable|integer', //memberid
             'trigger' => 'required|string', //memberid
             'device_serial_number' => 'required|string', //memberid
             "function" => 'required|string', //memberid
@@ -82,46 +112,57 @@ class ParkingDeviceController extends Controller
         //     "config" => ["relay0" => false],
         // ];
 
-        if ($request->function == 'in') {
-            $postData = [
+      //  if ($request->function == 'in') {
+            $postData1= [
                 "action" => "UPDATE_CONFIG",
                 "serialNumber" => $request->device_serial_number,
                 "config" => ["relay0" => false],
             ];
-        } else if ($request->function == 'out') {
-            $postData = [
+       // } else if ($request->function == 'out') {
+            $postData2 = [
                 "action" => "UPDATE_CONFIG",
                 "serialNumber" => $request->device_serial_number,
                 "config" => ["relay1" => false],
             ];
-        }
-        $delaySec = (int) ($request->input('parking_gate_close_time', 10));
+       //}
+        $delaySec = (int) ($request->input('parking_gate_close_time', 1));
 
-        $deviceJobs = new DeviceCommandsJob($postData); //run Job and command after 5 seconds
+        $deviceJobs = new DeviceCommandsJob($postData1); //run Job and command after 5 seconds
         $this->dispatch($deviceJobs->delay(now()->addSeconds($delaySec)));
 
+
+         $mqtt = new MqttService();
+            $mqtt->publish(env('MQTT_DEVICE_CLIENTID') . "/{$request->device_serial_number}/config/request",  json_encode($postData1), $request->device_serial_number);
+
+ $deviceJobs = new DeviceCommandsJob($postData2); //run Job and command after 5 seconds
+        $this->dispatch($deviceJobs->delay(now()->addSeconds($delaySec)));
+
+
+         $mqtt = new MqttService();
+            $mqtt->publish(env('MQTT_DEVICE_CLIENTID') . "/{$request->device_serial_number}/config/request",  json_encode($postData2), $request->device_serial_number);
 
 
         // } catch (\Exception $e) {
         // }
 
-        if ($request->trigger == 'manual') {
-            ParkingCameraLogs::where("id", $request->event_id)
-                ->where("company_id", $request->company_id)
+        if ($request->event_id) {
 
-                ->update([
-                    "manual_gate_opened_at" => date("Y-m-d H:i:s")
-                ]);
-        } else if ($request->trigger == 'automatic') {
-            ParkingCameraLogs::where("id", $request->event_id)
-                ->where("company_id", $request->company_id)
+            if ($request->trigger == 'manual') {
+                ParkingCameraLogs::where("id", $request->event_id)
+                    ->where("company_id", $request->company_id)
 
-                ->update([
-                    "automatic_gate_opened_at" => date("Y-m-d H:i:s")
-                ]);
+                    ->update([
+                        "manual_gate_opened_at" => date("Y-m-d H:i:s")
+                    ]);
+            } else if ($request->trigger == 'automatic') {
+                ParkingCameraLogs::where("id", $request->event_id)
+                    ->where("company_id", $request->company_id)
+
+                    ->update([
+                        "automatic_gate_opened_at" => date("Y-m-d H:i:s")
+                    ]);
+            }
         }
-
-
         return $this->response('Gate Opened', null, true);
     }
 
