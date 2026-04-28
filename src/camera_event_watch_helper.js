@@ -123,12 +123,16 @@ async function loadConfig() {
     // COMPANY_ID
     COMPANY_ID = (cfg.COMPANY_ID ?? "").toString().trim();
 
-    // WATCH_DIR base from API, then append COMPANY_ID if present
+    // WATCH_DIR base from API. Only append COMPANY_ID if it's not already the
+    // trailing path segment — many configs (like www/.env) ship a value that
+    // already includes the company folder, e.g. "D:/camera_logs/8/".
     const apiWatchBase = (cfg.WATCH_DIR ?? "").toString().trim();
     if (apiWatchBase) {
-      WATCH_DIR = COMPANY_ID
-        ? path.join(apiWatchBase, COMPANY_ID)
-        : apiWatchBase;
+      const trimmed = apiWatchBase.replace(/[\\/]+$/, "");
+      WATCH_DIR =
+        COMPANY_ID && !trimmed.endsWith(COMPANY_ID)
+          ? path.join(trimmed, COMPANY_ID)
+          : trimmed;
     } else {
       WATCH_DIR = "";
     }
@@ -367,30 +371,32 @@ async function handleBackgroundFile(filePath) {
 }
 
 // ============================================================================
-// SIMPLE QUEUE → ENSURES "ONE BY ONE" PROCESSING
+// PARALLEL QUEUE → UP TO N WORKERS PROCESS FILES CONCURRENTLY
 // ============================================================================
+// Matches the php-cgi worker pool size in main.js so PHP and Node throughput
+// are aligned. Distinct files (different cars / cameras) are independent;
+// same-plate floods are still suppressed by isDuplicateWithinWindow().
+const QUEUE_CONCURRENCY = 4;
+
 let fileQueue = [];
-let isProcessingQueue = false;
+let activeWorkers = 0;
 
 function enqueueFile(filePath) {
   fileQueue.push(filePath);
-  processQueue();
+  pumpQueue();
 }
 
-async function processQueue() {
-  if (isProcessingQueue) return;
-  isProcessingQueue = true;
-
-  while (fileQueue.length > 0) {
+function pumpQueue() {
+  while (activeWorkers < QUEUE_CONCURRENCY && fileQueue.length > 0) {
     const filePath = fileQueue.shift();
-    try {
-      await handleBackgroundFile(filePath);
-    } catch (err) {
-      logLine("❌ Error in queue processor:", err.message);
-    }
+    activeWorkers++;
+    handleBackgroundFile(filePath)
+      .catch((err) => logLine("❌ Error in queue worker:", err.message))
+      .finally(() => {
+        activeWorkers--;
+        pumpQueue();
+      });
   }
-
-  isProcessingQueue = false;
 }
 
 // ============================================================================

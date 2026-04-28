@@ -383,7 +383,7 @@ class CameraLogListenerController extends Controller
          $parkingMember = ParkingMembers::where('company_id', $companyId)
             ->where(function ($q) use ($plateNo) {
                 $q->where('plate_number', $plateNo)
-                  ->orWhereRaw("CONCAT(COALESCE(prefix,''), plate_number) = ?", [$plateNo]);
+                  ->orWhereRaw("(COALESCE(prefix, '') || plate_number) = ?", [$plateNo]);
             })
             ->first();
 

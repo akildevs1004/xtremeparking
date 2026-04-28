@@ -18,12 +18,13 @@ const { liveStreamHelper } = require("./camera_live_stream_helper.js");
 const { startOrganizer } = require("./camera_organize_files_by_date_helper.js");
 const { startWatcher } = require("./camera_event_watch_helper.js");
 
-//control GPU
-app.disableHardwareAcceleration();
-app.commandLine.appendSwitch("disable-gpu");
-app.commandLine.appendSwitch("disable-gpu-compositing");
-// optional: helps some drivers
-app.commandLine.appendSwitch("disable-features", "UseSkiaRenderer");
+//control GPU — disabled below was forcing SwiftShader software WebGL,
+// which kept the GPU helper process at ~120% of one core whenever the dashboard
+// was open (charts/gauges/map). Re-enabling hardware accel for testing.
+// app.disableHardwareAcceleration();
+// app.commandLine.appendSwitch("disable-gpu");
+// app.commandLine.appendSwitch("disable-gpu-compositing");
+// app.commandLine.appendSwitch("disable-features", "UseSkiaRenderer");
 
 ///GPU blacklist (for older Windows 10 versions with buggy drivers)
 
@@ -54,7 +55,7 @@ let nginxWindow;
 let nginxPID = null;
 let schedulePID = null;
 let queuePID = null;
-let serverPID = null;
+let serverPIDs = [];
 let MACHINE_ID = null;
 
 let mqttListernPID = null;
@@ -64,10 +65,10 @@ let mqttServerPID = null;
 async function startServices() {
   nginxPID = spawnWrapper("[Nginx]", nginxPath, { cwd: appDir });
 
-  // Spawn PHP workers
-  [9000].forEach((port) => {
-    serverPID = spawnPhpCgiWorker(phpCGi, port);
-  });
+  // Spawn PHP workers (one per port — php-cgi on Windows handles 1 request per process)
+  serverPIDs = [9000, 9001, 9002, 9003].map((port) =>
+    spawnPhpCgiWorker(phpCGi, port),
+  );
 
 
   await waitForURL(`http://${ipv4Address}:8000`);
@@ -181,9 +182,16 @@ app.whenReady().then(async () => {
     runInstaller(path.join(appDir, "vs_redist.exe"))
       .then(async () => {
 
-        console.log(`calling... startServices`);
+        // Duplicate startServices() — already invoked from createNginxWindow().
+        // Re-running here would respawn every service and lose port binds,
+        // leaving 4 zombie php-cgi.exe processes in a 2s restart loop.
+        // console.log(`calling... startServices`);
+        // await startServices();
 
-        await startServices();
+        // Wait for nginx (started by createNginxWindow's startServices) before
+        // the helpers below fetch /api/envsettings. Previously the runInstaller
+        // call's natural delay served as this synchronization point.
+        await waitForURL(`http://${ipv4Address}:8000`);
 
         console.log(`calling... startWatcher`);
         await startWatcher();
@@ -196,7 +204,7 @@ app.whenReady().then(async () => {
         console.log(`calling... startOrganizer`);
 
         await startOrganizer();
-        
+
       })
       .catch((err) => {
         console.log(err.message);
@@ -221,7 +229,9 @@ app.on("before-quit", async (e) => {
   await stopServices(nginxPID);
   await stopServices(schedulePID);
   await stopServices(queuePID);
-  await stopServices(serverPID);
+  for (const pid of serverPIDs) {
+    await stopServices(pid);
+  }
 
   await stopServices(mqttServerPID);
   await stopServices(mqttListernPID);
@@ -238,7 +248,9 @@ app.on("will-quit", async () => {
   await stopServices(nginxPID);
   await stopServices(schedulePID);
   await stopServices(queuePID);
-  await stopServices(serverPID);
+  for (const pid of serverPIDs) {
+    await stopServices(pid);
+  }
 
   await stopServices(mqttServerPID);
   await stopServices(mqttListernPID);
